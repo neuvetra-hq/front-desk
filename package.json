@@ -1,0 +1,19 @@
+{
+  "name": "front-desk",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "turbo": "^2.8.13",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "pnpm@9.14.4",
+  "engines": {
+    "node": ">=20"
+  }
+}
