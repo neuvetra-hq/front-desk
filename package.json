@@ -1,19 +1,15 @@
 {
   "name": "front-desk",
-  "version": "0.0.1",
-  "private": true,
+  "version": "1.0.50",
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch src/index.ts"
+  },
+  "dependencies": {
+    "elysia": "latest"
   },
   "devDependencies": {
-    "turbo": "^2.8.13",
-    "typescript": "^5.9.3"
+    "bun-types": "latest"
   },
-  "packageManager": "pnpm@9.14.4",
-  "engines": {
-    "node": ">=20"
-  }
+  "module": "src/index.js"
 }
