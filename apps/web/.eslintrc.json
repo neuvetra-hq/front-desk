@@ -1,0 +1,2 @@
+// ESLint v9 flat config is in eslint.config.mjs — this file is superseded.
+// ESLint v9 ignores .eslintrc.json when eslint.config.mjs is present.

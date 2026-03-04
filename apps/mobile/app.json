@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Front Desk",
+    "slug": "front-desk",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "frontdesk",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "inc.birgani.frontdesk"
+    },
+    "android": {
+      "package": "inc.birgani.frontdesk",
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
