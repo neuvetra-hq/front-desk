@@ -55,7 +55,7 @@ export const businesses = pgTable("businesses", {
   aiConfig:      jsonb("ai_config"),
   calcomApiKey:  text("calcom_api_key"),
   status:        businessStatusEnum("status").notNull().default("active"),
-  businessType:  businessTypeEnum("business_type").notNull(),
+  businessType:  businessTypeEnum("business_type"),
   createdAt:     timestamp("created_at").notNull().defaultNow(),
   updatedAt:     timestamp("updated_at").notNull().defaultNow(),
 })
@@ -68,6 +68,7 @@ export const users = pgTable("users", {
   id:        uuid("id").primaryKey(),
   email:     text("email").notNull().unique(),
   fullName:  text("full_name"),
+  phone:     text("phone"),
   avatarUrl: text("avatar_url"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

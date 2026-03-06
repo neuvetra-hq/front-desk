@@ -1,100 +1,77 @@
 ---
-status: pending
+status: in-progress
 ---
 
 # Task 07: User Authentication (Frontend + Supabase)
 
 ## Auth Methods
-Three supported methods, all handled by Supabase natively:
-1. **Email + password** — standard
-2. **Phone + OTP** — SMS via Twilio (already configured); user enters phone → receives OTP → enters code
-3. **Google OAuth (SSO)** — one-click sign in with Google account
+1. **Email + password**
+2. **Google OAuth (SSO)**
+> Phone OTP deferred — phone number is collected as profile data at signup, not used as auth method
 
 ## Setup
 - [ ] Install `@supabase/supabase-js` in `apps/web`
 - [ ] Install `react-hook-form`, `zod`, `@hookform/resolvers` in `apps/web`
-- [ ] Install shadcn components: `input`, `label`, `card`, `select`, `sonner`, `tabs`, `separator`
+- [ ] Install shadcn components: `input`, `label`, `card`, `select`, `sonner`, `separator`
 - [ ] Create `apps/web/.env.example` with `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
 - [ ] Create `apps/web/.env` (not committed) with real values from Supabase dashboard
-- [ ] Enable Phone provider in Supabase dashboard (Auth → Providers → Phone → Twilio)
-- [ ] Enable Google provider in Supabase dashboard (Auth → Providers → Google → OAuth credentials)
+- [ ] Enable Google provider in Supabase dashboard (Auth → Providers → Google)
 
 ## Supabase Client
-- [ ] `src/lib/supabase.ts` — typed singleton Supabase client using `VITE_` env vars
+- [ ] `src/lib/supabase.ts` — typed singleton client using `VITE_` env vars
 
 ## Auth Context
 - [ ] `src/contexts/AuthContext.tsx` — provides `session`, `user`, `loading`, `signOut`
-- [ ] `src/hooks/useAuth.ts` — convenience hook wrapping the context
+- [ ] `src/hooks/useAuth.ts` — convenience hook
 
 ## Database Trigger (packages/database)
+- [ ] Add `phone` column to `public.users` schema (nullable text)
 - [ ] New migration: Postgres function + trigger on `auth.users` INSERT
       → auto-inserts into `public.users` (id, email, full_name, avatar_url, phone)
-- [ ] Add `phone` column to `public.users` in schema (nullable text)
-- [ ] Run `db:generate` + `db:migrate` to apply
+- [ ] Run `db:generate` + `db:migrate`
 
 ## Components
-- [ ] `src/components/auth/AuthLayout.tsx`
-      — centered card layout, logo at top, used by both login + signup pages
-- [ ] `src/components/auth/SocialAuth.tsx`
-      — "Continue with Google" button (full width, Google icon, proper branding)
-      — divider ("or continue with") below
-- [ ] `src/components/auth/LoginForm.tsx`
-      — tabs: "Email" | "Phone"
-      — Email tab: email + password fields, show/hide toggle, zod validation
-      — Phone tab: phone number input → OTP input (two-step within same form)
-      — loading spinner, inline error messages
+- [ ] `src/components/auth/AuthLayout.tsx` — centered card, logo at top
+- [ ] `src/components/auth/SocialAuth.tsx` — "Continue with Google" button + divider
+- [ ] `src/components/auth/LoginForm.tsx` — email + password, show/hide toggle, zod, errors
 - [ ] `src/components/auth/SignupForm.tsx`
-      — email, password, full name, phone number (optional),
-        business name, business type (select from enum)
-      — zod validation, loading spinner, inline error messages
-- [ ] `src/components/auth/OtpInput.tsx`
-      — 6-digit OTP input, auto-advance between digits, paste support
-- [ ] `src/components/auth/ProtectedRoute.tsx`
-      — wraps any route; redirects to `/login` if no active session
+      — full name, personal phone number, email, password
+      — zod validation, inline errors, loading state
+- [ ] `src/components/auth/ProtectedRoute.tsx` — redirect to /login if no session
 
 ## Pages
-- [ ] `src/pages/LoginPage.tsx` — AuthLayout + SocialAuth + LoginForm
-- [ ] `src/pages/SignupPage.tsx` — AuthLayout + SocialAuth + SignupForm
+- [ ] `src/pages/LoginPage.tsx`
+- [ ] `src/pages/SignupPage.tsx`
+- [ ] `src/pages/AuthCallbackPage.tsx` — handles Google OAuth redirect → /dashboard
 
-## Post-Signup Flow
-- [ ] After successful signup: create row in `businesses` + `business_members` (owner)
-- [ ] Redirect authenticated users to `/dashboard` after sign in / sign up
-- [ ] Redirect already-authenticated users away from `/login` and `/signup`
-- [ ] Handle OAuth callback: Supabase redirects to `/auth/callback` → resolve session → redirect to `/dashboard`
-- [ ] `src/pages/AuthCallbackPage.tsx` — handles the OAuth redirect URL
+## Post-Auth Flow
+- [ ] Signup: create `businesses` row (name = "{fullName}'s Business", status = inactive) +
+      `business_members` row (role = owner) after user row exists
+- [ ] Redirect to `/dashboard` after sign in / sign up
+- [ ] Redirect away from `/login` + `/signup` if already authenticated
 
-## Routing (App.tsx)
-- [ ] Wrap `AuthProvider` around the entire app in `main.tsx`
-- [ ] `/login` → `LoginPage`
-- [ ] `/signup` → `SignupPage`
-- [ ] `/auth/callback` → `AuthCallbackPage`
-- [ ] `/dashboard` and other app routes → wrapped in `ProtectedRoute`
+## Routing
+- [ ] Wrap `AuthProvider` in `main.tsx`
+- [ ] `/login` → LoginPage
+- [ ] `/signup` → SignupPage
+- [ ] `/auth/callback` → AuthCallbackPage
+- [ ] `/dashboard` → wrapped in ProtectedRoute (placeholder page for now)
 
-## UX Details
-- [ ] Loading skeleton while session resolves on first load (avoids flash of login page)
-- [ ] Toast notifications via `sonner`: success on sign in, error on failed attempts
-- [ ] "Don't have an account? Sign up" link on login, and vice versa
+## UX
+- [ ] Full-page loading state while session resolves (no flash of wrong page)
+- [ ] Sonner toasts: success on sign in, error on failure
+- [ ] Disable submit + show spinner while in flight
+- [ ] "Already have an account? Sign in" ↔ "Don't have an account? Sign up" links
 - [ ] Password show/hide toggle
-- [ ] Disable submit button while request is in flight
-- [ ] Sign out button accessible from dashboard (placeholder for now)
-- [ ] Google button matches Google brand guidelines (white bg, Google logo SVG, correct text)
-
-## Supabase Dashboard Config (manual steps — documented here for reference)
-- Enable Email provider (on by default)
-- Enable Phone provider → set Twilio credentials (Account SID, Auth Token, From number)
-- Enable Google provider → set Client ID + Secret from Google Cloud Console
-- Set Site URL + Redirect URLs in Auth settings to include `http://localhost:5173`
 
 ## Acceptance Criteria
-- New user can sign up with email/password → all DB rows created
-- User can sign in via Google SSO → session established, redirected to `/dashboard`
-- User can sign in via phone OTP → OTP received via SMS, session established
-- Wrong credentials → clear error message, no crash
-- Unauthenticated access to `/dashboard` → redirected to `/login`
-- Already signed-in user visiting `/login` → redirected to `/dashboard`
+- User signs up (name + phone + email + password) → auth.users + public.users + businesses + business_members rows all created
+- User signs in with Google → session established, redirected to /dashboard
+- Wrong credentials → clear error shown
+- Unauthenticated /dashboard → redirected to /login
+- Authenticated user on /login → redirected to /dashboard
 - Session survives page refresh
-- Sign out clears session and redirects to `/login`
-- All forms validated client-side with zod before submission
-- `public.users` row auto-created via trigger for all auth methods (email, phone, Google)
-- UI is polished: shadcn Card, Input, Button, Select, Tabs, Sonner toasts
+- Sign out works, redirects to /login
+- All forms zod-validated before submission
+- UI polished: shadcn components, toasts, loading states
 - No console errors

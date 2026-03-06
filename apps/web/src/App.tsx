@@ -1,37 +1,22 @@
 import { Routes, Route } from "react-router"
 import { LandingPage } from "@/pages/LandingPage"
-
-function Dashboard() {
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-    </div>
-  )
-}
-
-function Login() {
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold">Login</h1>
-    </div>
-  )
-}
-
-function Calls() {
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold">Call History</h1>
-    </div>
-  )
-}
+import { LoginPage } from "@/pages/LoginPage"
+import { SignupPage } from "@/pages/SignupPage"
+import { AuthCallbackPage } from "@/pages/AuthCallbackPage"
+import { DashboardPage } from "@/pages/DashboardPage"
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 
 export function App() {
   return (
     <Routes>
+      {/* Public */}
       <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/calls" element={<Calls />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
+
+      {/* Protected */}
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
     </Routes>
   )
 }
