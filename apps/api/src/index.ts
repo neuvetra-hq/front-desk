@@ -1,10 +1,12 @@
 import { Elysia } from "elysia"
 import { webhooks } from "./routes/webhooks"
+import { businessesRoutes } from "./routes/businesses"
 
 const app = new Elysia()
   .get("/health", () => ({ status: "ok" }))
   .use(webhooks)
-  .listen(process.env.PORT ?? 3000)
+  .use(businessesRoutes)
+  .listen(Bun.env.PORT ?? 3000)
 
 export type App = typeof app
 

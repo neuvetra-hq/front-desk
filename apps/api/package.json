@@ -8,8 +8,10 @@
   "dependencies": {
     "@frontdesk/database": "workspace:*",
     "@supabase/supabase-js": "^2.50.0",
-    "drizzle-orm": "^0.30.0",
-    "elysia": "latest"
+    "drizzle-orm": "^0.45.1",
+    "elysia": "latest",
+    "retell-sdk": "^5.7.0",
+    "twilio": "^5.12.2"
   },
   "devDependencies": {
     "bun-types": "latest",
