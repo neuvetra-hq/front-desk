@@ -1,37 +1,37 @@
 ---
-status: pending
+status: done
 ---
 
 # Task 09: Twilio Phone Number Lifecycle (Provision + Release)
 
 ## Schema Migration (packages/database)
-- [ ] Add `twilio_number_sid` (text, nullable, unique) to `businesses` table
-- [ ] Run `db:generate` + `db:migrate`
+- [x] Add `twilio_number_sid` (text, nullable, unique) to `businesses` table
+- [x] Run `db:generate` + `db:migrate`
 
 ## Twilio Service (`apps/api/src/services/twilio.ts`)
-- [ ] `searchAvailableNumbers(areaCode: string)` — GET /AvailablePhoneNumbers/US/Local.json?VoiceEnabled=true&AreaCode={areaCode}
-- [ ] `provisionNumber(phoneNumber: string)` — POST /IncomingPhoneNumbers with VoiceUrl set to our webhook endpoint → returns { sid, phoneNumber }
-- [ ] `releaseNumber(sid: string)` — DELETE /IncomingPhoneNumbers/{sid}
+- [x] `searchAvailableNumbers(areaCode: string)` — GET /AvailablePhoneNumbers/US/Local.json?VoiceEnabled=true&AreaCode={areaCode}
+- [x] `provisionNumber(phoneNumber: string)` — POST /IncomingPhoneNumbers with VoiceUrl set to our webhook endpoint → returns { sid, phoneNumber }
+- [x] `releaseNumber(sid: string)` — DELETE /IncomingPhoneNumbers/{sid}
 
 ## API Routes (`apps/api/src/routes/businesses.ts`)
-- [ ] `POST /businesses/:id/provision`
+- [x] `POST /businesses/:id/provision`
       — auth required (owner/admin only)
       — calls searchAvailableNumbers + provisionNumber
       — saves twilio_number + twilio_number_sid to businesses table
       — sets status = "active"
       — returns the assigned number
-- [ ] `POST /businesses/:id/release`
+- [x] `POST /businesses/:id/release`
       — auth required (owner/admin only)
       — calls releaseNumber with stored twilio_number_sid
       — clears twilio_number + twilio_number_sid from businesses table
       — sets status = "inactive"
 
 ## Environment
-- [ ] Confirm `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WEBHOOK_BASE_URL` in apps/api/.env
-- [ ] Add `TWILIO_WEBHOOK_BASE_URL` to .env.example (public URL of API, e.g. ngrok for local dev)
+- [x] Confirm `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WEBHOOK_BASE_URL` in apps/api/.env
+- [x] Add `TWILIO_WEBHOOK_BASE_URL` to .env.example (public URL of API, e.g. ngrok for local dev)
 
 ## Install
-- [ ] `bun add twilio` in `apps/api`
+- [x] `bun add twilio` in `apps/api`
 
 ## Local Dev Note
 - Twilio VoiceUrl must be a publicly reachable URL
