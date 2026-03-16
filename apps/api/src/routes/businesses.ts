@@ -1,9 +1,48 @@
 import { Elysia, t } from "elysia"
-import { db, businesses } from "@frontdesk/database"
+import { db, businesses, businessMembers } from "@frontdesk/database"
 import { eq } from "drizzle-orm"
 import { searchAvailableNumbers, provisionNumber, releaseNumber } from "../services/twilio"
 
 export const businessesRoutes = new Elysia({ prefix: "/businesses" })
+
+  // Create a new business and link it to a user (owner)
+  .post("/", async ({ body }) => {
+    const { name, businessType, userId } = body as {
+      name: string
+      businessType: string
+      userId: string
+    }
+
+    const slug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`
+
+    const [business] = await db
+      .insert(businesses)
+      .values({
+        name,
+        slug,
+        businessType: businessType as typeof businesses.$inferInsert["businessType"],
+        status: "inactive",
+      })
+      .returning()
+
+    await db.insert(businessMembers).values({
+      businessId: business.id,
+      userId,
+      role: "owner",
+    })
+
+    return { businessId: business.id }
+  }, {
+    body: t.Object({
+      name: t.String(),
+      businessType: t.Union([
+        t.Literal("medical"), t.Literal("dental"), t.Literal("spa"),
+        t.Literal("salon"), t.Literal("plumbing"), t.Literal("legal"),
+        t.Literal("real_estate"), t.Literal("other"),
+      ]),
+      userId: t.String(),
+    }),
+  })
 
   // Update business details (name, type, area code preference)
   .patch("/:id", async ({ params, body }) => {

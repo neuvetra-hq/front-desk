@@ -1,6 +1,153 @@
-import { Navigate } from "react-router"
+import { useState } from "react"
+import { Navigate, useNavigate, Link } from "react-router"
+import { useAuth } from "@/contexts/AuthContext"
+import { supabase } from "@/lib/supabase"
+import { AuthLayout } from "@/components/auth/AuthLayout"
+import { StepIdentity, type IdentityData } from "@/components/signup/StepIdentity"
+import { StepVerify } from "@/components/signup/StepVerify"
+import { StepBusiness, type BusinessData } from "@/components/signup/StepBusiness"
+import { StepPickNumber } from "@/components/signup/StepPickNumber"
+import { toast } from "sonner"
 
-// Signup is now handled by the phone OTP flow on the login page
+// Normalize any phone format to E.164
+function toE164(raw: string): string {
+  const digits = raw.replace(/\D/g, "")
+  if (digits.length === 10) return `+1${digits}`
+  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`
+  return `+${digits}`
+}
+
+function extractAreaCode(phone: string): string {
+  const digits = phone.replace(/\D/g, "")
+  const local = digits.startsWith("1") && digits.length === 11 ? digits.slice(1) : digits
+  return local.slice(0, 3)
+}
+
+const STEPS = ["Your info", "Verify", "Your business", "Pick a number"]
+
 export function SignupPage() {
-  return <Navigate to="/login" replace />
+  const { session, profile, business, refreshProfile, refreshBusiness } = useAuth()
+  const navigate = useNavigate()
+
+  const [step, setStep] = useState(0)
+  const [busy, setBusy] = useState(false)
+
+  // Collected across steps
+  const [identity, setIdentity] = useState<IdentityData | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [businessData, setBusinessData] = useState<BusinessData | null>(null)
+
+  // Already fully set up
+  if (session && profile && business?.status === "active") {
+    return <Navigate to="/dashboard" replace />
+  }
+
+  // --- Step handlers ---
+
+  const handleIdentityNext = async (data: IdentityData) => {
+    setBusy(true)
+    try {
+      const { error } = await supabase.auth.signInWithOtp({ phone: toE164(data.phone) })
+      if (error) throw error
+      setIdentity(data)
+      setStep(1)
+      toast.success("Code sent — check your messages.")
+    } catch (err) {
+      toast.error((err as Error).message ?? "Failed to send code")
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleVerified = async (verifiedUserId: string) => {
+    if (!identity) return
+    setBusy(true)
+    try {
+      // Write the verified user profile to public.users
+      const { error } = await supabase.from("users").upsert({
+        id: verifiedUserId,
+        first_name: identity.firstName,
+        last_name: identity.lastName,
+        phone: toE164(identity.phone),
+      })
+      if (error) throw error
+      setUserId(verifiedUserId)
+      await refreshProfile()
+      setStep(2)
+    } catch (err) {
+      toast.error((err as Error).message ?? "Failed to save your profile")
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleBusinessNext = (data: BusinessData) => {
+    setBusinessData(data)
+    setStep(3)
+  }
+
+  const handleSuccess = async () => {
+    await refreshBusiness()
+    navigate("/dashboard", { replace: true })
+  }
+
+  const titles = [
+    "Create your account",
+    "Verify your number",
+    "About your business",
+    "Choose your AI number",
+  ]
+
+  const descriptions = [
+    "Tell us who you are — takes 30 seconds.",
+    `We sent a 6-digit code to ${identity ? toE164(identity.phone) : "your phone"}.`,
+    "Almost there. Tell us about your business.",
+    "Pick a local number for your AI receptionist.",
+  ]
+
+  return (
+    <AuthLayout title={titles[step]} description={descriptions[step]}>
+      {/* Step indicator */}
+      <div className="mb-6 flex items-center gap-1">
+        {STEPS.map((_, i) => (
+          <div
+            key={i}
+            className={`h-1 flex-1 rounded-full transition-all ${
+              i <= step ? "bg-indigo-600" : "bg-neutral-200"
+            }`}
+          />
+        ))}
+      </div>
+
+      {step === 0 && <StepIdentity onNext={handleIdentityNext} busy={busy} />}
+
+      {step === 1 && identity && (
+        <StepVerify
+          phone={toE164(identity.phone)}
+          onVerified={handleVerified}
+          onBack={() => setStep(0)}
+          busy={busy}
+          setBusy={setBusy}
+        />
+      )}
+
+      {step === 2 && <StepBusiness onNext={handleBusinessNext} />}
+
+      {step === 3 && identity && businessData && userId && (
+        <StepPickNumber
+          areaCode={extractAreaCode(identity.phone)}
+          businessName={businessData.businessName}
+          businessType={businessData.businessType}
+          userId={userId}
+          onSuccess={handleSuccess}
+          onBack={() => setStep(2)}
+        />
+      )}
+
+      <p className="mt-4 text-center text-sm text-neutral-500">
+        Already have an account?{" "}
+        <Link to="/login" className="font-medium text-indigo-600 hover:underline">Sign in</Link>
+      </p>
+    </AuthLayout>
+  )
 }

@@ -1,10 +1,9 @@
-import { Routes, Route } from "react-router"
+import { Routes, Route, Navigate } from "react-router"
 import { LandingPage } from "@/pages/LandingPage"
 import { LoginPage } from "@/pages/LoginPage"
 import { SignupPage } from "@/pages/SignupPage"
 import { AuthCallbackPage } from "@/pages/AuthCallbackPage"
 import { DashboardPage } from "@/pages/DashboardPage"
-import { OnboardingPage } from "@/pages/OnboardingPage"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 
 export function App() {
@@ -13,11 +12,15 @@ export function App() {
       {/* Public */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignupPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
+      {/* Signup wizard — public but redirects away if already set up */}
+      <Route path="/signup" element={<ProtectedRoute><SignupPage /></ProtectedRoute>} />
+
+      {/* Legacy redirect */}
+      <Route path="/onboarding" element={<Navigate to="/signup" replace />} />
+
       {/* Protected */}
-      <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
     </Routes>
   )

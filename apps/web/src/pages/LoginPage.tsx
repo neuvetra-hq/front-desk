@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { Navigate, useNavigate } from "react-router"
+import { Navigate, useNavigate, Link } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/lib/supabase"
 import { AuthLayout } from "@/components/auth/AuthLayout"
@@ -8,31 +8,27 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 
-// Normalize any phone format to E.164 (+1XXXXXXXXXX for US)
 function toE164(raw: string): string {
   const digits = raw.replace(/\D/g, "")
   if (digits.length === 10) return `+1${digits}`
   if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`
-  return `+${digits}` // international — pass through
+  return `+${digits}`
 }
 
-type Step = "phone" | "otp" | "name"
+type Step = "phone" | "otp"
 
 export function LoginPage() {
-  const { session, loading, refreshBusiness } = useAuth()
+  const { session, loading, profile, refreshProfile, refreshBusiness } = useAuth()
   const navigate = useNavigate()
 
   const [step, setStep] = useState<Step>("phone")
   const [phone, setPhone] = useState("")
   const [otp, setOtp] = useState("")
-  const [fullName, setFullName] = useState("")
   const [busy, setBusy] = useState(false)
-  const [resendCooldown, setResendCooldown] = useState(0)
-  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [cooldown, setCooldown] = useState(0)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  useEffect(() => {
-    return () => { if (cooldownRef.current) clearInterval(cooldownRef.current) }
-  }, [])
+  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current) }, [])
 
   if (loading) {
     return (
@@ -45,18 +41,14 @@ export function LoginPage() {
   if (session) return <Navigate to="/dashboard" replace />
 
   const startCooldown = () => {
-    setResendCooldown(30)
-    cooldownRef.current = setInterval(() => {
-      setResendCooldown((s) => {
-        if (s <= 1) { clearInterval(cooldownRef.current!); return 0 }
-        return s - 1
-      })
+    setCooldown(30)
+    timerRef.current = setInterval(() => {
+      setCooldown((s) => { if (s <= 1) { clearInterval(timerRef.current!); return 0 } return s - 1 })
     }, 1000)
   }
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!phone.trim()) return
     setBusy(true)
     try {
       const { error } = await supabase.auth.signInWithOtp({ phone: toE164(phone) })
@@ -71,34 +63,26 @@ export function LoginPage() {
     }
   }
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
+  const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (otp.length < 6) return
     setBusy(true)
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        phone: toE164(phone),
-        token: otp,
-        type: "sms",
-      })
+      const { data, error } = await supabase.auth.verifyOtp({ phone: toE164(phone), token: otp, type: "sms" })
       if (error) throw error
+      if (!data.user) throw new Error("No user returned")
 
-      const userId = data.user?.id
-      if (!userId) throw new Error("No user returned")
-
-      // Check if this is a new user (no public.users row yet)
-      const { data: existingUser } = await supabase
+      // Check if this user has completed registration
+      const { data: existingProfile } = await supabase
         .from("users")
         .select("id")
-        .eq("id", userId)
+        .eq("id", data.user.id)
         .maybeSingle()
 
-      if (!existingUser) {
-        // New user — collect their name before continuing
-        setStep("name")
+      if (!existingProfile) {
+        // New user — send to signup to complete registration
+        navigate("/signup", { replace: true })
       } else {
-        // Returning user — load business and go to dashboard
-        await refreshBusiness()
+        await Promise.all([refreshProfile(), refreshBusiness()])
         navigate("/dashboard", { replace: true })
       }
     } catch (err) {
@@ -108,53 +92,8 @@ export function LoginPage() {
     }
   }
 
-  const handleSaveName = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!fullName.trim()) return
-    setBusy(true)
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error("Not authenticated")
-
-      // Insert user profile row
-      await supabase.from("users").insert({
-        id: user.id,
-        email: user.email ?? null,
-        full_name: fullName.trim(),
-        phone: toE164(phone),
-      })
-
-      // Create placeholder business + member link
-      const { data: business } = await supabase
-        .from("businesses")
-        .insert({
-          name: `${fullName.trim()}'s Business`,
-          slug: `${fullName.trim().toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
-          status: "inactive",
-        })
-        .select("id")
-        .single()
-
-      if (business) {
-        await supabase.from("business_members").insert({
-          business_id: business.id,
-          user_id: user.id,
-          role: "owner",
-        })
-      }
-
-      await refreshBusiness()
-      toast.success("Welcome! Let's set up your Front Desk.")
-      navigate("/onboarding", { replace: true })
-    } catch (err) {
-      toast.error((err as Error).message ?? "Something went wrong")
-    } finally {
-      setBusy(false)
-    }
-  }
-
   const handleResend = async () => {
-    if (resendCooldown > 0) return
+    if (cooldown > 0) return
     setBusy(true)
     try {
       const { error } = await supabase.auth.signInWithOtp({ phone: toE164(phone) })
@@ -170,13 +109,11 @@ export function LoginPage() {
 
   return (
     <AuthLayout
-      title={step === "phone" ? "Sign in to Front Desk" : step === "otp" ? "Enter your code" : "One last thing"}
+      title={step === "phone" ? "Welcome back" : "Check your phone"}
       description={
         step === "phone"
-          ? "Enter your mobile number and we'll text you a code"
-          : step === "otp"
-          ? `We sent a 6-digit code to ${phone}`
-          : "What's your name?"
+          ? "Enter your mobile number to sign in"
+          : `We sent a code to ${phone}`
       }
     >
       {step === "phone" && (
@@ -186,7 +123,7 @@ export function LoginPage() {
             <Input
               id="phone"
               type="tel"
-              placeholder="+1 (555) 000-0000"
+              placeholder="+1 (415) 555-0100"
               autoComplete="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -196,11 +133,15 @@ export function LoginPage() {
           <Button type="submit" className="w-full" disabled={busy}>
             {busy ? "Sending…" : "Send code"}
           </Button>
+          <p className="text-center text-sm text-neutral-500">
+            New here?{" "}
+            <Link to="/signup" className="font-medium text-indigo-600 hover:underline">Create an account</Link>
+          </p>
         </form>
       )}
 
       {step === "otp" && (
-        <form onSubmit={handleVerifyOtp} className="space-y-4">
+        <form onSubmit={handleVerify} className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="otp">Verification code</Label>
             <Input
@@ -212,51 +153,24 @@ export function LoginPage() {
               autoComplete="one-time-code"
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-              required
             />
           </div>
           <Button type="submit" className="w-full" disabled={busy || otp.length < 6}>
-            {busy ? "Verifying…" : "Verify"}
+            {busy ? "Verifying…" : "Sign in"}
           </Button>
-          <div className="text-center">
+          <div className="flex items-center justify-between text-sm">
+            <button type="button" onClick={() => { setStep("phone"); setOtp("") }} className="text-neutral-400 hover:text-neutral-600">
+              ← Change number
+            </button>
             <button
               type="button"
               onClick={handleResend}
-              disabled={resendCooldown > 0 || busy}
-              className="text-sm text-neutral-500 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={cooldown > 0 || busy}
+              className="text-neutral-500 hover:text-neutral-900 disabled:opacity-40"
             >
-              {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Resend code"}
+              {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend"}
             </button>
           </div>
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => { setStep("phone"); setOtp("") }}
-              className="text-sm text-neutral-400 hover:text-neutral-600"
-            >
-              ← Change number
-            </button>
-          </div>
-        </form>
-      )}
-
-      {step === "name" && (
-        <form onSubmit={handleSaveName} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="fullName">Your full name</Label>
-            <Input
-              id="fullName"
-              type="text"
-              placeholder="Jane Smith"
-              autoComplete="name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={busy || !fullName.trim()}>
-            {busy ? "Setting up…" : "Continue"}
-          </Button>
         </form>
       )}
     </AuthLayout>

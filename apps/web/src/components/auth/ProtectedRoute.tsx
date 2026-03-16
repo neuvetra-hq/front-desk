@@ -2,10 +2,10 @@ import { Navigate, useLocation } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { session, loading, business, businessLoading } = useAuth()
+  const { session, loading, profile, business } = useAuth()
   const location = useLocation()
 
-  if (loading || (session && businessLoading)) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900" />
@@ -13,18 +13,21 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     )
   }
 
+  // Not logged in at all
   if (!session) return <Navigate to="/login" replace />
 
-  // Redirect to onboarding if business is not yet set up
-  const needsOnboarding = !business || business.status === "inactive" || !business.businessType
-  if (needsOnboarding && location.pathname !== "/onboarding") {
-    return <Navigate to="/onboarding" replace />
-  }
+  const onDashboard = location.pathname === "/dashboard"
+  const onSignup = location.pathname === "/signup"
 
-  // Redirect away from onboarding if already active
-  if (!needsOnboarding && location.pathname === "/onboarding") {
-    return <Navigate to="/dashboard" replace />
-  }
+  // Has session but no verified profile → must complete signup
+  if (!profile && !onSignup) return <Navigate to="/signup" replace />
+
+  // Has profile but no active business → must create one
+  const hasActiveBusiness = business?.status === "active"
+  if (profile && !hasActiveBusiness && !onSignup) return <Navigate to="/signup" replace />
+
+  // Already fully set up — bounce away from signup
+  if (profile && hasActiveBusiness && onSignup) return <Navigate to="/dashboard" replace />
 
   return <>{children}</>
 }
