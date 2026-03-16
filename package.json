@@ -1,6 +1,7 @@
 {
   "name": "front-desk",
   "private": true,
+  "packageManager": "bun@1.2.0",
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "dev": "turbo run dev",

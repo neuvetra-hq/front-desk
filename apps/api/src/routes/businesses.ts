@@ -5,6 +5,48 @@ import { searchAvailableNumbers, provisionNumber, releaseNumber } from "../servi
 
 export const businessesRoutes = new Elysia({ prefix: "/businesses" })
 
+  // Update business details (name, type, area code preference)
+  .patch("/:id", async ({ params, body }) => {
+    const { id } = params
+    const { name, businessType, areaCode } = body as {
+      name: string
+      businessType: string
+      areaCode: string
+    }
+
+    const [existing] = await db
+      .select()
+      .from(businesses)
+      .where(eq(businesses.id, id))
+      .limit(1)
+
+    if (!existing) return { error: "Business not found" }
+
+    const existingConfig = (existing.aiConfig as Record<string, unknown>) ?? {}
+
+    await db
+      .update(businesses)
+      .set({
+        name,
+        businessType: businessType as typeof businesses.$inferInsert["businessType"],
+        aiConfig: { ...existingConfig, preferredAreaCode: areaCode },
+        updatedAt: new Date(),
+      })
+      .where(eq(businesses.id, id))
+
+    return { updated: true }
+  }, {
+    body: t.Object({
+      name: t.String(),
+      businessType: t.Union([
+        t.Literal("medical"), t.Literal("dental"), t.Literal("spa"),
+        t.Literal("salon"), t.Literal("plumbing"), t.Literal("legal"),
+        t.Literal("real_estate"), t.Literal("other"),
+      ]),
+      areaCode: t.String(),
+    }),
+  })
+
   // Search available Twilio numbers by area code
   .get("/:id/available-numbers", async ({ params, query }) => {
     const areaCode = (query as Record<string, string>).areaCode ?? "415"

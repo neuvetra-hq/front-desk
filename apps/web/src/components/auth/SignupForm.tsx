@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { supabase } from "@/lib/supabase"
+import { useAuth } from "@/contexts/AuthContext"
 
 const schema = z.object({
   fullName: z.string().min(2, "Enter your full name"),
@@ -29,6 +30,7 @@ type FormData = z.infer<typeof schema>
 export function SignupForm() {
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
+  const { refreshBusiness } = useAuth()
 
   const {
     register,
@@ -70,8 +72,9 @@ export function SignupForm() {
       })
     }
 
-    toast.success("Account created! Check your email to confirm.")
-    navigate("/dashboard")
+    await refreshBusiness()
+    toast.success("Account created! Let's set up your business.")
+    navigate("/onboarding")
   }
 
   return (

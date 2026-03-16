@@ -1,4 +1,5 @@
-import { Button } from "@/components/ui/button"
+import { Link } from "react-router"
+import { buttonVariants } from "@/components/ui/button"
 import { Container } from "@/components/layout/Container"
 import { NAV_LINKS } from "@/constants/landing"
 
@@ -32,7 +33,9 @@ export function Navbar() {
           <a href="/login" className="hidden text-sm text-neutral-500 hover:text-neutral-900 md:block">
             Sign in
           </a>
-          <Button size="sm">Get Started</Button>
+          <Link to="/login" className={buttonVariants({ size: "sm" })}>
+            Get Started
+          </Link>
         </div>
       </Container>
     </header>

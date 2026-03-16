@@ -24,8 +24,7 @@ node_modules/
 /build
 dist/
 
-# misc
-.DS_Store
+# misc 
 *.pem
 
 # debug
@@ -38,6 +37,7 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+/.api_keys/
 
 # vercel
 .vercel

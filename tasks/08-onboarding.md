@@ -1,5 +1,5 @@
 ---
-status: pending
+status: done
 ---
 
 # Task 08: Business Onboarding Flow (`apps/web`)

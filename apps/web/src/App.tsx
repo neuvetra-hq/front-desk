@@ -4,6 +4,7 @@ import { LoginPage } from "@/pages/LoginPage"
 import { SignupPage } from "@/pages/SignupPage"
 import { AuthCallbackPage } from "@/pages/AuthCallbackPage"
 import { DashboardPage } from "@/pages/DashboardPage"
+import { OnboardingPage } from "@/pages/OnboardingPage"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 
 export function App() {
@@ -16,6 +17,7 @@ export function App() {
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
       {/* Protected */}
+      <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
     </Routes>
   )
