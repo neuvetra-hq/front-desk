@@ -41,7 +41,7 @@ Both routes are public (no auth required) and added to `App.tsx`.
 - [x] Contact: privacy@neuvetra.com / legal@neuvetra.com
 
 ## Where Legal Lives
-- neuvetra.com/terms and app.neuvetra.com/terms (same routes, both domains serve apps/web)
+- neuvetra.com/terms and neuvetra.com/terms (same routes, both domains serve apps/web)
 - Legal entity: Neuvetra / Birgani Enterprises Inc., Los Angeles, California
 
 ## Notes

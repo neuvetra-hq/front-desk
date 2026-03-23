@@ -5,7 +5,7 @@ status: in-progress
 # Task 16: Railway Deployment
 
 Deploy both services to Railway under one project.
-Domain: neuvetra.com (company landing) + app.neuvetra.com (dashboard) + api.neuvetra.com (API).
+Domain: neuvetra.com (company landing) + neuvetra.com (dashboard) + api.neuvetra.com (API).
 
 ## Why Railway
 - Single platform for Bun API (long-running process) + Vite static frontend
@@ -41,11 +41,11 @@ Domain: neuvetra.com (company landing) + app.neuvetra.com (dashboard) + api.neuv
   - `VITE_SUPABASE_URL`
   - `VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
   - `VITE_API_URL` = `https://api.neuvetra.com`
-- [ ] Assign custom domain: `app.neuvetra.com`
+- [ ] Assign custom domain: `neuvetra.com`
 
 ## DNS (via domain registrar)
 - [ ] `api.neuvetra.com` → CNAME to Railway API service domain
-- [ ] `app.neuvetra.com` → CNAME to Railway web service domain
+- [ ] `neuvetra.com` → CNAME to Railway web service domain
 - [ ] `neuvetra.com` → points to web service (task 14 landing page)
 
 ## Config Files Added
@@ -56,9 +56,9 @@ Domain: neuvetra.com (company landing) + app.neuvetra.com (dashboard) + api.neuv
 - [ ] OTP signup flow works end-to-end in production
 - [ ] Twilio webhooks hitting `https://api.neuvetra.com/webhooks/...`
 - [ ] Retell AI webhook URL updated in Retell dashboard
-- [ ] A2P 10DLC resubmitted with CTA = `https://app.neuvetra.com/signup`
+- [ ] A2P 10DLC resubmitted with CTA = `https://neuvetra.com/signup`
 
 ## Acceptance Criteria
-- [ ] `app.neuvetra.com` loads the Front Desk dashboard
+- [ ] `neuvetra.com` loads the Front Desk dashboard
 - [ ] `api.neuvetra.com/health` returns `{ status: "ok" }`
 - [ ] Full signup + onboarding flow works in production

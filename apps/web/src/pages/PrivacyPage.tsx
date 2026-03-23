@@ -19,10 +19,6 @@ export function PrivacyPage() {
               We operate an AI-powered voice receptionist platform for local service businesses.
               This Privacy Policy explains how we collect, use, share, and protect information when
               you use our Service at{" "}
-              <a href="https://app.neuvetra.com" className="text-indigo-600 hover:underline">
-                app.neuvetra.com
-              </a>{" "}
-              or{" "}
               <a href="https://neuvetra.com" className="text-indigo-600 hover:underline">
                 neuvetra.com
               </a>
