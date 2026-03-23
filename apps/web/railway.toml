@@ -4,4 +4,3 @@ buildCommand = "bun run build"
 
 [deploy]
 startCommand = "bunx serve dist -p ${PORT}"
-restartPolicyType = "on-failure"

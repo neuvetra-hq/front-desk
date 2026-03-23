@@ -3,5 +3,3 @@ builder = "nixpacks"
 
 [deploy]
 startCommand = "bun run src/index.ts"
-restartPolicyType = "on-failure"
-restartPolicyMaxRetries = 3
