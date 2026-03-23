@@ -1,7 +1,2 @@
 [build]
-builder = "nixpacks"
-installCommand = "bun install"
-buildCommand = "bun run build"
-
-[deploy]
-startCommand = "bunx serve dist -p ${PORT}"
+dockerfilePath = "apps/web/Dockerfile"
