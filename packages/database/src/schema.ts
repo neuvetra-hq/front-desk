@@ -70,7 +70,7 @@ export const users = pgTable("users", {
   email:     text("email").unique(),          // nullable — phone auth users may have no email
   firstName: text("first_name").notNull(),
   lastName:  text("last_name").notNull(),
-  phone:     text("phone").notNull().unique(), // verified personal mobile
+  phone:     text("phone").unique(),            // verified personal mobile (nullable for legacy rows)
   avatarUrl: text("avatar_url"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

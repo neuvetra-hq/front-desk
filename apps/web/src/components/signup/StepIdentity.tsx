@@ -57,6 +57,12 @@ export function StepIdentity({ onNext, busy }: Props) {
       <Button type="submit" className="w-full" disabled={busy}>
         {busy ? "Sending code…" : "Send verification code"}
       </Button>
+
+      <p className="text-xs text-neutral-400 text-center leading-relaxed">
+        By continuing, you agree to receive a one-time verification code via SMS to the number above.
+        Message and data rates may apply. See our{" "}
+        <a href="/privacy" className="underline hover:text-neutral-600">Privacy Policy</a>.
+      </p>
     </form>
   )
 }
