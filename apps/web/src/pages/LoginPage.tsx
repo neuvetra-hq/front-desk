@@ -18,7 +18,7 @@ function toE164(raw: string): string {
 type Step = "phone" | "otp"
 
 export function LoginPage() {
-  const { session, loading, profile, refreshProfile, refreshBusiness } = useAuth()
+  const { session, loading, refreshProfile, refreshBusiness } = useAuth()
   const navigate = useNavigate()
 
   const [step, setStep] = useState<Step>("phone")

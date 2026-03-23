@@ -14,8 +14,8 @@ import {
 
 const schema = z.object({
   businessName: z.string().min(2, "Enter your business name"),
-  businessType: z.enum(["medical", "dental", "spa", "salon", "plumbing", "legal", "real_estate", "other"], {
-    required_error: "Select a business type",
+  businessType: z.enum(["medical", "dental", "spa", "salon", "plumbing", "legal", "real_estate", "other"] as const, {
+    error: "Select a business type",
   }),
   businessPhone: z
     .string()

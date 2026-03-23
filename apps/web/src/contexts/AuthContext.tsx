@@ -56,7 +56,7 @@ async function fetchBusiness(userId: string): Promise<Business | null> {
     .maybeSingle()
 
   if (!data?.businesses) return null
-  const b = data.businesses as Record<string, unknown>
+  const b = data.businesses as unknown as Record<string, unknown>
   return {
     id: b.id as string,
     name: b.name as string,

@@ -16,7 +16,6 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // Not logged in at all
   if (!session) return <Navigate to="/login" replace />
 
-  const onDashboard = location.pathname === "/dashboard"
   const onSignup = location.pathname === "/signup"
 
   // Has session but no verified profile → must complete signup
