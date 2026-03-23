@@ -12,8 +12,9 @@ COPY apps/web/ ./apps/web/
 
 RUN cd apps/web && bun run build
 
-FROM oven/bun:1
+FROM node:20-alpine
+RUN npm install -g serve
 WORKDIR /app
 COPY --from=builder /app/apps/web/dist ./dist
 EXPOSE 8080
-CMD bunx serve -s dist -l $PORT
+CMD ["serve", "-s", "dist", "-l", "8080"]
