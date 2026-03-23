@@ -15,5 +15,5 @@ RUN cd apps/web && bun run build
 FROM oven/bun:1
 WORKDIR /app
 COPY --from=builder /app/apps/web/dist ./dist
-EXPOSE 3000
+EXPOSE 8080
 CMD bunx serve -s dist -l $PORT
