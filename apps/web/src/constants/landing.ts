@@ -223,6 +223,61 @@ export const CTA_BANNER = {
   secondaryCTA: "Talk to us",
 }
 
+export const PRICING_TIERS = [
+  {
+    name: "Starter",
+    description: "For solo operators just getting started.",
+    monthlyPrice: 49,
+    minutes: 150,
+    overageRate: "0.25",
+    popular: false,
+    features: [
+      "150 minutes/month (~75 calls)",
+      "1 local phone number",
+      "Call transcripts & summaries",
+      "SMS alerts for urgent calls",
+      "Dashboard access",
+      "Email support",
+    ],
+  },
+  {
+    name: "Growth",
+    description: "For active businesses with steady call volume.",
+    monthlyPrice: 99,
+    minutes: 400,
+    overageRate: "0.20",
+    popular: true,
+    features: [
+      "400 minutes/month (~200 calls)",
+      "1 local phone number",
+      "Call transcripts & summaries",
+      "SMS alerts for urgent calls",
+      "Dashboard access",
+      "Priority email support",
+      "Custom AI knowledge base",
+    ],
+  },
+  {
+    name: "Pro",
+    description: "For high-volume or multi-location businesses.",
+    monthlyPrice: 199,
+    minutes: 1000,
+    overageRate: "0.18",
+    popular: false,
+    features: [
+      "1,000 minutes/month (~500 calls)",
+      "Up to 3 phone numbers / locations",
+      "Call transcripts & summaries",
+      "SMS alerts for urgent calls",
+      "Dashboard access",
+      "Priority support",
+      "Custom AI knowledge base",
+      "Early access to Insights & Scheduler",
+      "Dedicated onboarding call",
+    ],
+  },
+]
+
 export const FOOTER = {
   tagline: "AI-powered products for the businesses that keep communities running.",
   columns: [

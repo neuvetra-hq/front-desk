@@ -6,6 +6,7 @@ import { HowItWorks } from "@/components/landing/HowItWorks"
 import { Industries } from "@/components/landing/Industries"
 import { WhyNeuvetra } from "@/components/landing/WhyNeuvetra"
 import { ComparisonTable } from "@/components/landing/ComparisonTable"
+import { Pricing } from "@/components/landing/Pricing"
 import { Testimonials } from "@/components/landing/Testimonials"
 import { CTABanner } from "@/components/landing/CTABanner"
 import { Footer } from "@/components/landing/Footer"
@@ -22,6 +23,7 @@ export function LandingPage() {
         <Industries />
         <WhyNeuvetra />
         <ComparisonTable />
+        <Pricing />
         <Testimonials />
         <CTABanner />
       </main>
