@@ -17,7 +17,7 @@ export function CTABanner() {
         <p className="mt-4 text-indigo-200">{CTA_BANNER.subheadline}</p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
-            to="/login"
+            to="/signup"
             className={buttonVariants({ size: "lg" }) + " w-full bg-white text-indigo-700 hover:bg-indigo-50 sm:w-auto px-8 font-semibold"}
           >
             {CTA_BANNER.primaryCTA}

@@ -12,6 +12,10 @@ export function Hero() {
 
       <Container className="relative text-center">
         {/* Badge */}
+        <span className="mb-3 inline-flex items-center gap-1.5 text-xs font-medium text-neutral-400">
+          A product by <span className="font-semibold text-neutral-600">Neuvetra</span>
+        </span>
+        <br />
         <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-xs font-semibold text-indigo-700">
           <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
           {HERO.badge}
@@ -34,7 +38,7 @@ export function Hero() {
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
-            to="/login"
+            to="/signup"
             className={buttonVariants({ size: "lg" }) + " w-full bg-indigo-600 text-white hover:bg-indigo-700 sm:w-auto px-8"}
           >
             {HERO.primaryCTA}

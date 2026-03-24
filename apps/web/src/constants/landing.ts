@@ -151,7 +151,7 @@ export const TESTIMONIALS = [
 
 export const CTA_BANNER = {
   headline: "Ready to put your front desk on autopilot?",
-  subheadline: "Join hundreds of small businesses that never miss a call.",
+  subheadline: "Join small businesses that never miss a call.",
   primaryCTA: "Start for free",
   secondaryCTA: "Talk to us",
 }
@@ -165,26 +165,22 @@ export const FOOTER = {
         { label: "Features", href: "#features" },
         { label: "How It Works", href: "#how-it-works" },
         { label: "Pricing", href: "#pricing" },
-        { label: "Changelog", href: "#" },
       ],
     },
     {
-      heading: "Company",
+      heading: "Account",
       links: [
-        { label: "About", href: "#" },
-        { label: "Blog", href: "#" },
-        { label: "Careers", href: "#" },
-        { label: "Contact", href: "#" },
+        { label: "Sign up", href: "/signup" },
+        { label: "Sign in", href: "/login" },
       ],
     },
     {
       heading: "Legal",
       links: [
-        { label: "Privacy Policy", href: "#" },
-        { label: "Terms of Service", href: "#" },
-        { label: "Security", href: "#" },
+        { label: "Privacy Policy", href: "/privacy" },
+        { label: "Terms of Service", href: "/terms" },
       ],
     },
   ],
-  copyright: `© ${new Date().getFullYear()} Front Desk. All rights reserved.`,
+  copyright: `© ${new Date().getFullYear()} Neuvetra / Birgani Enterprises Inc. All rights reserved.`,
 }
