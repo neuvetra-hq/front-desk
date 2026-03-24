@@ -158,7 +158,7 @@ export const INDUSTRIES = [
   { label: "Dental", icon: "🦷" },
   { label: "MedSpa & Wellness", icon: "✨" },
   { label: "Salon & Beauty", icon: "💇" },
-  { label: "Plumbing & Trades", icon: "🔧" },
+  { label: "Home Services", icon: "🔧" },
   { label: "Legal", icon: "⚖️" },
   { label: "Real Estate", icon: "🏡" },
   { label: "And many more", icon: "+" },

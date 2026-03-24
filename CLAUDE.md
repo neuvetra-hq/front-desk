@@ -40,3 +40,19 @@ cd packages/database && bun run db:push       # push schema to Supabase
 - Use `bun add` / `bun remove` — do NOT use npm or pnpm
 - Run from the workspace directory: `cd apps/api && bun add <pkg>`
 - Lock file: `bun.lock` at root
+
+## Testing (TDD)
+- **Framework:** Playwright (`@playwright/test`) for E2E tests
+- **Test location:** `apps/web/tests/` — all `.spec.ts` files
+- **Run tests:** `cd apps/web && bun run test:e2e`
+- **Interactive UI:** `cd apps/web && bun run test:e2e:ui`
+- **Config:** `apps/web/playwright.config.ts` — defaults to `http://localhost:5173`, auto-starts dev server
+- **Convention:** Write a failing test first, then implement the feature
+- **Coverage areas:**
+  - Landing page rendering and CTAs
+  - Auth flows (signup, login, OTP)
+  - Protected route redirects
+  - Onboarding steps
+  - Legal pages
+- **Auth state for protected-route tests:** Use Playwright `storageState` with a seeded Supabase session
+- **CI:** Set `BASE_URL` env var to point tests at the deployed Railway URL

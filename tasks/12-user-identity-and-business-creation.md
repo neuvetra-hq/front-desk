@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 
 # Task 12: User Identity First, Then Business Creation
