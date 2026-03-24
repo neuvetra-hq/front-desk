@@ -1,8 +1,10 @@
 import { Navbar } from "@/components/landing/Navbar"
 import { Hero } from "@/components/landing/Hero"
+import { Products } from "@/components/landing/Products"
 import { Features } from "@/components/landing/Features"
 import { HowItWorks } from "@/components/landing/HowItWorks"
 import { Industries } from "@/components/landing/Industries"
+import { WhyNeuvetra } from "@/components/landing/WhyNeuvetra"
 import { ComparisonTable } from "@/components/landing/ComparisonTable"
 import { Testimonials } from "@/components/landing/Testimonials"
 import { CTABanner } from "@/components/landing/CTABanner"
@@ -14,9 +16,11 @@ export function LandingPage() {
       <Navbar />
       <main>
         <Hero />
+        <Products />
         <Features />
         <HowItWorks />
         <Industries />
+        <WhyNeuvetra />
         <ComparisonTable />
         <Testimonials />
         <CTABanner />

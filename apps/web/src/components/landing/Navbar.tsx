@@ -5,17 +5,14 @@ import { NAV_LINKS } from "@/constants/landing"
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-neutral-200 bg-white/80 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 w-full border-b border-neutral-100 bg-white/90 backdrop-blur-md">
       <Container className="flex h-16 items-center justify-between">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900">
-            <span className="text-sm font-bold text-white">N</span>
+        <a href="/" className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-900">
+            <span className="text-sm font-black text-white tracking-tight">N</span>
           </div>
-          <div className="flex flex-col leading-none">
-            <span className="text-sm font-bold text-neutral-900">Neuvetra</span>
-            <span className="text-[10px] text-neutral-400 font-medium">Front Desk</span>
-          </div>
+          <span className="text-lg font-bold text-neutral-900 tracking-tight">Neuvetra</span>
         </a>
 
         {/* Nav links */}
@@ -24,7 +21,7 @@ export function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="text-sm text-neutral-500 transition-colors hover:text-neutral-900"
+              className="text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900"
             >
               {link.label}
             </a>
@@ -32,11 +29,14 @@ export function Navbar() {
         </nav>
 
         {/* CTA */}
-        <div className="flex items-center gap-3">
-          <Link to="/login" className="hidden text-sm text-neutral-500 hover:text-neutral-900 md:block">
+        <div className="flex items-center gap-4">
+          <Link to="/login" className="hidden text-sm font-medium text-neutral-500 hover:text-neutral-900 md:block">
             Sign in
           </Link>
-          <Link to="/signup" className={buttonVariants({ size: "sm" }) + " bg-indigo-600 text-white hover:bg-indigo-700"}>
+          <Link
+            to="/signup"
+            className={buttonVariants({ size: "sm" }) + " bg-neutral-900 text-white hover:bg-neutral-700 rounded-lg px-5"}
+          >
             Get Started
           </Link>
         </div>

@@ -3,30 +3,24 @@ import { HOW_IT_WORKS } from "@/constants/landing"
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="bg-gradient-to-br from-indigo-50 to-white py-24">
+    <section id="how-it-works" className="bg-neutral-900 py-24 md:py-32">
       <Container>
         <div className="mb-16 text-center">
-          <span className="mb-3 inline-block rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
-            How it works
-          </span>
-          <h2 className="text-3xl font-bold tracking-tight text-neutral-900 md:text-4xl">
-            Up and running in minutes
+          <p className="text-sm font-semibold uppercase tracking-widest text-indigo-400 mb-3">Setup</p>
+          <h2 className="text-4xl font-black tracking-tight text-white md:text-5xl">
+            Live in under 10 minutes.
           </h2>
-          <p className="mt-4 text-neutral-500">No technical expertise required. No IT team needed.</p>
+          <p className="mx-auto mt-4 max-w-xl text-lg text-neutral-400">
+            No IT team. No hardware. No phone system changes. Just sign up and forward your calls.
+          </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-5">
-          {HOW_IT_WORKS.map((item, i) => (
-            <div key={item.step} className="flex flex-col items-center text-center">
-              <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold shadow-sm ${
-                i === 0
-                  ? "bg-indigo-600 text-white"
-                  : "border-2 border-indigo-200 bg-white text-indigo-600"
-              }`}>
-                {item.step}
-              </div>
-              <h3 className="mb-1.5 text-sm font-semibold text-neutral-900">{item.title}</h3>
-              <p className="text-xs leading-relaxed text-neutral-500">{item.description}</p>
+        <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-4">
+          {HOW_IT_WORKS.map((item) => (
+            <div key={item.step} className="relative rounded-2xl border border-neutral-700 bg-neutral-800 p-6">
+              <p className="mb-3 text-3xl font-black text-indigo-500 opacity-60">{item.step}</p>
+              <h3 className="text-sm font-bold text-white">{item.title}</h3>
+              <p className="mt-2 text-xs leading-relaxed text-neutral-400">{item.description}</p>
             </div>
           ))}
         </div>
