@@ -7,7 +7,7 @@ export function Features() {
       <Container>
         <div className="mb-16 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 mb-3">Neuvetra Front Desk</p>
-          <h2 className="text-4xl font-black tracking-tight text-neutral-900 md:text-5xl">
+          <h2 className="text-4xl font-semibold tracking-tight text-neutral-900 md:text-5xl">
             Everything your receptionist does.<br />
             <span className="text-neutral-400">For a fraction of the cost.</span>
           </h2>

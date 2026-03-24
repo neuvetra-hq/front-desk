@@ -10,7 +10,7 @@ export function CTABanner() {
 
       <Container className="relative text-center">
         <p className="text-sm font-semibold uppercase tracking-widest text-indigo-200 mb-4">Get Started</p>
-        <h2 className="text-4xl font-black tracking-tight text-white md:text-5xl">
+        <h2 className="text-4xl font-semibold tracking-tight text-white md:text-5xl">
           {CTA_BANNER.headline}
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-lg text-indigo-200">{CTA_BANNER.subheadline}</p>

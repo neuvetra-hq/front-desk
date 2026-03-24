@@ -9,7 +9,7 @@ export function WhyNeuvetra() {
           {/* Left — text */}
           <div>
             <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 mb-3">Why Neuvetra</p>
-            <h2 className="text-4xl font-black tracking-tight text-neutral-900 md:text-5xl leading-tight">
+            <h2 className="text-4xl font-semibold tracking-tight text-neutral-900 md:text-5xl leading-tight">
               Enterprise AI.<br />Small business price.
             </h2>
             <p className="mt-6 text-lg leading-relaxed text-neutral-500">

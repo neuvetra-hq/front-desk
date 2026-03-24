@@ -27,7 +27,7 @@ export function Hero() {
           </div>
 
           {/* Headline */}
-          <h1 className="text-5xl font-black tracking-tight text-neutral-900 md:text-6xl lg:text-7xl leading-[1.05]">
+          <h1 className="text-5xl font-semibold tracking-tight text-neutral-900 md:text-6xl lg:text-7xl leading-[1.05]">
             {HERO.headline.split("\n").map((line, i) => (
               <span key={i} className="block">{line}</span>
             ))}
@@ -59,7 +59,7 @@ export function Hero() {
         <div className="mx-auto mt-20 grid max-w-2xl grid-cols-3 divide-x divide-neutral-100 rounded-2xl border border-neutral-100 bg-neutral-50 shadow-sm">
           {STATS.map(({ value, label }) => (
             <div key={label} className="px-6 py-6 text-center">
-              <p className="text-3xl font-black text-neutral-900">{value}</p>
+              <p className="text-3xl font-bold text-neutral-900">{value}</p>
               <p className="mt-1 text-xs font-medium text-neutral-500">{label}</p>
             </div>
           ))}

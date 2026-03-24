@@ -7,7 +7,7 @@ export function Testimonials() {
       <Container>
         <div className="mb-16 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 mb-3">Customer Stories</p>
-          <h2 className="text-4xl font-black tracking-tight text-neutral-900 md:text-5xl">
+          <h2 className="text-4xl font-semibold tracking-tight text-neutral-900 md:text-5xl">
             Real businesses. Real results.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-lg text-neutral-500">

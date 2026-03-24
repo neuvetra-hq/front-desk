@@ -7,7 +7,7 @@ export function HowItWorks() {
       <Container>
         <div className="mb-16 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-indigo-400 mb-3">Setup</p>
-          <h2 className="text-4xl font-black tracking-tight text-white md:text-5xl">
+          <h2 className="text-4xl font-semibold tracking-tight text-white md:text-5xl">
             Live in under 10 minutes.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-lg text-neutral-400">
@@ -18,7 +18,7 @@ export function HowItWorks() {
         <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-4">
           {HOW_IT_WORKS.map((item) => (
             <div key={item.step} className="relative rounded-2xl border border-neutral-700 bg-neutral-800 p-6">
-              <p className="mb-3 text-3xl font-black text-indigo-500 opacity-60">{item.step}</p>
+              <p className="mb-3 text-3xl font-bold text-indigo-500 opacity-60">{item.step}</p>
               <h3 className="text-sm font-bold text-white">{item.title}</h3>
               <p className="mt-2 text-xs leading-relaxed text-neutral-400">{item.description}</p>
             </div>
