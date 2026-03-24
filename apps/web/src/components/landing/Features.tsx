@@ -9,7 +9,7 @@ export function Features() {
           <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 mb-3">Neuvetra Front Desk</p>
           <h2 className="text-4xl font-semibold tracking-tight text-neutral-900 md:text-5xl">
             Everything your receptionist does.<br />
-            <span className="text-neutral-400">For a fraction of the cost.</span>
+            <span className="text-neutral-600">For a fraction of the cost.</span>
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-neutral-500">
             Front Desk handles every inbound call with the knowledge, professionalism, and availability your business needs.
