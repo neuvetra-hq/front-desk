@@ -1,4 +1,3 @@
-import { Link } from "react-router"
 import { buttonVariants } from "@/components/ui/button"
 import { Container } from "@/components/layout/Container"
 import { HERO, STATS } from "@/constants/landing"
