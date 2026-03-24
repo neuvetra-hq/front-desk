@@ -18,8 +18,8 @@ export function App() {
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
 
-      {/* Signup wizard — public but redirects away if already set up */}
-      <Route path="/signup" element={<ProtectedRoute><SignupPage /></ProtectedRoute>} />
+      {/* Signup wizard — public */}
+      <Route path="/signup" element={<SignupPage />} />
 
       {/* Legacy redirect */}
       <Route path="/onboarding" element={<Navigate to="/signup" replace />} />
