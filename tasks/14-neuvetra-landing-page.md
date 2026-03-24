@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 
 # Task 14: Neuvetra Landing Page (neuvetra.com)
