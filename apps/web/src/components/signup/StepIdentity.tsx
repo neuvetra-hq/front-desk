@@ -59,8 +59,8 @@ export function StepIdentity({ onNext, busy }: Props) {
       </Button>
 
       <p className="text-xs text-neutral-400 text-center leading-relaxed">
-        By continuing, you agree to receive a one-time verification code via SMS to the number above.
-        Message and data rates may apply. See our{" "}
+        By clicking "Send verification code," you agree to receive a one-time SMS verification code from Front Desk by Neuvetra to the number above. Message frequency: 1 message per sign-up. Message and data rates may apply. Reply STOP to opt out or HELP for help. See our{" "}
+        <a href="/terms" className="underline hover:text-neutral-600">Terms of Service</a> and{" "}
         <a href="/privacy" className="underline hover:text-neutral-600">Privacy Policy</a>.
       </p>
     </form>
