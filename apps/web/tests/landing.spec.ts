@@ -15,6 +15,7 @@ test.describe("Landing page", () => {
     await expect(nav.getByRole("link", { name: "Products", exact: true })).toBeVisible()
     await expect(nav.getByRole("link", { name: "How It Works", exact: true })).toBeVisible()
     await expect(nav.getByRole("link", { name: "Industries", exact: true })).toBeVisible()
+    await expect(nav.getByRole("link", { name: "Pricing", exact: true })).toBeVisible()
   })
 
   test("hero CTA links to signup", async ({ page }) => {

@@ -1,18 +1,42 @@
 import { test, expect } from "@playwright/test"
 
-// Onboarding routes require auth — these tests verify the UI renders
-// when a session is simulated. Without a real session, we expect a redirect.
-// Real authenticated tests should use Playwright storageState with a seeded session.
+// The signup wizard at /signup is a 4-step flow:
+//   Step 0: Identity (first name, last name, phone)
+//   Step 1: Verify OTP
+//   Step 2: Business info (business name, type)
+//   Step 3: Pick a number
+// Steps 2-3 require prior state (OTP verification), so we only test step 0 directly.
+// Authenticated onboarding tests should use Playwright storageState with a seeded session.
 
-test.describe("Onboarding routes (unauthenticated redirects)", () => {
-  test("/onboarding/identity redirects unauthenticated user", async ({ page }) => {
-    await page.goto("/onboarding/identity")
-    await expect(page).toHaveURL(/login|onboarding|identity/, { timeout: 5000 })
+test.describe("Signup wizard — identity step", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/signup")
   })
 
-  test("/onboarding/business redirects unauthenticated user", async ({ page }) => {
-    await page.goto("/onboarding/business")
-    await expect(page).toHaveURL(/login|onboarding|business/, { timeout: 5000 })
+  test("shows first name and last name fields", async ({ page }) => {
+    await expect(page.getByLabel("First name")).toBeVisible()
+    await expect(page.getByLabel("Last name")).toBeVisible()
+  })
+
+  test("shows mobile number field", async ({ page }) => {
+    await expect(page.getByLabel("Your mobile number")).toBeVisible()
+  })
+
+  test("shows 4-step progress indicator", async ({ page }) => {
+    // 4 step bars rendered
+    const bars = page.locator(".h-1.flex-1.rounded-full")
+    await expect(bars).toHaveCount(4)
+  })
+
+  test("shows Send verification code button", async ({ page }) => {
+    await expect(page.getByRole("button", { name: /send verification code/i })).toBeVisible()
+  })
+})
+
+test.describe("Protected route — /onboarding redirects to /signup", () => {
+  test("/onboarding redirects to /signup", async ({ page }) => {
+    await page.goto("/onboarding")
+    await expect(page).toHaveURL(/signup/, { timeout: 5000 })
   })
 })
 
