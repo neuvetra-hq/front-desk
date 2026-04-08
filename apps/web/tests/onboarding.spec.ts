@@ -22,10 +22,10 @@ test.describe("Signup wizard — identity step", () => {
     await expect(page.getByLabel("Your mobile number")).toBeVisible()
   })
 
-  test("shows 4-step progress indicator", async ({ page }) => {
-    // 4 step bars rendered
+  test("shows 5-step progress indicator", async ({ page }) => {
+    // 5 step bars rendered (Your info, Verify, Your business, Pick a number, Payment)
     const bars = page.locator(".h-1.flex-1.rounded-full")
-    await expect(bars).toHaveCount(4)
+    await expect(bars).toHaveCount(5)
   })
 
   test("shows Send verification code button", async ({ page }) => {

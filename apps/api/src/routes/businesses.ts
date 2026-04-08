@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia"
-import { db, businesses, businessMembers } from "@frontdesk/database"
-import { eq } from "drizzle-orm"
+import { db, businesses, businessMembers, calls, knowledgeBase } from "@frontdesk/database"
+import { eq, desc, gte, sql, asc, and } from "drizzle-orm"
 import { searchAvailableNumbers, provisionNumber, releaseNumber } from "../services/twilio"
 
 export const businessesRoutes = new Elysia({ prefix: "/businesses" })
@@ -44,13 +44,14 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
     }),
   })
 
-  // Update business details (name, type, area code preference)
+  // Update business details — accepts any subset of fields
   .patch("/:id", async ({ params, body }) => {
     const { id } = params
-    const { name, businessType, areaCode } = body as {
-      name: string
-      businessType: string
-      areaCode: string
+    const { name, businessType, areaCode, aiConfig: aiConfigPatch } = body as {
+      name?: string
+      businessType?: string
+      areaCode?: string
+      aiConfig?: Record<string, unknown>
     }
 
     const [existing] = await db
@@ -62,13 +63,18 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
     if (!existing) return { error: "Business not found" }
 
     const existingConfig = (existing.aiConfig as Record<string, unknown>) ?? {}
+    const mergedConfig = {
+      ...existingConfig,
+      ...(areaCode ? { preferredAreaCode: areaCode } : {}),
+      ...(aiConfigPatch ?? {}),
+    }
 
     await db
       .update(businesses)
       .set({
-        name,
-        businessType: businessType as typeof businesses.$inferInsert["businessType"],
-        aiConfig: { ...existingConfig, preferredAreaCode: areaCode },
+        ...(name ? { name } : {}),
+        ...(businessType ? { businessType: businessType as typeof businesses.$inferInsert["businessType"] } : {}),
+        aiConfig: mergedConfig,
         updatedAt: new Date(),
       })
       .where(eq(businesses.id, id))
@@ -76,13 +82,14 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
     return { updated: true }
   }, {
     body: t.Object({
-      name: t.String(),
-      businessType: t.Union([
+      name:         t.Optional(t.String()),
+      businessType: t.Optional(t.Union([
         t.Literal("medical"), t.Literal("dental"), t.Literal("spa"),
         t.Literal("salon"), t.Literal("plumbing"), t.Literal("legal"),
         t.Literal("real_estate"), t.Literal("other"),
-      ]),
-      areaCode: t.String(),
+      ])),
+      areaCode:  t.Optional(t.String()),
+      aiConfig:  t.Optional(t.Record(t.String(), t.Unknown())),
     }),
   })
 
@@ -157,4 +164,92 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
     console.log(`🗑️  Released number for business ${id}`)
 
     return { released: true }
+  })
+
+  // GET /:id/calls — recent call logs for the dashboard
+  .get("/:id/calls", async ({ params, query }) => {
+    const { id } = params
+    const limit = Math.min(Number((query as Record<string, string>).limit ?? 50), 100)
+
+    const rows = await db
+      .select({
+        id: calls.id,
+        callerNumber: calls.callerNumber,
+        status: calls.status,
+        durationSeconds: calls.durationSeconds,
+        summary: calls.summary,
+        startedAt: calls.startedAt,
+        endedAt: calls.endedAt,
+      })
+      .from(calls)
+      .where(eq(calls.businessId, id))
+      .orderBy(desc(calls.startedAt))
+      .limit(limit)
+
+    return { calls: rows }
+  })
+
+  // GET /:id/usage — minutes used this billing period
+  .get("/:id/usage", async ({ params }) => {
+    const { id } = params
+
+    const [business] = await db
+      .select({ stripePlanId: businesses.stripePlanId })
+      .from(businesses)
+      .where(eq(businesses.id, id))
+      .limit(1)
+
+    if (!business) return { error: "Business not found" }
+
+    // Sum duration for calls this calendar month
+    const startOfMonth = new Date()
+    startOfMonth.setDate(1)
+    startOfMonth.setHours(0, 0, 0, 0)
+
+    const [usage] = await db
+      .select({
+        totalSeconds: sql<number>`coalesce(sum(${calls.durationSeconds}), 0)::int`,
+        totalCalls: sql<number>`count(*)::int`,
+      })
+      .from(calls)
+      .where(and(eq(calls.businessId, id), gte(calls.startedAt, startOfMonth)))
+
+    const minutesUsed = Math.ceil((usage?.totalSeconds ?? 0) / 60)
+
+    return {
+      minutesUsed,
+      totalCalls: usage?.totalCalls ?? 0,
+      stripePlanId: business.stripePlanId,
+      periodStart: startOfMonth.toISOString(),
+    }
+  })
+
+  // GET /:id/knowledge-base
+  .get("/:id/knowledge-base", async ({ params }) => {
+    const rows = await db
+      .select()
+      .from(knowledgeBase)
+      .where(eq(knowledgeBase.businessId, params.id))
+      .orderBy(asc(knowledgeBase.createdAt))
+    return { items: rows }
+  })
+
+  // POST /:id/knowledge-base
+  .post("/:id/knowledge-base", async ({ params, body }) => {
+    const { question, answer } = body
+    const [item] = await db
+      .insert(knowledgeBase)
+      .values({ businessId: params.id, question, answer })
+      .returning()
+    return { item }
+  }, {
+    body: t.Object({ question: t.String(), answer: t.String() }),
+  })
+
+  // DELETE /:id/knowledge-base/:itemId
+  .delete("/:id/knowledge-base/:itemId", async ({ params }) => {
+    await db
+      .delete(knowledgeBase)
+      .where(eq(knowledgeBase.id, params.itemId))
+    return { deleted: true }
   })
