@@ -7,9 +7,9 @@ import { StepIdentity, type IdentityData } from "@/components/signup/StepIdentit
 import { StepVerify } from "@/components/signup/StepVerify"
 import { StepBusiness, type BusinessData } from "@/components/signup/StepBusiness"
 import { StepPickNumber } from "@/components/signup/StepPickNumber"
+import { StepPayment } from "@/components/signup/StepPayment"
 import { toast } from "sonner"
 
-// Normalize any phone format to E.164
 function toE164(raw: string): string {
   const digits = raw.replace(/\D/g, "")
   if (digits.length === 10) return `+1${digits}`
@@ -23,7 +23,7 @@ function extractAreaCode(phone: string): string {
   return local.slice(0, 3)
 }
 
-const STEPS = ["Your info", "Verify", "Your business", "Pick a number"]
+const STEPS = ["Your info", "Verify", "Your business", "Pick a number", "Payment"]
 
 export function SignupPage() {
   const { session, profile, business, refreshProfile, refreshBusiness } = useAuth()
@@ -32,17 +32,15 @@ export function SignupPage() {
   const [step, setStep] = useState(0)
   const [busy, setBusy] = useState(false)
 
-  // Collected across steps
   const [identity, setIdentity] = useState<IdentityData | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [businessData, setBusinessData] = useState<BusinessData | null>(null)
+  const [selectedNumber, setSelectedNumber] = useState<string | null>(null)
 
-  // Already fully set up
+  // Already fully set up — skip signup
   if (session && profile && business?.status === "active") {
     return <Navigate to="/dashboard" replace />
   }
-
-  // --- Step handlers ---
 
   const handleIdentityNext = async (data: IdentityData) => {
     setBusy(true)
@@ -63,7 +61,6 @@ export function SignupPage() {
     if (!identity) return
     setBusy(true)
     try {
-      // Write the verified user profile to public.users
       const { error } = await supabase.from("users").upsert({
         id: verifiedUserId,
         first_name: identity.firstName,
@@ -86,6 +83,11 @@ export function SignupPage() {
     setStep(3)
   }
 
+  const handleNumberNext = (phoneNumber: string) => {
+    setSelectedNumber(phoneNumber)
+    setStep(4)
+  }
+
   const handleSuccess = async () => {
     await refreshBusiness()
     navigate("/dashboard", { replace: true })
@@ -96,6 +98,7 @@ export function SignupPage() {
     "Verify your number",
     "About your business",
     "Choose your AI number",
+    "Activate your Front Desk",
   ]
 
   const descriptions = [
@@ -103,6 +106,7 @@ export function SignupPage() {
     `We sent a 6-digit code to ${identity ? toE164(identity.phone) : "your phone"}.`,
     "Almost there. Tell us about your business.",
     "Pick a local number for your AI receptionist.",
+    "Choose a plan and enter your payment details.",
   ]
 
   return (
@@ -133,14 +137,23 @@ export function SignupPage() {
 
       {step === 2 && <StepBusiness onNext={handleBusinessNext} />}
 
-      {step === 3 && identity && businessData && userId && (
+      {step === 3 && identity && (
         <StepPickNumber
           areaCode={extractAreaCode(identity.phone)}
+          onNext={handleNumberNext}
+          onBack={() => setStep(2)}
+        />
+      )}
+
+      {step === 4 && identity && businessData && selectedNumber && userId && (
+        <StepPayment
+          userId={userId}
+          userName={`${identity.firstName} ${identity.lastName}`}
           businessName={businessData.businessName}
           businessType={businessData.businessType}
-          userId={userId}
+          phoneNumber={selectedNumber}
           onSuccess={handleSuccess}
-          onBack={() => setStep(2)}
+          onBack={() => setStep(3)}
         />
       )}
 

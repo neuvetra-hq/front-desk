@@ -57,6 +57,10 @@ export const businesses = pgTable("businesses", {
   calcomApiKey:  text("calcom_api_key"),
   status:        businessStatusEnum("status").notNull().default("active"),
   businessType:  businessTypeEnum("business_type"),
+  stripeCustomerId:      text("stripe_customer_id").unique(),
+  stripeSubscriptionId:  text("stripe_subscription_id").unique(),
+  stripePlanId:          text("stripe_plan_id"),          // flat price id (e.g. price_growth_flat)
+  stripeMeteredItemId:   text("stripe_metered_item_id"),  // subscription item id for usage reporting
   createdAt:     timestamp("created_at").notNull().defaultNow(),
   updatedAt:     timestamp("updated_at").notNull().defaultNow(),
 })
