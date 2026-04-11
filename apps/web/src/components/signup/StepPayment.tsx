@@ -50,7 +50,7 @@ interface ActivatePayload {
 }
 
 interface FormProps {
-  payload: Omit<ActivatePayload, "paymentMethodId">
+  payload: Omit<ActivatePayload, "paymentMethodId" | "stripeCustomerId">
   stripeCustomerId: string
   onSuccess: () => void
   onBack: () => void

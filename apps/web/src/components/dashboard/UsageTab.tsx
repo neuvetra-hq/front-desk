@@ -11,9 +11,9 @@ interface UsageData {
 }
 
 const PLAN_LIMITS: Record<string, { name: string; minutes: number; overageRate: string }> = {
-  [import.meta.env.VITE_STRIPE_PRICE_STARTER_FLAT]: { name: "Starter", minutes: 150,  overageRate: "$0.25" },
-  [import.meta.env.VITE_STRIPE_PRICE_GROWTH_FLAT]:  { name: "Growth",  minutes: 400,  overageRate: "$0.20" },
-  [import.meta.env.VITE_STRIPE_PRICE_PRO_FLAT]:     { name: "Pro",     minutes: 1000, overageRate: "$0.18" },
+  [import.meta.env.VITE_STRIPE_PRICE_STARTER_FLAT as string]: { name: "Starter", minutes: 150,  overageRate: "$0.25" },
+  [import.meta.env.VITE_STRIPE_PRICE_GROWTH_FLAT as string]:  { name: "Growth",  minutes: 400,  overageRate: "$0.20" },
+  [import.meta.env.VITE_STRIPE_PRICE_PRO_FLAT as string]:     { name: "Pro",     minutes: 1000, overageRate: "$0.18" },
 }
 
 export function UsageTab() {

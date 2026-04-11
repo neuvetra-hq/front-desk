@@ -242,14 +242,3 @@ function SummaryCard({
   )
 }
 
-function ComingSoon({ label }: { label: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div className="h-12 w-12 rounded-2xl bg-neutral-100 flex items-center justify-center mb-4">
-        <BarChart2 size={20} className="text-neutral-400" />
-      </div>
-      <h2 className="text-lg font-semibold text-neutral-700">{label}</h2>
-      <p className="text-sm text-neutral-400 mt-1">Coming soon — being built now.</p>
-    </div>
-  )
-}
