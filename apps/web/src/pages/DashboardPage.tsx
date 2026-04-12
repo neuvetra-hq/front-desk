@@ -1,25 +1,20 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate, Navigate } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
+import { Phone, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { PhoneCall, Settings, BookOpen, BarChart2, LogOut, Phone, AlertTriangle, MessageSquare } from "lucide-react"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
+import { AppSidebar, NAV_ITEMS, type Tab } from "@/components/dashboard/AppSidebar"
 import { CallLogsTab } from "@/components/dashboard/CallLogsTab"
 import { UsageTab } from "@/components/dashboard/UsageTab"
 import { KnowledgeBaseTab } from "@/components/dashboard/KnowledgeBaseTab"
 import { SettingsTab } from "@/components/dashboard/SettingsTab"
 
 const API_URL = import.meta.env.VITE_API_URL as string
-
-const BUSINESS_TYPE_LABELS: Record<string, string> = {
-  medical: "Medical / Healthcare",
-  dental: "Dental",
-  spa: "MedSpa / Wellness",
-  salon: "Salon & Beauty",
-  plumbing: "Plumbing & Trades",
-  legal: "Legal",
-  real_estate: "Real Estate",
-  other: "Other",
-}
 
 // Map Stripe flat price IDs → plan display info
 // Price IDs come from VITE_ vars — we derive plan from the business.stripePlanId
@@ -38,26 +33,14 @@ function getPlanKey(stripePlanId: string | null): keyof typeof PLAN_MAP | null {
   return null
 }
 
-type Tab = "overview" | "calls" | "messages" | "usage" | "knowledge" | "settings"
-
-const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: "overview",  label: "Overview",      icon: <BarChart2     size={16} /> },
-  { id: "calls",     label: "Call Logs",      icon: <PhoneCall     size={16} /> },
-  { id: "messages",  label: "Messages",       icon: <MessageSquare size={16} /> },
-  { id: "usage",     label: "Usage",          icon: <BarChart2     size={16} /> },
-  { id: "knowledge", label: "Knowledge Base", icon: <BookOpen      size={16} /> },
-  { id: "settings",  label: "Settings",       icon: <Settings      size={16} /> },
-]
-
 export function DashboardPage() {
-  const { profile, business, session, signOut } = useAuth()
+  const { business, session } = useAuth()
   const { tab: rawTab } = useParams<{ tab: string }>()
   const navigate = useNavigate()
-  const validTabs = TABS.map((t) => t.id)
+  const validTabs = NAV_ITEMS.map((t) => t.id)
   const tab: Tab = (validTabs.includes(rawTab as Tab) ? rawTab : "overview") as Tab
   const [calendarConnected, setCalendarConnected] = useState<boolean | null>(null)
 
-  // Redirect unknown tab params to overview
   if (rawTab && !validTabs.includes(rawTab as Tab)) {
     return <Navigate to="/dashboard/overview" replace />
   }
@@ -74,140 +57,53 @@ export function DashboardPage() {
       .catch(() => setCalendarConnected(false))
   }, [business?.id])
 
-  const planKey = getPlanKey(business?.stripePlanId ?? null)
-  const plan = planKey ? PLAN_MAP[planKey] : null
-
   return (
-    <div className="min-h-screen bg-neutral-50 flex flex-col">
-
-      {/* Top nav */}
-      <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white">
-        <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900">
-              <span className="text-xs font-black text-white">FD</span>
-            </div>
-            <span className="font-semibold text-neutral-900 text-sm">Front Desk</span>
-            {business?.status === "active" && (
-              <span className="hidden sm:inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
-                Active
-              </span>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        {/* Top header */}
+        <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-neutral-200 bg-white px-4">
+          <SidebarTrigger className="-ml-1" />
+          <div className="flex flex-1 items-center gap-3 overflow-hidden">
+            {business?.twilioNumber && (
+              <div className="flex items-center gap-2 overflow-hidden">
+                <Phone size={14} className="shrink-0 text-neutral-400" />
+                <span className="font-mono text-sm font-semibold text-neutral-900 truncate">
+                  {business.twilioNumber}
+                </span>
+              </div>
             )}
           </div>
-          <div className="flex items-center gap-4">
-            <span className="hidden sm:block text-sm text-neutral-500">
-              {profile?.firstName} {profile?.lastName}
-            </span>
-            <Button variant="outline" size="sm" onClick={signOut} className="gap-1.5">
-              <LogOut size={14} />
-              Sign out
+        </header>
+
+        {/* No-calendar warning */}
+        {calendarConnected === false && (
+          <div className="border-b border-amber-200 bg-amber-50 px-4 py-2.5 flex items-center gap-3">
+            <AlertTriangle size={15} className="shrink-0 text-amber-600" />
+            <p className="text-sm text-amber-800 flex-1 min-w-0">
+              <strong>No calendar connected</strong> — your AI cannot book appointments.
+            </p>
+            <Button
+              variant="link"
+              className="shrink-0 h-auto p-0 text-sm text-amber-700 hover:text-amber-900"
+              onClick={() => navigate("/dashboard/settings")}
+            >
+              Connect →
             </Button>
           </div>
-        </div>
-      </header>
+        )}
 
-      {/* Status banner */}
-      <div className="bg-white border-b border-neutral-100">
-        <div className="mx-auto max-w-6xl px-6 py-5">
-          <div className="flex flex-wrap items-center gap-6">
-
-            {/* AI number */}
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50">
-                <Phone size={18} className="text-indigo-600" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-neutral-400 uppercase tracking-wide">AI Number</p>
-                <p className="font-mono text-base font-semibold text-neutral-900">
-                  {business?.twilioNumber ?? "—"}
-                </p>
-              </div>
-            </div>
-
-            <div className="h-8 w-px bg-neutral-200 hidden sm:block" />
-
-            {/* Business */}
-            <div>
-              <p className="text-xs font-medium text-neutral-400 uppercase tracking-wide">Business</p>
-              <p className="text-base font-semibold text-neutral-900">{business?.name ?? "—"}</p>
-            </div>
-
-            <div className="h-8 w-px bg-neutral-200 hidden sm:block" />
-
-            {/* Type */}
-            <div>
-              <p className="text-xs font-medium text-neutral-400 uppercase tracking-wide">Type</p>
-              <p className="text-sm text-neutral-700">
-                {business?.businessType ? BUSINESS_TYPE_LABELS[business.businessType] ?? business.businessType : "—"}
-              </p>
-            </div>
-
-            {/* Plan badge */}
-            {plan && (
-              <>
-                <div className="h-8 w-px bg-neutral-200 hidden sm:block" />
-                <div>
-                  <p className="text-xs font-medium text-neutral-400 uppercase tracking-wide">Plan</p>
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${plan.color}`}>
-                    {plan.name} · {plan.minutes} min/mo
-                  </span>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Tab bar */}
-      <div className="bg-white border-b border-neutral-200">
-        <div className="mx-auto max-w-6xl px-6">
-          <nav className="flex gap-1" aria-label="Dashboard tabs">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => navigate(`/dashboard/${t.id}`)}
-                className={`flex items-center gap-1.5 px-4 py-3.5 text-sm font-medium border-b-2 transition-colors ${
-                  tab === t.id
-                    ? "border-indigo-600 text-indigo-600"
-                    : "border-transparent text-neutral-500 hover:text-neutral-800 hover:border-neutral-300"
-                }`}
-              >
-                {t.icon}
-                {t.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </div>
-
-      {/* No-calendar warning banner */}
-      {calendarConnected === false && (
-        <div className="border-b border-amber-200 bg-amber-50">
-          <div className="mx-auto max-w-6xl px-6 py-3 flex items-center gap-3">
-            <AlertTriangle size={16} className="shrink-0 text-amber-600" />
-            <p className="text-sm text-amber-800 flex-1">
-              <strong>No calendar connected</strong> — your AI can answer calls but cannot check availability or book appointments.
-            </p>
-            <button
-              onClick={() => navigate("/dashboard/settings")}
-              className="shrink-0 text-sm font-medium text-amber-700 underline underline-offset-2 hover:text-amber-900"
-            >
-              Connect calendar →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Tab content */}
-      <main className="mx-auto w-full max-w-6xl px-6 py-8 flex-1">
-        {tab === "overview"  && <OverviewTab />}
-        {tab === "calls"     && <CallLogsTab />}
-        {tab === "messages"  && <MessagesTab />}
-        {tab === "usage"     && <UsageTab />}
-        {tab === "knowledge" && <KnowledgeBaseTab />}
-        {tab === "settings"  && <SettingsTab onCalendarChange={setCalendarConnected} />}
-      </main>
-    </div>
+        {/* Page content */}
+        <main className="flex-1 p-6">
+          {tab === "overview"  && <OverviewTab />}
+          {tab === "calls"     && <CallLogsTab />}
+          {tab === "messages"  && <MessagesTab />}
+          {tab === "usage"     && <UsageTab />}
+          {tab === "knowledge" && <KnowledgeBaseTab />}
+          {tab === "settings"  && <SettingsTab onCalendarChange={setCalendarConnected} />}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
 
