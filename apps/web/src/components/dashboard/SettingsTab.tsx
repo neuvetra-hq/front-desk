@@ -38,10 +38,6 @@ export function SettingsTab() {
   const [saving, setSaving] = useState(false)
   const [calendarConn, setCalendarConn] = useState<CalendarConnection | null>(null)
   const [calendarLoading, setCalendarLoading] = useState(false)
-  const [testEventLoading, setTestEventLoading] = useState(false)
-  const [testEventId, setTestEventId] = useState<string | null>(null)
-  const [modifyEventLoading, setModifyEventLoading] = useState(false)
-  const [deleteEventLoading, setDeleteEventLoading] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
 
   // Fetch current calendar connection status on mount
@@ -94,71 +90,6 @@ export function SettingsTab() {
       toast.error((err as Error).message ?? "Failed to start calendar connection")
     } finally {
       setCalendarLoading(false)
-    }
-  }
-
-  const handleTestEvent = async () => {
-    if (!business?.id) return
-    setTestEventLoading(true)
-    try {
-      const res = await fetch(`${API_URL}/calendar/${business.id}/test-event`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
-      })
-      const data = await res.json() as { event?: { eventId: string; summary: string; startTime: string }; error?: string }
-      if (!res.ok) throw new Error(data.error ?? "Failed to create test event")
-      if (data.event?.eventId) setTestEventId(data.event.eventId)
-      const formattedTime = data.event?.startTime
-        ? new Date(data.event.startTime).toLocaleString("en-US", {
-            weekday: "long",
-            month:   "long",
-            day:     "numeric",
-            hour:    "numeric",
-            minute:  "2-digit",
-          })
-        : ""
-      toast.success(`Test event created for ${formattedTime}`)
-    } catch (err) {
-      toast.error((err as Error).message ?? "Failed to create test event")
-    } finally {
-      setTestEventLoading(false)
-    }
-  }
-
-  const handleModifyEvent = async () => {
-    if (!business?.id || !testEventId) return
-    setModifyEventLoading(true)
-    try {
-      const res = await fetch(`${API_URL}/calendar/${business.id}/events/${testEventId}`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
-      })
-      const data = await res.json() as { event?: { summary: string; startTime: string }; error?: string }
-      if (data.error) throw new Error(data.error)
-      toast.success(`Event updated: "${data.event?.summary}" → 6:00 PM`)
-    } catch (err) {
-      toast.error((err as Error).message ?? "Failed to update event")
-    } finally {
-      setModifyEventLoading(false)
-    }
-  }
-
-  const handleDeleteEvent = async () => {
-    if (!business?.id || !testEventId) return
-    setDeleteEventLoading(true)
-    try {
-      const res = await fetch(`${API_URL}/calendar/${business.id}/events/${testEventId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
-      })
-      const data = await res.json() as { deleted?: boolean; error?: string }
-      if (data.error) throw new Error(data.error)
-      setTestEventId(null)
-      toast.success("Test event deleted")
-    } catch (err) {
-      toast.error((err as Error).message ?? "Failed to delete event")
-    } finally {
-      setDeleteEventLoading(false)
     }
   }
 
@@ -281,62 +212,28 @@ export function SettingsTab() {
 
         <div className="rounded-xl border border-neutral-200 bg-white p-5">
           {calendarConn ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  {/* Google Calendar icon */}
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-100">
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
-                      <rect width="24" height="24" rx="4" fill="#fff"/>
-                      <path d="M17 3h-1V1h-2v2H10V1H8v2H7C5.9 3 5 3.9 5 5v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V9h10v10z" fill="#4285F4"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-neutral-900">Google Calendar</p>
-                    <p className="text-xs text-neutral-400">Connected as {calendarConn.providerEmail}</p>
-                  </div>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                {/* Google Calendar icon */}
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-100">
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                    <rect width="24" height="24" rx="4" fill="#fff"/>
+                    <path d="M17 3h-1V1h-2v2H10V1H8v2H7C5.9 3 5 3.9 5 5v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V9h10v10z" fill="#4285F4"/>
+                  </svg>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={handleTestEvent}
-                    disabled={testEventLoading || calendarLoading}
-                    className="shrink-0 text-sm"
-                  >
-                    {testEventLoading ? "Creating…" : "Create Test Event"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleDisconnectCalendar}
-                    disabled={calendarLoading}
-                    className="shrink-0 text-sm text-red-600 border-red-200 hover:bg-red-50"
-                  >
-                    {calendarLoading ? "Disconnecting…" : "Disconnect"}
-                  </Button>
+                <div>
+                  <p className="text-sm font-medium text-neutral-900">Google Calendar</p>
+                  <p className="text-xs text-neutral-400">Connected as {calendarConn.providerEmail}</p>
                 </div>
               </div>
-
-              {testEventId && (
-                <div className="flex items-center gap-2 rounded-lg bg-neutral-50 border border-neutral-200 px-4 py-2.5">
-                  <span className="text-xs text-neutral-500 flex-1">Last test event ready to modify or delete</span>
-                  <Button
-                    variant="outline"
-                    onClick={handleModifyEvent}
-                    disabled={modifyEventLoading || deleteEventLoading}
-                    className="text-xs h-7 px-3"
-                  >
-                    {modifyEventLoading ? "Updating…" : "Modify (→ 6 PM)"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleDeleteEvent}
-                    disabled={deleteEventLoading || modifyEventLoading}
-                    className="text-xs h-7 px-3 text-red-600 border-red-200 hover:bg-red-50"
-                  >
-                    {deleteEventLoading ? "Deleting…" : "Delete"}
-                  </Button>
-                </div>
-              )}
+              <Button
+                variant="outline"
+                onClick={handleDisconnectCalendar}
+                disabled={calendarLoading}
+                className="shrink-0 text-sm text-red-600 border-red-200 hover:bg-red-50"
+              >
+                {calendarLoading ? "Disconnecting…" : "Disconnect"}
+              </Button>
             </div>
           ) : (
             <div className="flex items-center justify-between gap-4">
