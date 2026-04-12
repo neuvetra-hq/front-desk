@@ -13,12 +13,21 @@ const twiml = (xml: string) =>
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Format an ISO datetime string for human speech. */
+/** Format an ISO datetime string for human speech — full date + time. */
 function formatForSpeech(iso: string): string {
   return new Date(iso).toLocaleString("en-US", {
     weekday:      "long",
     month:        "long",
     day:          "numeric",
+    hour:         "numeric",
+    minute:       "2-digit",
+    timeZoneName: "short",
+  })
+}
+
+/** Format just the time portion of an ISO string (e.g. "1:30 PM PDT"). */
+function formatTimeOnly(iso: string): string {
+  return new Date(iso).toLocaleString("en-US", {
     hour:         "numeric",
     minute:       "2-digit",
     timeZoneName: "short",
@@ -84,15 +93,15 @@ async function outsideHoursResponse(
 
   // Day is closed entirely
   if (hoursMap && (!dayHours?.open)) {
-    return `The business is closed on ${dayName}. Please ask the caller to choose a different day.`
+    return `We're closed on ${dayName}. Which day would work better for you?`
   }
 
   // Day is open but time is outside the window — find in-hours alternatives
-  const reason = `${formatForSpeech(requestedTime)} is outside business hours` +
+  const reason = `${formatForSpeech(requestedTime)} is outside our business hours` +
     (dayHours ? ` (${dayHours.from}–${dayHours.to} on ${dayName})` : "") + "."
 
   if (!dayHours?.open) {
-    return `${reason} Please ask the caller to choose a different time.`
+    return `${reason} Could you choose a different time?`
   }
 
   try {
@@ -104,14 +113,14 @@ async function outsideHoursResponse(
     })
 
     if (allSlots.length === 0) {
-      return `${reason} There are no other openings that day. Please ask the caller to try a different day.`
+      return `${reason} There are no other openings that day — could you try a different day?`
     }
 
     const alternatives = closestSlots(allSlots, requested)
-    const formatted    = alternatives.map((s) => formatForSpeech(s.start)).join(", ")
-    return `${reason} Available times that day are: ${formatted}. Which works for the caller?`
+    const formatted    = alternatives.map((s) => formatTimeOnly(s.start)).join(", ")
+    return `${reason} I have openings at ${formatted}. Which of those works for you?`
   } catch {
-    return `${reason} Please ask the caller to choose a different time.`
+    return `${reason} Could you choose a different time?`
   }
 }
 
@@ -211,7 +220,7 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             // 1. Day closed entirely
             if (dayHours && !dayHours.open) {
               return {
-                result: `The business is closed on ${dayName}. Please ask the caller to choose a different day.`,
+                result: `We're closed on ${dayName}. Which day would work better for you?`,
               }
             }
 
@@ -229,14 +238,14 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
 
                 if (allSlots.length === 0) {
                   return {
-                    result: `That time is outside business hours (${dayHours.from}–${dayHours.to} on ${dayName}) and there are no openings left that day. Please ask the caller to try another day.`,
+                    result: `That time is outside our business hours of ${dayHours.from}–${dayHours.to}. We don't have any other openings that day — could you try a different day?`,
                   }
                 }
 
                 const alternatives = closestSlots(allSlots, requested)
-                const formatted = alternatives.map((s) => formatForSpeech(s.start)).join(", ")
+                const formatted    = alternatives.map((s) => formatTimeOnly(s.start)).join(", ")
                 return {
-                  result: `That time is outside business hours (${dayHours.from}–${dayHours.to} on ${dayName}). Available times that day are: ${formatted}. Which works best for the caller?`,
+                  result: `That time is outside our business hours (${dayHours.from}–${dayHours.to}). I have openings at ${formatted}. Which of those works for you?`,
                 }
               }
             }
@@ -249,13 +258,13 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             })
 
             if (exactSlots.length > 0) {
-              return { result: `${formatForSpeech(requested.toISOString())} is available. Shall I book it?` }
+              return { result: `${formatForSpeech(requested.toISOString())} is available. Shall I go ahead and book that?` }
             }
 
             // Slot is taken — find closest alternatives within business hours
             const fallbackHours = dayHours?.open ? dayHours : null
             if (!fallbackHours) {
-              return { result: `${formatForSpeech(requested.toISOString())} is already taken. Please ask the caller for a different time.` }
+              return { result: `${formatForSpeech(requested.toISOString())} is already taken. Could you suggest a different time?` }
             }
 
             const { start: dayStart, end: dayEnd } = buildDayWindow(requested, fallbackHours)
@@ -266,13 +275,13 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             })
 
             if (allSlots.length === 0) {
-              return { result: `${formatForSpeech(requested.toISOString())} is taken and there are no other openings that day. Please ask the caller to try another day.` }
+              return { result: `${formatForSpeech(requested.toISOString())} is taken and there are no other openings that day. Could you try a different day?` }
             }
 
             const alternatives = closestSlots(allSlots, requested)
-            const formatted    = alternatives.map((s) => formatForSpeech(s.start)).join(", ")
+            const formatted    = alternatives.map((s) => formatTimeOnly(s.start)).join(", ")
             return {
-              result: `${formatForSpeech(requested.toISOString())} is already taken. The closest available times are: ${formatted}. Which works best for the caller?`,
+              result: `${formatForSpeech(requested.toISOString())} is already taken. The closest available times are: ${formatted}. Which works best?`,
             }
           }
 
@@ -288,15 +297,15 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
           })
 
           if (slots.length === 0) {
-            return { result: "No availability found in the requested window. Please ask the caller to try different dates." }
+            return { result: "I don't see any availability in that window. Could you try different dates?" }
           }
 
           const formatted = slots.map((s) => formatForSpeech(s.start)).join(", ")
-          return { result: `Available times: ${formatted}` }
+          return { result: `I have the following times available: ${formatted}. Which works for you?` }
 
         } catch (err) {
           console.error("check_availability error:", err)
-          return { result: "Unable to check availability right now. Please ask the caller to call back or try another time." }
+          return { result: "I'm having trouble checking availability right now. Please try again in a moment." }
         }
       }
 
@@ -304,18 +313,21 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
       // book_appointment
       // ----------------------------------------------------------------
       if (funcName === "book_appointment") {
+        const customerName = funcArgs.customer_name as string
+        const duration     = (funcArgs.duration_minutes as number | undefined) ?? 60
         try {
-          const booking = await CalendarService.bookAppointment(business.id, {
+          const booking  = await CalendarService.bookAppointment(business.id, {
             startTime:       funcArgs.start_time as string,
-            durationMinutes: (funcArgs.duration_minutes as number | undefined) ?? 60,
-            customerName:    funcArgs.customer_name as string,
+            durationMinutes: duration,
+            customerName,
             customerPhone:   funcArgs.customer_phone as string ?? fromNumber ?? "",
             customerEmail:   funcArgs.customer_email as string | undefined,
             reason:          funcArgs.reason as string,
           })
 
+          const endTime = new Date(new Date(booking.startTime).getTime() + duration * 60 * 1000)
           return {
-            result: `Appointment confirmed for ${formatForSpeech(booking.startTime)}. A calendar invite has been created.`,
+            result: `Your appointment is confirmed for ${formatForSpeech(booking.startTime)} to ${formatTimeOnly(endTime.toISOString())} for ${customerName}. Is there anything else I can help you with?`,
           }
         } catch (err) {
           const msg = (err as Error).message ?? ""
@@ -323,11 +335,10 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
           if (msg.includes("outside business hours") || msg.includes("closed on")) {
             const aiConfig  = business.aiConfig as { businessHours?: BusinessHours } | null
             const startTime = funcArgs.start_time as string
-            const duration  = (funcArgs.duration_minutes as number | undefined) ?? 60
             const response  = await outsideHoursResponse(business.id, startTime, duration, aiConfig?.businessHours)
             return { result: response }
           }
-          return { result: "Unable to book the appointment right now. Please ask the caller to call back and we will get that sorted." }
+          return { result: "I wasn't able to complete the booking just now. Please try again or call back and we'll get that sorted." }
         }
       }
 
@@ -339,27 +350,28 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
       if (funcName === "find_appointment") {
         try {
           if (!fromNumber) {
-            return { result: "I couldn't identify the caller's phone number. Unable to look up appointments." }
+            return { result: "I wasn't able to identify your phone number, so I can't look up appointments." }
           }
 
           const appointments = await CalendarService.findAppointmentsByPhone(business.id, fromNumber)
 
           if (appointments.length === 0) {
-            return { result: "I couldn't find any upcoming appointments for this caller." }
+            return { result: "I don't see any upcoming appointments linked to your number." }
           }
 
+          const n    = appointments.length
           const list = appointments
             .map((a, i) => `${i + 1}. ${a.reason} on ${formatForSpeech(a.startTime)}`)
             .join("; ")
 
           return {
-            result: `I found ${appointments.length} upcoming appointment${appointments.length > 1 ? "s" : ""}: ${list}. Would the caller like to cancel or reschedule one?`,
-            // Pass the raw appointment data so the AI can reference event IDs internally
+            result: `I found ${n} upcoming appointment${n > 1 ? "s" : ""} for you: ${list}. Would you like to cancel or reschedule one?`,
+            // Pass structured data so the AI can reference event IDs internally
             appointments: appointments.map((a) => ({ eventId: a.eventId, summary: a.summary, startTime: a.startTime })),
           }
         } catch (err) {
           console.error("find_appointment error:", err)
-          return { result: "Unable to look up appointments right now. Please ask the caller to call back." }
+          return { result: "I'm having trouble looking up appointments right now. Please try again in a moment." }
         }
       }
 
@@ -372,24 +384,24 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
       if (funcName === "cancel_appointment") {
         try {
           if (!fromNumber) {
-            return { result: "I couldn't verify the caller's phone number. Unable to cancel." }
+            return { result: "I wasn't able to verify your phone number, so I can't cancel the appointment." }
           }
 
           const eventId = funcArgs.event_id as string
           if (!eventId) {
-            return { result: "No appointment was selected. Please ask the caller which appointment they want to cancel." }
+            return { result: "I'm not sure which appointment to cancel — could you clarify which one?" }
           }
 
           await CalendarService.cancelAppointment(business.id, fromNumber, eventId)
 
-          return { result: "The appointment has been cancelled. Is there anything else I can help with?" }
+          return { result: "Done, that appointment has been cancelled. Is there anything else I can help you with?" }
         } catch (err) {
           const msg = (err as Error).message ?? ""
           console.error("cancel_appointment error:", err)
           if (msg.includes("No appointment found")) {
-            return { result: "I couldn't find that appointment linked to this caller's number. No changes were made." }
+            return { result: "I couldn't find that appointment linked to your number, so no changes were made." }
           }
-          return { result: "Unable to cancel the appointment right now. Please ask the caller to call back." }
+          return { result: "I wasn't able to cancel the appointment just now. Please try again in a moment." }
         }
       }
 
@@ -401,7 +413,7 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
       if (funcName === "reschedule_appointment") {
         try {
           if (!fromNumber) {
-            return { result: "I couldn't verify the caller's phone number. Unable to reschedule." }
+            return { result: "I wasn't able to verify your phone number, so I can't reschedule the appointment." }
           }
 
           const eventId      = funcArgs.event_id as string
@@ -409,7 +421,7 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
           const duration     = (funcArgs.duration_minutes as number | undefined) ?? 60
 
           if (!eventId || !newStartTime) {
-            return { result: "Missing appointment or new time. Please confirm which appointment and what time the caller wants." }
+            return { result: "I need both the appointment and the new time to reschedule — could you confirm those details?" }
           }
 
           const updated = await CalendarService.rescheduleAppointment(
@@ -421,25 +433,25 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
           )
 
           return {
-            result: `Appointment rescheduled to ${formatForSpeech(updated.startTime)}. The calendar has been updated.`,
+            result: `Done! Your appointment has been rescheduled to ${formatForSpeech(updated.startTime)}. Is there anything else I can help you with?`,
           }
         } catch (err) {
           const msg = (err as Error).message ?? ""
           console.error("reschedule_appointment error:", err)
           if (msg.includes("No appointment found")) {
-            return { result: "I couldn't find that appointment linked to this caller's number. No changes were made." }
+            return { result: "I couldn't find that appointment linked to your number, so no changes were made." }
           }
           if (msg.includes("outside business hours") || msg.includes("closed on")) {
-            const aiConfig  = business.aiConfig as { businessHours?: BusinessHours } | null
-            const newStart  = funcArgs.new_start_time as string
-            const duration  = (funcArgs.duration_minutes as number | undefined) ?? 60
-            const response  = await outsideHoursResponse(business.id, newStart, duration, aiConfig?.businessHours)
+            const aiConfig   = business.aiConfig as { businessHours?: BusinessHours } | null
+            const newStart   = funcArgs.new_start_time as string
+            const durMinutes = (funcArgs.duration_minutes as number | undefined) ?? 60
+            const response   = await outsideHoursResponse(business.id, newStart, durMinutes, aiConfig?.businessHours)
             return { result: response }
           }
           if (msg.includes("not available")) {
-            return { result: "That new time slot is already taken. Please ask the caller to choose a different time." }
+            return { result: "That time slot is already taken — could you choose a different time?" }
           }
-          return { result: "Unable to reschedule right now. Please ask the caller to call back." }
+          return { result: "I wasn't able to reschedule just now. Please try again in a moment." }
         }
       }
 
