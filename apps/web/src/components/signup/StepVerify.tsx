@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 
@@ -28,12 +28,10 @@ export function StepVerify({ phone, onVerified, onBack, busy, setBusy }: Props) 
     return () => clearInterval(timerRef.current!)
   }, [])
 
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (otp.length < 6) return
+  const handleVerifyToken = async (token: string) => {
     setBusy(true)
     try {
-      const { data, error } = await supabase.auth.verifyOtp({ phone, token: otp, type: "sms" })
+      const { data, error } = await supabase.auth.verifyOtp({ phone, token, type: "sms" })
       if (error) throw error
       if (!data.user) throw new Error("No user returned")
       onVerified(data.user.id)
@@ -42,6 +40,12 @@ export function StepVerify({ phone, onVerified, onBack, busy, setBusy }: Props) 
     } finally {
       setBusy(false)
     }
+  }
+
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (otp.length < 6) return
+    await handleVerifyToken(otp)
   }
 
   const handleResend = async () => {
@@ -67,24 +71,28 @@ export function StepVerify({ phone, onVerified, onBack, busy, setBusy }: Props) 
 
   return (
     <form onSubmit={handleVerify} className="space-y-4">
-      <div className="space-y-1.5">
-        <Label htmlFor="otp">6-digit code</Label>
-        <Input
-          id="otp"
-          type="text"
-          inputMode="numeric"
-          placeholder="123456"
+      <div className="space-y-3">
+        <Label>6-digit code</Label>
+        <InputOTP
           maxLength={6}
-          autoComplete="one-time-code"
           value={otp}
-          onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-        />
+          onChange={(val) => {
+            setOtp(val)
+            if (val.length === 6) handleVerifyToken(val)
+          }}
+          disabled={busy}
+        >
+          <InputOTPGroup>
+            <InputOTPSlot index={0} />
+            <InputOTPSlot index={1} />
+            <InputOTPSlot index={2} />
+            <InputOTPSlot index={3} />
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
+          </InputOTPGroup>
+        </InputOTP>
         <p className="text-xs text-neutral-400">Sent to {phone}</p>
       </div>
-
-      <Button type="submit" className="w-full" disabled={busy || otp.length < 6}>
-        {busy ? "Verifying…" : "Verify"}
-      </Button>
 
       <div className="flex items-center justify-between text-sm">
         <Button type="button" variant="link" className="h-auto p-0 text-neutral-400 hover:text-neutral-600" onClick={onBack}>
