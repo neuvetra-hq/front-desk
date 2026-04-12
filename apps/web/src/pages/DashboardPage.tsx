@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
-import { PhoneCall, Settings, BookOpen, BarChart2, LogOut, Phone, AlertTriangle } from "lucide-react"
-
-const API_URL = import.meta.env.VITE_API_URL as string
+import { PhoneCall, Settings, BookOpen, BarChart2, LogOut, Phone, AlertTriangle, MessageSquare } from "lucide-react"
 import { CallLogsTab } from "@/components/dashboard/CallLogsTab"
 import { UsageTab } from "@/components/dashboard/UsageTab"
 import { KnowledgeBaseTab } from "@/components/dashboard/KnowledgeBaseTab"
 import { SettingsTab } from "@/components/dashboard/SettingsTab"
+
+const API_URL = import.meta.env.VITE_API_URL as string
 
 const BUSINESS_TYPE_LABELS: Record<string, string> = {
   medical: "Medical / Healthcare",
@@ -37,14 +37,15 @@ function getPlanKey(stripePlanId: string | null): keyof typeof PLAN_MAP | null {
   return null
 }
 
-type Tab = "overview" | "calls" | "usage" | "knowledge" | "settings"
+type Tab = "overview" | "calls" | "messages" | "usage" | "knowledge" | "settings"
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: "overview",   label: "Overview",       icon: <BarChart2 size={16} /> },
-  { id: "calls",      label: "Call Logs",       icon: <PhoneCall size={16} /> },
-  { id: "usage",      label: "Usage",           icon: <BarChart2 size={16} /> },
-  { id: "knowledge",  label: "Knowledge Base",  icon: <BookOpen size={16} /> },
-  { id: "settings",   label: "Settings",        icon: <Settings size={16} /> },
+  { id: "overview",  label: "Overview",      icon: <BarChart2     size={16} /> },
+  { id: "calls",     label: "Call Logs",      icon: <PhoneCall     size={16} /> },
+  { id: "messages",  label: "Messages",       icon: <MessageSquare size={16} /> },
+  { id: "usage",     label: "Usage",          icon: <BarChart2     size={16} /> },
+  { id: "knowledge", label: "Knowledge Base", icon: <BookOpen      size={16} /> },
+  { id: "settings",  label: "Settings",       icon: <Settings      size={16} /> },
 ]
 
 export function DashboardPage() {
@@ -190,11 +191,12 @@ export function DashboardPage() {
 
       {/* Tab content */}
       <main className="mx-auto w-full max-w-6xl px-6 py-8 flex-1">
-        {tab === "overview" && <OverviewTab />}
-        {tab === "calls" && <CallLogsTab />}
-        {tab === "usage" && <UsageTab />}
+        {tab === "overview"  && <OverviewTab />}
+        {tab === "calls"     && <CallLogsTab />}
+        {tab === "messages"  && <MessagesTab />}
+        {tab === "usage"     && <UsageTab />}
         {tab === "knowledge" && <KnowledgeBaseTab />}
-        {tab === "settings" && <SettingsTab onCalendarChange={setCalendarConnected} />}
+        {tab === "settings"  && <SettingsTab onCalendarChange={setCalendarConnected} />}
       </main>
     </div>
   )
@@ -250,6 +252,134 @@ function OverviewTab() {
             <p>☎️ <strong>VoIP / Office line:</strong> Contact your provider and ask them to forward unanswered calls to <span className="font-mono font-semibold">{business.twilioNumber}</span></p>
           </div>
         </div>
+      )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Messages tab — callback requests left by callers when scheduling was down
+// ---------------------------------------------------------------------------
+
+interface CallbackRequest {
+  id: string
+  callerPhone: string
+  callerName: string | null
+  message: string | null
+  status: string
+  createdAt: string
+}
+
+function MessagesTab() {
+  const { business, session } = useAuth()
+  const [messages, setMessages] = useState<CallbackRequest[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!business?.id) return
+    fetch(`${API_URL}/businesses/${business.id}/messages`, {
+      headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+    })
+      .then((r) => r.json())
+      .then((data: { messages?: CallbackRequest[] }) => {
+        setMessages(data.messages ?? [])
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [business?.id])
+
+  const markHandled = async (messageId: string) => {
+    await fetch(`${API_URL}/businesses/${business!.id}/messages/${messageId}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+    })
+    setMessages((prev) => prev.map((m) => m.id === messageId ? { ...m, status: "handled" } : m))
+  }
+
+  if (loading) {
+    return <p className="text-sm text-neutral-400">Loading…</p>
+  }
+
+  const pending = messages.filter((m) => m.status === "pending")
+  const handled = messages.filter((m) => m.status === "handled")
+
+  return (
+    <div className="space-y-6 max-w-2xl">
+      <div>
+        <h2 className="text-lg font-semibold text-neutral-900">Callback Requests</h2>
+        <p className="text-sm text-neutral-400 mt-0.5">
+          Callers who asked to be called back when scheduling was unavailable.
+        </p>
+      </div>
+
+      {messages.length === 0 ? (
+        <div className="rounded-xl border border-neutral-200 bg-white p-8 text-center">
+          <p className="text-sm text-neutral-400">No callback requests yet.</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {pending.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                Pending ({pending.length})
+              </p>
+              {pending.map((m) => (
+                <MessageCard key={m.id} message={m} onMarkHandled={markHandled} />
+              ))}
+            </div>
+          )}
+
+          {handled.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide">
+                Handled ({handled.length})
+              </p>
+              {handled.map((m) => (
+                <MessageCard key={m.id} message={m} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MessageCard({ message, onMarkHandled }: { message: CallbackRequest; onMarkHandled?: (id: string) => void }) {
+  const date = new Date(message.createdAt).toLocaleString("en-US", {
+    weekday: "short", month: "short", day: "numeric",
+    hour: "numeric", minute: "2-digit",
+  })
+
+  return (
+    <div className={`rounded-xl border bg-white p-4 flex items-start gap-4 ${
+      message.status === "pending" ? "border-amber-200" : "border-neutral-200 opacity-60"
+    }`}>
+      <div className="flex-1 space-y-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-semibold text-neutral-900">
+            {message.callerName ?? "Unknown caller"}
+          </span>
+          <span className="font-mono text-xs text-neutral-500">{message.callerPhone}</span>
+          {message.status === "pending" && (
+            <span className="rounded-full bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5">
+              Needs callback
+            </span>
+          )}
+        </div>
+        {message.message && (
+          <p className="text-sm text-neutral-600 truncate">{message.message}</p>
+        )}
+        <p className="text-xs text-neutral-400">{date}</p>
+      </div>
+      {onMarkHandled && message.status === "pending" && (
+        <Button
+          variant="outline"
+          className="shrink-0 text-xs h-8 px-3"
+          onClick={() => onMarkHandled(message.id)}
+        >
+          Mark handled
+        </Button>
       )}
     </div>
   )

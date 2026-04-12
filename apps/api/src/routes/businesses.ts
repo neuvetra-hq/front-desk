@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia"
-import { db, businesses, businessMembers, calls, knowledgeBase } from "@frontdesk/database"
+import { db, businesses, businessMembers, calls, knowledgeBase, callbackRequests } from "@frontdesk/database"
 import { eq, desc, gte, sql, asc, and } from "drizzle-orm"
 import { searchAvailableNumbers, provisionNumber, releaseNumber } from "../services/twilio"
 
@@ -263,4 +263,25 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
       .delete(knowledgeBase)
       .where(eq(knowledgeBase.id, params.itemId))
     return { deleted: true }
+  })
+
+  // GET /:id/messages — callback requests left by callers when scheduling was unavailable
+  .get("/:id/messages", async ({ params, query }) => {
+    const limit = Math.min(Number((query as Record<string, string>).limit ?? 50), 100)
+    const rows = await db
+      .select()
+      .from(callbackRequests)
+      .where(eq(callbackRequests.businessId, params.id))
+      .orderBy(desc(callbackRequests.createdAt))
+      .limit(limit)
+    return { messages: rows }
+  })
+
+  // PATCH /:id/messages/:messageId — mark a callback request as handled
+  .patch("/:id/messages/:messageId", async ({ params }) => {
+    await db
+      .update(callbackRequests)
+      .set({ status: "handled" })
+      .where(eq(callbackRequests.id, params.messageId))
+    return { updated: true }
   })

@@ -43,6 +43,13 @@
       "when": 1744400000000,
       "tag": "0005_calendar_integration",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1744500000000,
+      "tag": "0006_callback_requests",
+      "breakpoints": true
     }
   ]
 }

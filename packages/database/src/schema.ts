@@ -151,6 +151,25 @@ export const calendarConnections = pgTable(
 )
 
 // ---------------------------------------------------------------------------
+// callback_requests
+// Saved by the take_message webhook function when the AI takes a caller's
+// name, number, and reason so the business can call them back.
+// Used when no calendar is connected OR for businesses that prefer callbacks.
+// ---------------------------------------------------------------------------
+
+export const callbackRequests = pgTable("callback_requests", {
+  id:          uuid("id").primaryKey().defaultRandom(),
+  businessId:  uuid("business_id")
+    .notNull()
+    .references(() => businesses.id, { onDelete: "cascade" }),
+  callerPhone: text("caller_phone").notNull(),
+  callerName:  text("caller_name"),
+  message:     text("message"),
+  status:      text("status").notNull().default("pending"), // "pending" | "handled"
+  createdAt:   timestamp("created_at").notNull().defaultNow(),
+})
+
+// ---------------------------------------------------------------------------
 // calls
 // ---------------------------------------------------------------------------
 

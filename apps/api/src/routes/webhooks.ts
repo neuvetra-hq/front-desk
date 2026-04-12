@@ -1,5 +1,5 @@
 import { Elysia } from "elysia"
-import { db, businesses, calls } from "@frontdesk/database"
+import { db, businesses, calls, callbackRequests } from "@frontdesk/database"
 import { eq } from "drizzle-orm"
 import { retell } from "../services/retell"
 import * as CalendarService from "../services/calendar/index"
@@ -209,7 +209,7 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
         const connection = await CalendarService.getActiveConnection(business.id)
         if (!connection) {
           return {
-            result: "I'm not able to check availability or book appointments right now — our scheduling system isn't connected. Please contact us directly to schedule.",
+            result: "Our scheduling system is temporarily unavailable. I'd be happy to take your name and number so someone from our team can call you back to get you booked in — would that work for you?",
           }
         }
       }
@@ -476,6 +476,36 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             return { result: "That time slot is already taken — could you choose a different time?" }
           }
           return { result: "I wasn't able to reschedule just now. Please try again in a moment." }
+        }
+      }
+
+      // ----------------------------------------------------------------
+      // take_message
+      // Works without a calendar — saves caller name, phone, and reason
+      // so the business owner can follow up. Used when scheduling is
+      // unavailable OR for businesses that prefer a callback model.
+      // ----------------------------------------------------------------
+      if (funcName === "take_message") {
+        try {
+          const callerName  = funcArgs.caller_name  as string | undefined
+          const callerPhone = (funcArgs.caller_phone as string | undefined) ?? fromNumber ?? ""
+          const message     = funcArgs.message       as string | undefined
+
+          await db.insert(callbackRequests).values({
+            businessId:  business.id,
+            callerPhone,
+            callerName:  callerName ?? null,
+            message:     message   ?? null,
+            status:      "pending",
+          })
+
+          const nameClause = callerName ? `, ${callerName},` : ""
+          return {
+            result: `Done! I've noted that down. Someone will call${nameClause} back at ${callerPhone} shortly. Is there anything else I can help you with?`,
+          }
+        } catch (err) {
+          console.error("take_message error:", err)
+          return { result: "I wasn't able to save that just now. Please try calling back in a moment." }
         }
       }
 
