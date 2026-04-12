@@ -6,6 +6,7 @@ import { AuthLayout } from "@/components/auth/AuthLayout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 import { toast } from "sonner"
 
 function toE164(raw: string): string {
@@ -63,15 +64,13 @@ export function LoginPage() {
     }
   }
 
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleVerifyOtp = async (token: string) => {
     setBusy(true)
     try {
-      const { data, error } = await supabase.auth.verifyOtp({ phone: toE164(phone), token: otp, type: "sms" })
+      const { data, error } = await supabase.auth.verifyOtp({ phone: toE164(phone), token, type: "sms" })
       if (error) throw error
       if (!data.user) throw new Error("No user returned")
 
-      // Check if this user has completed registration
       const { data: existingProfile } = await supabase
         .from("users")
         .select("id")
@@ -79,7 +78,6 @@ export function LoginPage() {
         .maybeSingle()
 
       if (!existingProfile) {
-        // New user — send to signup to complete registration
         navigate("/signup", { replace: true })
       } else {
         await Promise.all([refreshProfile(), refreshBusiness()])
@@ -90,6 +88,11 @@ export function LoginPage() {
     } finally {
       setBusy(false)
     }
+  }
+
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await handleVerifyOtp(otp)
   }
 
   const handleResend = async () => {
@@ -142,22 +145,30 @@ export function LoginPage() {
 
       {step === "otp" && (
         <form onSubmit={handleVerify} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="otp">Verification code</Label>
-            <Input
-              id="otp"
-              type="text"
-              inputMode="numeric"
-              placeholder="123456"
+          <div className="space-y-3">
+            <Label>Verification code</Label>
+            <InputOTP
               maxLength={6}
-              autoComplete="one-time-code"
               value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-            />
+              onChange={(val) => {
+                setOtp(val)
+                if (val.length === 6) handleVerifyOtp(val)
+              }}
+              disabled={busy}
+            >
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+            <p className="text-xs text-neutral-400">
+              {busy ? "Verifying…" : "Enter the 6-digit code sent to your phone"}
+            </p>
           </div>
-          <Button type="submit" className="w-full" disabled={busy || otp.length < 6}>
-            {busy ? "Verifying…" : "Sign in"}
-          </Button>
           <div className="flex items-center justify-between text-sm">
             <Button type="button" variant="link" className="h-auto p-0 text-neutral-400 hover:text-neutral-600" onClick={() => { setStep("phone"); setOtp("") }}>
               ← Change number
