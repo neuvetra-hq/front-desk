@@ -32,7 +32,11 @@ interface CalendarConnection {
   isActive: boolean
 }
 
-export function SettingsTab() {
+interface SettingsTabProps {
+  onCalendarChange?: (connected: boolean) => void
+}
+
+export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
   const { business, session } = useAuth()
   const [hours, setHours] = useState<BusinessHours>(DEFAULT_HOURS)
   const [saving, setSaving] = useState(false)
@@ -61,6 +65,7 @@ export function SettingsTab() {
     if (status === "connected") {
       toast.success("Google Calendar connected!")
       setSearchParams({}, { replace: true })
+      onCalendarChange?.(true)
       // Re-fetch connection
       if (business?.id) {
         fetch(`${API_URL}/calendar/connection/${business.id}`)
@@ -104,6 +109,7 @@ export function SettingsTab() {
       const data = await res.json() as { disconnected?: boolean; error?: string }
       if (data.error) throw new Error(data.error)
       setCalendarConn(null)
+      onCalendarChange?.(false)
       toast.success("Calendar disconnected")
     } catch (err) {
       toast.error((err as Error).message ?? "Failed to disconnect calendar")

@@ -191,6 +191,30 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
       if (!business) return { error: "Business not found" }
 
       // ----------------------------------------------------------------
+      // Calendar connection guard — checked once, before any scheduling function.
+      //
+      // If the business has no active calendar, every scheduling function would
+      // silently fail with a generic error. Instead we return a specific, honest
+      // message the AI can deliver to the caller, with a real next step.
+      // ----------------------------------------------------------------
+      const CALENDAR_FUNCTIONS = new Set([
+        "check_availability",
+        "book_appointment",
+        "find_appointment",
+        "cancel_appointment",
+        "reschedule_appointment",
+      ])
+
+      if (CALENDAR_FUNCTIONS.has(funcName)) {
+        const connection = await CalendarService.getActiveConnection(business.id)
+        if (!connection) {
+          return {
+            result: "I'm not able to check availability or book appointments right now — our scheduling system isn't connected. Please contact us directly to schedule.",
+          }
+        }
+      }
+
+      // ----------------------------------------------------------------
       // check_availability
       //
       // Two modes:

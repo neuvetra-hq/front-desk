@@ -1,7 +1,9 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
-import { PhoneCall, Settings, BookOpen, BarChart2, LogOut, Phone } from "lucide-react"
+import { PhoneCall, Settings, BookOpen, BarChart2, LogOut, Phone, AlertTriangle } from "lucide-react"
+
+const API_URL = import.meta.env.VITE_API_URL as string
 import { CallLogsTab } from "@/components/dashboard/CallLogsTab"
 import { UsageTab } from "@/components/dashboard/UsageTab"
 import { KnowledgeBaseTab } from "@/components/dashboard/KnowledgeBaseTab"
@@ -46,8 +48,21 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
 ]
 
 export function DashboardPage() {
-  const { profile, business, signOut } = useAuth()
+  const { profile, business, session, signOut } = useAuth()
   const [tab, setTab] = useState<Tab>("overview")
+  const [calendarConnected, setCalendarConnected] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    if (!business?.id) return
+    fetch(`${API_URL}/calendar/connection/${business.id}`, {
+      headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+    })
+      .then((r) => r.json())
+      .then((data: { connection?: { isActive: boolean } }) => {
+        setCalendarConnected(data.connection?.isActive === true)
+      })
+      .catch(() => setCalendarConnected(false))
+  }, [business?.id])
 
   const planKey = getPlanKey(business?.stripePlanId ?? null)
   const plan = planKey ? PLAN_MAP[planKey] : null
@@ -155,13 +170,31 @@ export function DashboardPage() {
         </div>
       </div>
 
+      {/* No-calendar warning banner */}
+      {calendarConnected === false && (
+        <div className="border-b border-amber-200 bg-amber-50">
+          <div className="mx-auto max-w-6xl px-6 py-3 flex items-center gap-3">
+            <AlertTriangle size={16} className="shrink-0 text-amber-600" />
+            <p className="text-sm text-amber-800 flex-1">
+              <strong>No calendar connected</strong> — your AI can answer calls but cannot check availability or book appointments.
+            </p>
+            <button
+              onClick={() => setTab("settings")}
+              className="shrink-0 text-sm font-medium text-amber-700 underline underline-offset-2 hover:text-amber-900"
+            >
+              Connect calendar →
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Tab content */}
       <main className="mx-auto w-full max-w-6xl px-6 py-8 flex-1">
         {tab === "overview" && <OverviewTab />}
         {tab === "calls" && <CallLogsTab />}
         {tab === "usage" && <UsageTab />}
         {tab === "knowledge" && <KnowledgeBaseTab />}
-        {tab === "settings" && <SettingsTab />}
+        {tab === "settings" && <SettingsTab onCalendarChange={setCalendarConnected} />}
       </main>
     </div>
   )
