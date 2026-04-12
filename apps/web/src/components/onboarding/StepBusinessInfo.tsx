@@ -90,7 +90,7 @@ export function StepBusinessInfo({ defaultValues, onNext }: Props) {
           name="businessType"
           render={({ field }) => (
             <Select value={field.value ?? ""} onValueChange={field.onChange}>
-              <SelectTrigger size="lg" className="w-full rounded-xl px-4 text-sm">
+              <SelectTrigger className="w-full rounded-xl px-4 text-sm h-11">
                 <SelectValue placeholder="Select a type…" />
               </SelectTrigger>
               <SelectContent>
