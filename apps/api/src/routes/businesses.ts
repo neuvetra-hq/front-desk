@@ -15,6 +15,16 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
 
     const slug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`
 
+    const defaultBusinessHours = {
+      Monday:    { open: true,  from: "09:00", to: "17:00" },
+      Tuesday:   { open: true,  from: "09:00", to: "17:00" },
+      Wednesday: { open: true,  from: "09:00", to: "17:00" },
+      Thursday:  { open: true,  from: "09:00", to: "17:00" },
+      Friday:    { open: true,  from: "09:00", to: "17:00" },
+      Saturday:  { open: false, from: "09:00", to: "14:00" },
+      Sunday:    { open: false, from: "09:00", to: "14:00" },
+    }
+
     const [business] = await db
       .insert(businesses)
       .values({
@@ -22,6 +32,7 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
         slug,
         businessType: businessType as typeof businesses.$inferInsert["businessType"],
         status: "inactive",
+        aiConfig: { businessHours: defaultBusinessHours },
       })
       .returning()
 
