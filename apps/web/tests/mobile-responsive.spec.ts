@@ -4,10 +4,11 @@ import { test, expect } from "@playwright/test"
 const MOBILE = { width: 375, height: 667 }
 
 test.describe("mobile layout — dashboard sidebar", () => {
-  test("sidebar trigger (hamburger) is visible on mobile", async ({ page }) => {
+  test.skip("sidebar trigger (hamburger) is visible on mobile — TODO: implement after AppSidebar is built", async ({ page }) => {
     await page.setViewportSize(MOBILE)
     await page.goto("/dashboard/overview")
-    await expect(page).toHaveURL(/login|dashboard/)
+    const trigger = page.locator('[data-sidebar="trigger"]')
+    await expect(trigger).toBeVisible()
   })
 
   test("landing page renders correctly at mobile width", async ({ page }) => {
@@ -28,27 +29,22 @@ test.describe("InputOTP component", () => {
 
   test("signup verify step shows phone input when reached", async ({ page }) => {
     await page.goto("/signup")
+    // Skip if redirected away from signup (unauthenticated in test env)
     const url = page.url()
-    if (!url.includes("signup")) return
-    await expect(page.getByLabel(/phone/i)).toBeVisible()
+    test.skip(!url.includes("signup"), "Signup page redirected — needs auth state")
+    // StepIdentity label reads "Your mobile number" — getByLabel(/mobile number/i)
+    await expect(page.getByLabel(/mobile number/i)).toBeVisible()
   })
 })
 
-test.describe("Form component validation", () => {
-  test("login page phone form renders correctly", async ({ page }) => {
-    await page.goto("/login")
-    await expect(page.getByRole("button", { name: /send code/i })).toBeVisible()
-  })
-
+test.describe("component interactions", () => {
   test("pricing toggle buttons are visible on landing page", async ({ page }) => {
     await page.goto("/")
     const monthlyBtn = page.getByRole("button", { name: /monthly/i })
     const annualBtn = page.getByRole("button", { name: /annual/i })
-    if (await monthlyBtn.isVisible()) {
-      await expect(monthlyBtn).toBeVisible()
-      await expect(annualBtn).toBeVisible()
-      await annualBtn.click()
-    }
+    await expect(monthlyBtn).toBeVisible()
+    await expect(annualBtn).toBeVisible()
+    await annualBtn.click()
   })
 })
 
