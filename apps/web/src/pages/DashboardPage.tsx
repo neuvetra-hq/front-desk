@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useParams, useNavigate, Navigate } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { PhoneCall, Settings, BookOpen, BarChart2, LogOut, Phone, AlertTriangle, MessageSquare } from "lucide-react"
@@ -50,8 +51,16 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
 
 export function DashboardPage() {
   const { profile, business, session, signOut } = useAuth()
-  const [tab, setTab] = useState<Tab>("overview")
+  const { tab: rawTab } = useParams<{ tab: string }>()
+  const navigate = useNavigate()
+  const validTabs = TABS.map((t) => t.id)
+  const tab: Tab = (validTabs.includes(rawTab as Tab) ? rawTab : "overview") as Tab
   const [calendarConnected, setCalendarConnected] = useState<boolean | null>(null)
+
+  // Redirect unknown tab params to overview
+  if (rawTab && !validTabs.includes(rawTab as Tab)) {
+    return <Navigate to="/dashboard/overview" replace />
+  }
 
   useEffect(() => {
     if (!business?.id) return
@@ -156,7 +165,7 @@ export function DashboardPage() {
             {TABS.map((t) => (
               <button
                 key={t.id}
-                onClick={() => setTab(t.id)}
+                onClick={() => navigate(`/dashboard/${t.id}`)}
                 className={`flex items-center gap-1.5 px-4 py-3.5 text-sm font-medium border-b-2 transition-colors ${
                   tab === t.id
                     ? "border-indigo-600 text-indigo-600"
@@ -180,7 +189,7 @@ export function DashboardPage() {
               <strong>No calendar connected</strong> — your AI can answer calls but cannot check availability or book appointments.
             </p>
             <button
-              onClick={() => setTab("settings")}
+              onClick={() => navigate("/dashboard/settings")}
               className="shrink-0 text-sm font-medium text-amber-700 underline underline-offset-2 hover:text-amber-900"
             >
               Connect calendar →

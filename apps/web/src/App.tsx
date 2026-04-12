@@ -28,8 +28,9 @@ export function App() {
       {/* Calendar OAuth return — protected */}
       <Route path="/calendar/callback" element={<ProtectedRoute><CalendarCallbackPage /></ProtectedRoute>} />
 
-      {/* Protected */}
-      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+      {/* Protected — /dashboard redirects to /dashboard/overview */}
+      <Route path="/dashboard" element={<ProtectedRoute><Navigate to="/dashboard/overview" replace /></ProtectedRoute>} />
+      <Route path="/dashboard/:tab" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
     </Routes>
   )
 }
