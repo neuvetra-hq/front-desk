@@ -204,8 +204,10 @@ export const calendarRoutes = new Elysia({ prefix: "/calendar" })
     },
   )
 
-  // POST /calendar/:businessId/test-event — creates a 30-min test event today at 17:00 (authenticated)
-  // Guards: checks freebusy first; returns 409 if the slot is already occupied.
+  // POST /calendar/:businessId/test-event — creates a 30-min test event within business hours
+  // Finds the next open business day (starting today) and books at the first available slot
+  // at or after 17:00. Falls back to 10:00 if 17:00 is outside the day's hours.
+  // Guards: enforces business hours, then checks freebusy.
   .post(
     "/:businessId/test-event",
     async ({ params, headers, set }) => {
@@ -213,8 +215,20 @@ export const calendarRoutes = new Elysia({ prefix: "/calendar" })
       if (!userId) { set.status = 401; return { error: "Unauthorized" } }
       if (!(await assertMember(params.businessId, userId))) { set.status = 403; return { error: "Forbidden" } }
 
-      const { getActiveConnection } = await import("../services/calendar/index")
+      const {
+        getActiveConnection,
+        assertWithinBusinessHours,
+      } = await import("../services/calendar/index")
       const { GoogleCalendarAdapter } = await import("../services/calendar/google")
+
+      // Load business to read hours
+      const [business] = await db
+        .select({ aiConfig: businesses.aiConfig })
+        .from(businesses)
+        .where(eq(businesses.id, params.businessId))
+        .limit(1)
+
+      if (!business) { set.status = 404; return { error: "Business not found" } }
 
       const connection = await getActiveConnection(params.businessId)
       if (!connection) { set.status = 404; return { error: "No calendar connected" } }
@@ -223,10 +237,51 @@ export const calendarRoutes = new Elysia({ prefix: "/calendar" })
         set.status = 400; return { error: "Unsupported provider for test event" }
       }
 
-      // Build today 17:00–17:30 in the server's local timezone
-      const now   = new Date()
-      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 0, 0)
-      const end   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 30, 0)
+      const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+      const hoursMap = (business.aiConfig as { businessHours?: Record<string, { open: boolean; from: string; to: string }> } | null)?.businessHours
+
+      // Find the next open business day (today or up to 7 days ahead)
+      let start: Date | null = null
+      for (let offset = 0; offset < 7; offset++) {
+        const candidate = new Date()
+        candidate.setDate(candidate.getDate() + offset)
+
+        const dayName = DAY_NAMES[candidate.getDay()]
+        const dayHours = hoursMap?.[dayName]
+
+        // If no hours configured, any day is fine
+        if (hoursMap && (!dayHours?.open)) continue
+
+        // Determine a target hour within the day's open window
+        let targetHour = 17
+        if (dayHours?.open) {
+          const [closeH] = dayHours.to.split(":").map(Number)
+          const [openH]  = dayHours.from.split(":").map(Number)
+          // Use 17:00 if it fits (end 17:30 <= close), otherwise use the midpoint
+          if (17 + 0.5 > closeH || 17 < openH) {
+            targetHour = Math.floor((openH + closeH) / 2)
+          }
+        }
+
+        const slot = new Date(candidate.getFullYear(), candidate.getMonth(), candidate.getDate(), targetHour, 0, 0)
+        start = slot
+        break
+      }
+
+      if (!start) {
+        set.status = 400
+        return { error: "Could not find an open business day in the next 7 days. Check your business hours in Settings." }
+      }
+
+      const end = new Date(start.getTime() + 30 * 60 * 1000)
+
+      // Business hours check (uses the exported service function)
+      try {
+        await assertWithinBusinessHours(params.businessId, start.toISOString(), 30)
+      } catch (err) {
+        set.status = 400
+        return { error: (err as Error).message }
+      }
 
       // Freebusy check — only create if the slot is actually free
       const freeSlots = await GoogleCalendarAdapter.checkAvailability({
@@ -238,7 +293,7 @@ export const calendarRoutes = new Elysia({ prefix: "/calendar" })
 
       if (freeSlots.length === 0) {
         set.status = 409
-        return { error: "The 5:00 PM slot is already occupied. Delete the existing event first." }
+        return { error: `The ${start.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })} slot on ${start.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })} is already occupied. Delete the existing test event first.` }
       }
 
       // Create directly so we can set frontdesk_type: "test" (bookAppointment sets "booking")

@@ -40,7 +40,7 @@ const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frid
  * This is enforced for every booking and reschedule — not just in the webhook —
  * so no code path can bypass it.
  */
-async function assertWithinBusinessHours(
+export async function assertWithinBusinessHours(
   businessId: string,
   startTime: string,
   durationMinutes: number,
