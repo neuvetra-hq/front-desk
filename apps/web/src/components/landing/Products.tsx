@@ -1,5 +1,6 @@
 import { Container } from "@/components/layout/Container"
 import { PRODUCTS } from "@/constants/landing"
+import { Button } from "@/components/ui/button"
 
 const colorMap: Record<string, { bg: string; text: string; badge: string }> = {
   indigo: { bg: "bg-indigo-50", text: "text-indigo-700", badge: "bg-indigo-100 text-indigo-700" },
@@ -60,12 +61,13 @@ export function Products() {
                       {product.cta} →
                     </a>
                   ) : (
-                    <button
+                    <Button
                       disabled
-                      className="inline-flex w-full items-center justify-center rounded-xl border border-neutral-200 px-4 py-2.5 text-sm font-semibold text-neutral-400 cursor-not-allowed"
+                      variant="outline"
+                      className="w-full rounded-xl border-neutral-200 text-neutral-400"
                     >
                       {product.cta}
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>

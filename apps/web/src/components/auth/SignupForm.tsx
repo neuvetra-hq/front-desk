@@ -128,13 +128,15 @@ export function SignupForm() {
             className="pr-10"
             {...register("password")}
           />
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => setShowPassword((v) => !v)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-neutral-400 hover:text-neutral-600"
           >
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-          </button>
+          </Button>
         </div>
         {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
       </div>

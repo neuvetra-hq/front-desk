@@ -91,13 +91,14 @@ export function StepCalendar({ businessId, accessToken, onSkip }: Props) {
           )}
         </Button>
 
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={onSkip}
-          className="w-full text-sm text-neutral-400 hover:text-neutral-600 transition-colors py-1"
+          className="w-full text-sm text-neutral-400 hover:text-neutral-600"
         >
           Skip for now — I'll connect in Settings
-        </button>
+        </Button>
       </div>
     </div>
   )

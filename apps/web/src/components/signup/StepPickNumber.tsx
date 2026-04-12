@@ -50,26 +50,29 @@ export function StepPickNumber({ areaCode, onNext, onBack }: Props) {
       ) : numbers.length === 0 ? (
         <div className="rounded-xl border border-neutral-200 bg-neutral-50 py-6 text-center text-sm text-neutral-500">
           No numbers found for area code {areaCode}.
-          <button type="button" onClick={onBack} className="ml-1 text-indigo-600 hover:underline">
+          <Button type="button" variant="link" onClick={onBack} className="ml-1 h-auto p-0">
             Try a different area code
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="space-y-2">
           {numbers.map((n) => (
-            <button
+            <Button
               key={n.phoneNumber}
               type="button"
+              variant="outline"
               onClick={() => setSelected(n.phoneNumber)}
-              className={`w-full rounded-xl border px-4 py-3.5 text-left transition-all ${
+              className={`h-auto w-full justify-start rounded-xl border px-4 py-3.5 text-left transition-all ${
                 selected === n.phoneNumber
                   ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200"
                   : "border-neutral-200 bg-white hover:border-neutral-300"
               }`}
             >
-              <p className="font-mono text-sm font-semibold text-neutral-900">{n.friendlyName}</p>
-              <p className="text-xs text-neutral-500 mt-0.5">{n.locality}, {n.region}</p>
-            </button>
+              <div>
+                <p className="font-mono text-sm font-semibold text-neutral-900">{n.friendlyName}</p>
+                <p className="text-xs text-neutral-500 mt-0.5">{n.locality}, {n.region}</p>
+              </div>
+            </Button>
           ))}
         </div>
       )}
@@ -82,13 +85,14 @@ export function StepPickNumber({ areaCode, onNext, onBack }: Props) {
         Continue →
       </Button>
 
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={onBack}
         className="w-full text-sm text-neutral-400 hover:text-neutral-600"
       >
         ← Back
-      </button>
+      </Button>
     </div>
   )
 }

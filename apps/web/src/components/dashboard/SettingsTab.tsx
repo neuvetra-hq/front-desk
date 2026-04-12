@@ -2,6 +2,8 @@ import { useState, useEffect } from "react"
 import { useSearchParams } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 
 const API_URL = import.meta.env.VITE_API_URL as string
@@ -160,19 +162,10 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
               className={`flex items-center gap-4 px-5 py-3.5 ${i < DAYS.length - 1 ? "border-b border-neutral-100" : ""}`}
             >
               {/* Toggle */}
-              <button
-                type="button"
-                onClick={() => updateDay(day, { open: !hours[day].open })}
-                className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
-                  hours[day].open ? "bg-indigo-600" : "bg-neutral-200"
-                }`}
-              >
-                <span
-                  className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${
-                    hours[day].open ? "translate-x-4" : "translate-x-1"
-                  }`}
-                />
-              </button>
+              <Switch
+                checked={hours[day].open}
+                onCheckedChange={(open) => updateDay(day, { open })}
+              />
 
               {/* Day name */}
               <span className={`w-24 text-sm font-medium ${hours[day].open ? "text-neutral-900" : "text-neutral-400"}`}>
@@ -181,18 +174,18 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
 
               {hours[day].open ? (
                 <div className="flex items-center gap-2 text-sm">
-                  <input
+                  <Input
                     type="time"
                     value={hours[day].from}
                     onChange={(e) => updateDay(day, { from: e.target.value })}
-                    className="rounded-lg border border-neutral-200 px-2.5 py-1.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-auto px-2.5 py-1.5 text-sm"
                   />
                   <span className="text-neutral-400">to</span>
-                  <input
+                  <Input
                     type="time"
                     value={hours[day].to}
                     onChange={(e) => updateDay(day, { to: e.target.value })}
-                    className="rounded-lg border border-neutral-200 px-2.5 py-1.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-auto px-2.5 py-1.5 text-sm"
                   />
                 </div>
               ) : (

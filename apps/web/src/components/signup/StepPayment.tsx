@@ -133,29 +133,32 @@ function PaymentForm({ payload, stripeCustomerId, onSuccess, onBack }: FormProps
         <p className="text-sm font-medium text-neutral-700 mb-2">Choose your plan</p>
         <div className="space-y-2">
           {PLANS.map((plan) => (
-            <button
+            <Button
               key={plan.id}
               type="button"
+              variant="outline"
               onClick={() => setSelectedPlan(plan.id)}
-              className={`w-full rounded-xl border px-4 py-3 text-left transition-all ${
+              className={`h-auto w-full justify-start rounded-xl border px-4 py-3 text-left transition-all ${
                 selectedPlan === plan.id
                   ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200"
                   : "border-neutral-200 bg-white hover:border-neutral-300"
               }`}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-neutral-900">{plan.name}</span>
-                  {plan.popular && (
-                    <span className="rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-semibold text-white">
-                      Most popular
-                    </span>
-                  )}
+              <div className="w-full">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-neutral-900">{plan.name}</span>
+                    {plan.popular && (
+                      <span className="rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-semibold text-white">
+                        Most popular
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-sm font-bold text-neutral-900">{plan.price}<span className="text-xs font-normal text-neutral-500">/mo</span></span>
                 </div>
-                <span className="text-sm font-bold text-neutral-900">{plan.price}<span className="text-xs font-normal text-neutral-500">/mo</span></span>
+                <p className="text-xs text-neutral-500 mt-0.5">{plan.minutes} · {plan.overage}</p>
               </div>
-              <p className="text-xs text-neutral-500 mt-0.5">{plan.minutes} · {plan.overage}</p>
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -186,14 +189,15 @@ function PaymentForm({ payload, stripeCustomerId, onSuccess, onBack }: FormProps
         ) : "Activate my Front Desk"}
       </Button>
 
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={onBack}
         disabled={busy}
-        className="w-full text-sm text-neutral-400 hover:text-neutral-600 disabled:pointer-events-none"
+        className="w-full text-sm text-neutral-400 hover:text-neutral-600"
       >
         ← Back
-      </button>
+      </Button>
     </form>
   )
 }

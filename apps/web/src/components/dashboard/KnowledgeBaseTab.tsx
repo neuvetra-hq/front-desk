@@ -144,13 +144,16 @@ export function KnowledgeBaseTab() {
                 <p className="font-medium text-neutral-900 text-sm">{item.question}</p>
                 <p className="text-sm text-neutral-500">{item.answer}</p>
               </div>
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => handleDelete(item.id)}
-                className="shrink-0 text-neutral-300 hover:text-red-500 transition-colors mt-0.5"
+                className="shrink-0 h-7 w-7 text-neutral-300 hover:text-red-500 mt-0.5"
                 aria-label="Delete"
               >
                 <Trash2 size={16} />
-              </button>
+              </Button>
             </div>
           ))}
         </div>

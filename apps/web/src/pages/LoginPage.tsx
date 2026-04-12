@@ -159,17 +159,18 @@ export function LoginPage() {
             {busy ? "Verifying…" : "Sign in"}
           </Button>
           <div className="flex items-center justify-between text-sm">
-            <button type="button" onClick={() => { setStep("phone"); setOtp("") }} className="text-neutral-400 hover:text-neutral-600">
+            <Button type="button" variant="link" className="h-auto p-0 text-neutral-400 hover:text-neutral-600" onClick={() => { setStep("phone"); setOtp("") }}>
               ← Change number
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="link"
               onClick={handleResend}
               disabled={cooldown > 0 || busy}
-              className="text-neutral-500 hover:text-neutral-900 disabled:opacity-40"
+              className="h-auto p-0 text-neutral-500 hover:text-neutral-900"
             >
               {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend"}
-            </button>
+            </Button>
           </div>
         </form>
       )}
