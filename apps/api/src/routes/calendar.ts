@@ -240,42 +240,28 @@ export const calendarRoutes = new Elysia({ prefix: "/calendar" })
       const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
       const hoursMap = (business.aiConfig as { businessHours?: Record<string, { open: boolean; from: string; to: string }> } | null)?.businessHours
 
-      // Find the next open business day (today or up to 7 days ahead)
-      let start: Date | null = null
-      for (let offset = 0; offset < 7; offset++) {
-        const candidate = new Date()
-        candidate.setDate(candidate.getDate() + offset)
+      // Always use TODAY at 10:00 AM — predictable, no silent day-hopping.
+      // If today is closed or 10 AM is outside hours, return a clear error
+      // so the user knows exactly why and what to do next.
+      const now       = new Date()
+      const todayName = DAY_NAMES[now.getDay()]
+      const dayHours  = hoursMap?.[todayName]
 
-        const dayName = DAY_NAMES[candidate.getDay()]
-        const dayHours = hoursMap?.[dayName]
-
-        // If no hours configured, any day is fine
-        if (hoursMap && (!dayHours?.open)) continue
-
-        // Determine a target hour within the day's open window
-        let targetHour = 17
-        if (dayHours?.open) {
-          const [closeH] = dayHours.to.split(":").map(Number)
-          const [openH]  = dayHours.from.split(":").map(Number)
-          // Use 17:00 if it fits (end 17:30 <= close), otherwise use the midpoint
-          if (17 + 0.5 > closeH || 17 < openH) {
-            targetHour = Math.floor((openH + closeH) / 2)
-          }
-        }
-
-        const slot = new Date(candidate.getFullYear(), candidate.getMonth(), candidate.getDate(), targetHour, 0, 0)
-        start = slot
-        break
-      }
-
-      if (!start) {
+      if (hoursMap && !dayHours?.open) {
+        const openDays = Object.entries(hoursMap)
+          .filter(([, h]) => h.open)
+          .map(([day]) => day)
+          .join(", ")
         set.status = 400
-        return { error: "Could not find an open business day in the next 7 days. Check your business hours in Settings." }
+        return {
+          error: `Today is ${todayName} which is outside business hours. Open days: ${openDays || "none configured"}. Please test on an open day.`,
+        }
       }
 
-      const end = new Date(start.getTime() + 30 * 60 * 1000)
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 0, 0)
+      const end   = new Date(start.getTime() + 30 * 60 * 1000)
 
-      // Business hours check (uses the exported service function)
+      // Business hours check — catches edge cases (e.g., open=true but hours 11:00–17:00)
       try {
         await assertWithinBusinessHours(params.businessId, start.toISOString(), 30)
       } catch (err) {

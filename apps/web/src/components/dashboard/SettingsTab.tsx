@@ -108,7 +108,16 @@ export function SettingsTab() {
       const data = await res.json() as { event?: { eventId: string; summary: string; startTime: string }; error?: string }
       if (!res.ok) throw new Error(data.error ?? "Failed to create test event")
       if (data.event?.eventId) setTestEventId(data.event.eventId)
-      toast.success(`Test event created: "${data.event?.summary}"`)
+      const formattedTime = data.event?.startTime
+        ? new Date(data.event.startTime).toLocaleString("en-US", {
+            weekday: "long",
+            month:   "long",
+            day:     "numeric",
+            hour:    "numeric",
+            minute:  "2-digit",
+          })
+        : ""
+      toast.success(`Test event created for ${formattedTime}`)
     } catch (err) {
       toast.error((err as Error).message ?? "Failed to create test event")
     } finally {

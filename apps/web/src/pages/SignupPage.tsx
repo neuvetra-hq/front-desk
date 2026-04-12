@@ -8,6 +8,7 @@ import { StepVerify } from "@/components/signup/StepVerify"
 import { StepBusiness, type BusinessData } from "@/components/signup/StepBusiness"
 import { StepPickNumber } from "@/components/signup/StepPickNumber"
 import { StepPayment } from "@/components/signup/StepPayment"
+import { StepCalendar } from "@/components/signup/StepCalendar"
 import { toast } from "sonner"
 
 function toE164(raw: string): string {
@@ -23,7 +24,7 @@ function extractAreaCode(phone: string): string {
   return local.slice(0, 3)
 }
 
-const STEPS = ["Your info", "Verify", "Your business", "Pick a number", "Payment"]
+const STEPS = ["Your info", "Verify", "Your business", "Pick a number", "Payment", "Calendar"]
 
 export function SignupPage() {
   const { session, profile, business, refreshProfile, refreshBusiness } = useAuth()
@@ -88,8 +89,12 @@ export function SignupPage() {
     setStep(4)
   }
 
-  const handleSuccess = async () => {
+  const handlePaymentSuccess = async () => {
     await refreshBusiness()
+    setStep(5)
+  }
+
+  const handleSuccess = () => {
     navigate("/dashboard", { replace: true })
   }
 
@@ -99,6 +104,7 @@ export function SignupPage() {
     "About your business",
     "Choose your AI number",
     "Activate your Front Desk",
+    "One last step",
   ]
 
   const descriptions = [
@@ -107,6 +113,7 @@ export function SignupPage() {
     "Almost there. Tell us about your business.",
     "Pick a local number for your AI receptionist.",
     "Choose a plan and enter your payment details.",
+    "Connect your calendar so your AI can book appointments.",
   ]
 
   return (
@@ -152,8 +159,16 @@ export function SignupPage() {
           businessName={businessData.businessName}
           businessType={businessData.businessType}
           phoneNumber={selectedNumber}
-          onSuccess={handleSuccess}
+          onSuccess={handlePaymentSuccess}
           onBack={() => setStep(3)}
+        />
+      )}
+
+      {step === 5 && business?.id && session && (
+        <StepCalendar
+          businessId={business.id}
+          accessToken={session.access_token}
+          onSkip={handleSuccess}
         />
       )}
 
