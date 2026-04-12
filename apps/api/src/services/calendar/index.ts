@@ -7,7 +7,7 @@
 // Ownership of appointments is verified here before any mutation.
 // ---------------------------------------------------------------------------
 
-import { db, calendarConnections } from "@frontdesk/database"
+import { db, calendarConnections, businesses } from "@frontdesk/database"
 import { eq, and } from "drizzle-orm"
 import { GoogleCalendarAdapter } from "./google"
 import { OutlookCalendarAdapter } from "./outlook"
@@ -23,6 +23,62 @@ import type {
 } from "./types"
 
 export type { CalendarProvider, CalendarConnection, TimeSlot, BookingResult, AppointmentRecord }
+
+// ---------------------------------------------------------------------------
+// Business hours validation
+// ---------------------------------------------------------------------------
+
+interface DayHours { open: boolean; from: string; to: string }
+type BusinessHoursMap = Record<string, DayHours>
+
+const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+/**
+ * Throws a descriptive error if startTime + durationMinutes falls outside
+ * the business's configured hours. If no hours are configured, passes through.
+ *
+ * This is enforced for every booking and reschedule — not just in the webhook —
+ * so no code path can bypass it.
+ */
+async function assertWithinBusinessHours(
+  businessId: string,
+  startTime: string,
+  durationMinutes: number,
+): Promise<void> {
+  const [business] = await db
+    .select({ aiConfig: businesses.aiConfig })
+    .from(businesses)
+    .where(eq(businesses.id, businessId))
+    .limit(1)
+
+  if (!business) throw new Error("Business not found")
+
+  const hoursMap = (business.aiConfig as { businessHours?: BusinessHoursMap } | null)
+    ?.businessHours
+
+  // No hours configured → no restriction
+  if (!hoursMap) return
+
+  const start   = new Date(startTime)
+  const end     = new Date(start.getTime() + durationMinutes * 60 * 1000)
+  const dayName = DAY_NAMES[start.getDay()]
+  const day     = hoursMap[dayName]
+
+  if (!day?.open) {
+    throw new Error(`The business is closed on ${dayName}. Please choose a different day.`)
+  }
+
+  const [openH, openM]  = day.from.split(":").map(Number)
+  const [closeH, closeM] = day.to.split(":").map(Number)
+  const dayOpen  = new Date(start.getFullYear(), start.getMonth(), start.getDate(), openH,  openM,  0)
+  const dayClose = new Date(start.getFullYear(), start.getMonth(), start.getDate(), closeH, closeM, 0)
+
+  if (start < dayOpen || end > dayClose) {
+    throw new Error(
+      `The requested time is outside business hours (${day.from}–${day.to} on ${dayName}).`,
+    )
+  }
+}
 
 function getAdapter(provider: CalendarProvider): CalendarAdapter {
   switch (provider) {
@@ -75,6 +131,8 @@ export async function bookAppointment(
   businessId: string,
   params: Omit<BookAppointmentParams, "connection">,
 ): Promise<BookingResult> {
+  await assertWithinBusinessHours(businessId, params.startTime, params.durationMinutes)
+
   const connection = await getActiveConnection(businessId)
   if (!connection) throw new Error("No calendar connected for this business")
 
@@ -144,6 +202,9 @@ export async function rescheduleAppointment(
   const appointments = await adapter.findByCustomerPhone(connection, customerPhone)
   const match = appointments.find((a) => a.eventId === eventId)
   if (!match) throw new Error("No appointment found for this caller with that ID")
+
+  // Business hours check on the new slot
+  await assertWithinBusinessHours(businessId, newStartTime, durationMinutes)
 
   // Availability check on the new slot
   const newEnd = new Date(new Date(newStartTime).getTime() + durationMinutes * 60 * 1000)

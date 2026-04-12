@@ -146,10 +146,51 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
 
           if (requestedTime) {
             // --- Smart mode ---
+            // Order of checks matters — give the AI a specific reason, not just "unavailable".
+            //   1. Is the day open?
+            //   2. Is the time within open hours?
+            //   3. Is the slot free (freebusy)?
+
             const requested = new Date(requestedTime)
             const reqEnd    = new Date(requested.getTime() + duration * 60 * 1000)
+            const aiConfig  = business.aiConfig as { businessHours?: BusinessHours } | null
+            const dayName   = DAY_NAMES[requested.getDay()]
+            const dayHours  = aiConfig?.businessHours?.[dayName]
 
-            // Check if the exact requested slot is free
+            // 1. Day closed entirely
+            if (dayHours && !dayHours.open) {
+              return {
+                result: `The business is closed on ${dayName}. Please ask the caller to choose a different day.`,
+              }
+            }
+
+            // 2. Day is open — check if the requested time falls within hours
+            if (dayHours?.open) {
+              const { start: dayOpen, end: dayClose } = buildDayWindow(requested, dayHours)
+
+              if (requested < dayOpen || reqEnd > dayClose) {
+                // Outside hours — scan the open window for alternatives
+                const allSlots = await CalendarService.checkAvailability(business.id, {
+                  from:            dayOpen.toISOString(),
+                  to:              dayClose.toISOString(),
+                  durationMinutes: duration,
+                })
+
+                if (allSlots.length === 0) {
+                  return {
+                    result: `That time is outside business hours (${dayHours.from}–${dayHours.to} on ${dayName}) and there are no openings left that day. Please ask the caller to try another day.`,
+                  }
+                }
+
+                const alternatives = closestSlots(allSlots, requested)
+                const formatted = alternatives.map((s) => formatForSpeech(s.start)).join(", ")
+                return {
+                  result: `That time is outside business hours (${dayHours.from}–${dayHours.to} on ${dayName}). Available times that day are: ${formatted}. Which works best for the caller?`,
+                }
+              }
+            }
+
+            // 3. Within hours (or no hours configured) — check freebusy
             const exactSlots = await CalendarService.checkAvailability(business.id, {
               from:            requested.toISOString(),
               to:              reqEnd.toISOString(),
@@ -160,16 +201,13 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
               return { result: `${formatForSpeech(requested.toISOString())} is available. Shall I book it?` }
             }
 
-            // Slot is busy — find closest alternatives within business hours
-            const aiConfig     = business.aiConfig as { businessHours?: BusinessHours } | null
-            const dayName      = DAY_NAMES[requested.getDay()]
-            const todayHours   = aiConfig?.businessHours?.[dayName]
-
-            if (!todayHours?.open) {
-              return { result: "That time is not available and the business is closed that day. Please ask the caller for a different date." }
+            // Slot is taken — find closest alternatives within business hours
+            const fallbackHours = dayHours?.open ? dayHours : null
+            if (!fallbackHours) {
+              return { result: `${formatForSpeech(requested.toISOString())} is already taken. Please ask the caller for a different time.` }
             }
 
-            const { start: dayStart, end: dayEnd } = buildDayWindow(requested, todayHours)
+            const { start: dayStart, end: dayEnd } = buildDayWindow(requested, fallbackHours)
             const allSlots = await CalendarService.checkAvailability(business.id, {
               from:            dayStart.toISOString(),
               to:              dayEnd.toISOString(),
@@ -177,14 +215,11 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             })
 
             if (allSlots.length === 0) {
-              return { result: `The ${formatForSpeech(requested.toISOString())} slot is taken and there are no other openings that day. Please ask the caller to try another day.` }
+              return { result: `${formatForSpeech(requested.toISOString())} is taken and there are no other openings that day. Please ask the caller to try another day.` }
             }
 
             const alternatives = closestSlots(allSlots, requested)
-            const formatted = alternatives
-              .map((s) => formatForSpeech(s.start))
-              .join(", ")
-
+            const formatted    = alternatives.map((s) => formatForSpeech(s.start)).join(", ")
             return {
               result: `${formatForSpeech(requested.toISOString())} is already taken. The closest available times are: ${formatted}. Which works best for the caller?`,
             }
@@ -232,7 +267,11 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             result: `Appointment confirmed for ${formatForSpeech(booking.startTime)}. A calendar invite has been created.`,
           }
         } catch (err) {
+          const msg = (err as Error).message ?? ""
           console.error("book_appointment error:", err)
+          if (msg.includes("outside business hours") || msg.includes("closed on")) {
+            return { result: msg }
+          }
           return { result: "Unable to book the appointment right now. Please ask the caller to call back and we will get that sorted." }
         }
       }
@@ -334,6 +373,9 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
           console.error("reschedule_appointment error:", err)
           if (msg.includes("No appointment found")) {
             return { result: "I couldn't find that appointment linked to this caller's number. No changes were made." }
+          }
+          if (msg.includes("outside business hours") || msg.includes("closed on")) {
+            return { result: msg }
           }
           if (msg.includes("not available")) {
             return { result: "That new time slot is already taken. Please ask the caller to choose a different time." }
