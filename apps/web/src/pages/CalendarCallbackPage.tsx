@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { useNavigate, useSearchParams } from "react-router"
+import { useNavigate } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
 
 /**
@@ -9,7 +9,6 @@ import { useAuth } from "@/contexts/AuthContext"
  * This page just reads that param and routes the user accordingly.
  */
 export function CalendarCallbackPage() {
-  const [params] = useSearchParams()
   const navigate = useNavigate()
   const { user } = useAuth()
 
@@ -18,8 +17,8 @@ export function CalendarCallbackPage() {
       navigate("/login", { replace: true })
       return
     }
-    // The API already handled token exchange — just redirect to settings tab
-    navigate("/dashboard?tab=settings", { replace: true })
+    // The API already handled token exchange — redirect to Settings tab
+    navigate("/dashboard/settings?calendar=connected", { replace: true })
   }, [user, navigate])
 
   return (
