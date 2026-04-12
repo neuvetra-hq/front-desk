@@ -41,10 +41,6 @@ export function DashboardPage() {
   const tab: Tab = (validTabs.includes(rawTab as Tab) ? rawTab : "overview") as Tab
   const [calendarConnected, setCalendarConnected] = useState<boolean | null>(null)
 
-  if (rawTab && !validTabs.includes(rawTab as Tab)) {
-    return <Navigate to="/dashboard/overview" replace />
-  }
-
   useEffect(() => {
     if (!business?.id) return
     fetch(`${API_URL}/calendar/connection/${business.id}`, {
@@ -55,7 +51,11 @@ export function DashboardPage() {
         setCalendarConnected(data.connection?.isActive === true)
       })
       .catch(() => setCalendarConnected(false))
-  }, [business?.id])
+  }, [business?.id, session?.access_token])
+
+  if (rawTab && !validTabs.includes(rawTab as Tab)) {
+    return <Navigate to="/dashboard/overview" replace />
+  }
 
   return (
     <SidebarProvider>
