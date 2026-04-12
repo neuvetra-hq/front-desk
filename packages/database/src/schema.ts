@@ -4,6 +4,7 @@ import {
   uuid,
   text,
   integer,
+  boolean,
   timestamp,
   jsonb,
   uniqueIndex,
@@ -43,6 +44,13 @@ export const callStatusEnum = pgEnum("call_status", [
   "transferred",
 ])
 
+export const calendarProviderEnum = pgEnum("calendar_provider", [
+  "google",
+  "outlook",
+  "apple",
+  "caldav",
+])
+
 // ---------------------------------------------------------------------------
 // businesses
 // ---------------------------------------------------------------------------
@@ -54,7 +62,6 @@ export const businesses = pgTable("businesses", {
   twilioNumber:    text("twilio_number").unique(),
   twilioNumberSid: text("twilio_number_sid").unique(),
   aiConfig:      jsonb("ai_config"),
-  calcomApiKey:  text("calcom_api_key"),
   status:        businessStatusEnum("status").notNull().default("active"),
   businessType:  businessTypeEnum("business_type"),
   stripeCustomerId:      text("stripe_customer_id").unique(),
@@ -113,6 +120,35 @@ export const knowledgeBase = pgTable("knowledge_base", {
   answer:     text("answer").notNull(),
   createdAt:  timestamp("created_at").notNull().defaultNow(),
 })
+
+// ---------------------------------------------------------------------------
+// calendar_connections  (one row per provider per business)
+// ---------------------------------------------------------------------------
+
+export const calendarConnections = pgTable(
+  "calendar_connections",
+  {
+    id:                uuid("id").primaryKey().defaultRandom(),
+    businessId:        uuid("business_id")
+      .notNull()
+      .references(() => businesses.id, { onDelete: "cascade" }),
+    provider:          calendarProviderEnum("provider").notNull(),
+    // Provider-issued account identifier — used to detect re-auth vs new connect
+    providerAccountId: text("provider_account_id"),
+    // Human-readable display ("Connected as john@gmail.com")
+    providerEmail:     text("provider_email"),
+    accessToken:       text("access_token"),
+    refreshToken:      text("refresh_token"),
+    tokenExpiry:       timestamp("token_expiry"),
+    isActive:          boolean("is_active").notNull().default(true),
+    createdAt:         timestamp("created_at").notNull().defaultNow(),
+    updatedAt:         timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => [
+    // One active connection per provider per business
+    uniqueIndex("uq_calendar_connections").on(t.businessId, t.provider),
+  ],
+)
 
 // ---------------------------------------------------------------------------
 // calls

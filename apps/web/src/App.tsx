@@ -7,6 +7,7 @@ import { DashboardPage } from "@/pages/DashboardPage"
 import { TermsPage } from "@/pages/TermsPage"
 import { PrivacyPage } from "@/pages/PrivacyPage"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
+import { CalendarCallbackPage } from "@/pages/CalendarCallbackPage"
 
 export function App() {
   return (
@@ -23,6 +24,9 @@ export function App() {
 
       {/* Legacy redirect */}
       <Route path="/onboarding" element={<Navigate to="/signup" replace />} />
+
+      {/* Calendar OAuth return — protected */}
+      <Route path="/calendar/callback" element={<ProtectedRoute><CalendarCallbackPage /></ProtectedRoute>} />
 
       {/* Protected */}
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

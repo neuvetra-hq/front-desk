@@ -3,6 +3,7 @@ import { cors } from "@elysiajs/cors"
 import { webhooks } from "./routes/webhooks"
 import { businessesRoutes } from "./routes/businesses"
 import { billingRoutes } from "./routes/billing"
+import { calendarRoutes } from "./routes/calendar"
 import { searchAvailableNumbers } from "./services/twilio"
 
 const app = new Elysia()
@@ -27,6 +28,7 @@ const app = new Elysia()
   .use(webhooks)
   .use(businessesRoutes)
   .use(billingRoutes)
+  .use(calendarRoutes)
   .listen(Bun.env.PORT ?? 3000)
 
 export type App = typeof app

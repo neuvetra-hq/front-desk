@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -26,10 +27,150 @@ const DEFAULT_HOURS: BusinessHours = {
   Sunday:    { open: false, from: "09:00", to: "14:00" },
 }
 
+interface CalendarConnection {
+  providerEmail: string | null
+  isActive: boolean
+}
+
 export function SettingsTab() {
-  const { business } = useAuth()
+  const { business, session } = useAuth()
   const [hours, setHours] = useState<BusinessHours>(DEFAULT_HOURS)
   const [saving, setSaving] = useState(false)
+  const [calendarConn, setCalendarConn] = useState<CalendarConnection | null>(null)
+  const [calendarLoading, setCalendarLoading] = useState(false)
+  const [testEventLoading, setTestEventLoading] = useState(false)
+  const [testEventId, setTestEventId] = useState<string | null>(null)
+  const [modifyEventLoading, setModifyEventLoading] = useState(false)
+  const [deleteEventLoading, setDeleteEventLoading] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // Fetch current calendar connection status on mount
+  useEffect(() => {
+    if (!business?.id) return
+    fetch(`${API_URL}/calendar/connection/${business.id}`, {
+      headers: {
+        Authorization: `Bearer ${session?.access_token ?? ""}`,
+      },
+    })
+      .then((r) => r.json())
+      .then((data: { connection?: CalendarConnection }) => {
+        if (data.connection?.isActive) setCalendarConn(data.connection)
+      })
+      .catch(() => { /* silently ignore — calendar is optional */ })
+  }, [business?.id])
+
+  // Handle OAuth return params (?calendar=connected or ?calendar=error)
+  useEffect(() => {
+    const status = searchParams.get("calendar")
+    if (status === "connected") {
+      toast.success("Google Calendar connected!")
+      setSearchParams({}, { replace: true })
+      // Re-fetch connection
+      if (business?.id) {
+        fetch(`${API_URL}/calendar/connection/${business.id}`)
+          .then((r) => r.json())
+          .then((data: { connection?: CalendarConnection }) => {
+            if (data.connection?.isActive) setCalendarConn(data.connection)
+          })
+          .catch(() => {})
+      }
+    } else if (status === "error") {
+      toast.error("Calendar connection failed. Please try again.")
+      setSearchParams({}, { replace: true })
+    }
+  }, [searchParams])
+
+  const handleConnectCalendar = async () => {
+    if (!business?.id) return
+    setCalendarLoading(true)
+    try {
+      const res = await fetch(`${API_URL}/calendar/auth-url?businessId=${business.id}`, {
+        headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+      })
+      const data = await res.json() as { url?: string; error?: string }
+      if (data.error) throw new Error(data.error)
+      if (data.url) window.location.href = data.url
+    } catch (err) {
+      toast.error((err as Error).message ?? "Failed to start calendar connection")
+    } finally {
+      setCalendarLoading(false)
+    }
+  }
+
+  const handleTestEvent = async () => {
+    if (!business?.id) return
+    setTestEventLoading(true)
+    try {
+      const res = await fetch(`${API_URL}/calendar/${business.id}/test-event`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+      })
+      const data = await res.json() as { event?: { eventId: string; summary: string; startTime: string }; error?: string }
+      if (!res.ok) throw new Error(data.error ?? "Failed to create test event")
+      if (data.event?.eventId) setTestEventId(data.event.eventId)
+      toast.success(`Test event created: "${data.event?.summary}"`)
+    } catch (err) {
+      toast.error((err as Error).message ?? "Failed to create test event")
+    } finally {
+      setTestEventLoading(false)
+    }
+  }
+
+  const handleModifyEvent = async () => {
+    if (!business?.id || !testEventId) return
+    setModifyEventLoading(true)
+    try {
+      const res = await fetch(`${API_URL}/calendar/${business.id}/events/${testEventId}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+      })
+      const data = await res.json() as { event?: { summary: string; startTime: string }; error?: string }
+      if (data.error) throw new Error(data.error)
+      toast.success(`Event updated: "${data.event?.summary}" → 6:00 PM`)
+    } catch (err) {
+      toast.error((err as Error).message ?? "Failed to update event")
+    } finally {
+      setModifyEventLoading(false)
+    }
+  }
+
+  const handleDeleteEvent = async () => {
+    if (!business?.id || !testEventId) return
+    setDeleteEventLoading(true)
+    try {
+      const res = await fetch(`${API_URL}/calendar/${business.id}/events/${testEventId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+      })
+      const data = await res.json() as { deleted?: boolean; error?: string }
+      if (data.error) throw new Error(data.error)
+      setTestEventId(null)
+      toast.success("Test event deleted")
+    } catch (err) {
+      toast.error((err as Error).message ?? "Failed to delete event")
+    } finally {
+      setDeleteEventLoading(false)
+    }
+  }
+
+  const handleDisconnectCalendar = async () => {
+    if (!business?.id) return
+    setCalendarLoading(true)
+    try {
+      const res = await fetch(`${API_URL}/calendar/${business.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+      })
+      const data = await res.json() as { disconnected?: boolean; error?: string }
+      if (data.error) throw new Error(data.error)
+      setCalendarConn(null)
+      toast.success("Calendar disconnected")
+    } catch (err) {
+      toast.error((err as Error).message ?? "Failed to disconnect calendar")
+    } finally {
+      setCalendarLoading(false)
+    }
+  }
 
   const updateDay = (day: Day, patch: Partial<DayHours>) => {
     setHours((prev) => ({ ...prev, [day]: { ...prev[day], ...patch } }))
@@ -118,6 +259,94 @@ export function SettingsTab() {
         <Button onClick={handleSave} disabled={saving}>
           {saving ? "Saving…" : "Save hours"}
         </Button>
+      </section>
+
+      {/* Calendar integration */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-neutral-900">Calendar</h2>
+          <p className="text-sm text-neutral-400 mt-0.5">
+            Connect your calendar so your AI can check availability and book appointments during calls.
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-neutral-200 bg-white p-5">
+          {calendarConn ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  {/* Google Calendar icon */}
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-100">
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                      <rect width="24" height="24" rx="4" fill="#fff"/>
+                      <path d="M17 3h-1V1h-2v2H10V1H8v2H7C5.9 3 5 3.9 5 5v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V9h10v10z" fill="#4285F4"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900">Google Calendar</p>
+                    <p className="text-xs text-neutral-400">Connected as {calendarConn.providerEmail}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleTestEvent}
+                    disabled={testEventLoading || calendarLoading}
+                    className="shrink-0 text-sm"
+                  >
+                    {testEventLoading ? "Creating…" : "Create Test Event"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleDisconnectCalendar}
+                    disabled={calendarLoading}
+                    className="shrink-0 text-sm text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    {calendarLoading ? "Disconnecting…" : "Disconnect"}
+                  </Button>
+                </div>
+              </div>
+
+              {testEventId && (
+                <div className="flex items-center gap-2 rounded-lg bg-neutral-50 border border-neutral-200 px-4 py-2.5">
+                  <span className="text-xs text-neutral-500 flex-1">Last test event ready to modify or delete</span>
+                  <Button
+                    variant="outline"
+                    onClick={handleModifyEvent}
+                    disabled={modifyEventLoading || deleteEventLoading}
+                    className="text-xs h-7 px-3"
+                  >
+                    {modifyEventLoading ? "Updating…" : "Modify (→ 6 PM)"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleDeleteEvent}
+                    disabled={deleteEventLoading || modifyEventLoading}
+                    className="text-xs h-7 px-3 text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    {deleteEventLoading ? "Deleting…" : "Delete"}
+                  </Button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-neutral-900">No calendar connected</p>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  Connect Google Calendar to enable appointment booking.
+                </p>
+              </div>
+              <Button
+                onClick={handleConnectCalendar}
+                disabled={calendarLoading}
+                className="shrink-0 text-sm"
+              >
+                {calendarLoading ? "Connecting…" : "Connect Google Calendar"}
+              </Button>
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Call forwarding guide */}
