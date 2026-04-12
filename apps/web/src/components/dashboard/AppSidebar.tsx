@@ -1,7 +1,7 @@
-import * as React from "react"
+import { type ReactNode } from "react"
 import { useParams, useNavigate } from "react-router"
 import {
-  BarChart2, PhoneCall, MessageSquare, BookOpen, Settings, LogOut,
+  BarChart2, PhoneCall, MessageSquare, BookOpen, Settings, LogOut, TrendingUp,
 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import {
@@ -19,11 +19,11 @@ import { Button } from "@/components/ui/button"
 
 type Tab = "overview" | "calls" | "messages" | "usage" | "knowledge" | "settings"
 
-const NAV_ITEMS: { id: Tab; label: string; icon: React.ReactNode }[] = [
+const NAV_ITEMS: { id: Tab; label: string; icon: ReactNode }[] = [
   { id: "overview",  label: "Overview",      icon: <BarChart2     size={16} /> },
   { id: "calls",     label: "Call Logs",      icon: <PhoneCall     size={16} /> },
   { id: "messages",  label: "Messages",       icon: <MessageSquare size={16} /> },
-  { id: "usage",     label: "Usage",          icon: <BarChart2     size={16} /> },
+  { id: "usage",     label: "Usage",          icon: <TrendingUp    size={16} /> },
   { id: "knowledge", label: "Knowledge Base", icon: <BookOpen      size={16} /> },
   { id: "settings",  label: "Settings",       icon: <Settings      size={16} /> },
 ]
@@ -87,7 +87,7 @@ export function AppSidebar() {
             className="h-8 w-8 shrink-0 text-neutral-400 hover:text-neutral-900"
             title="Sign out"
           >
-            <LogOut size={15} />
+            <LogOut size={16} />
           </Button>
         </div>
       </SidebarFooter>
