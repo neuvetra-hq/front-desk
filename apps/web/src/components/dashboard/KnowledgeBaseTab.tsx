@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { FieldGroup, Field, FieldLabel, FieldError } from "@/components/ui/field"
 import { Trash2, Plus, BookOpen } from "lucide-react"
 import { toast } from "sonner"
 
@@ -81,7 +81,7 @@ export function KnowledgeBaseTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-indigo-600" />
+        <div className="size-5 animate-spin rounded-full border-2 border-neutral-300 border-t-primary" />
       </div>
     )
   }
@@ -90,8 +90,8 @@ export function KnowledgeBaseTab() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-neutral-900">Knowledge Base</h2>
-          <p className="text-sm text-neutral-400 mt-0.5">
+          <h2 className="text-lg font-semibold text-foreground">Knowledge Base</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
             Q&A pairs your AI uses to answer calls. The more you add, the better it performs.
           </p>
         </div>
@@ -103,18 +103,30 @@ export function KnowledgeBaseTab() {
 
       {/* Add form */}
       {showForm && (
-        <form onSubmit={handleSubmit(handleAdd)} className="rounded-xl border border-indigo-200 bg-indigo-50 p-5 space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="question">Question</Label>
-            <Input id="question" placeholder="What are your business hours?" {...register("question")} />
-            {errors.question && <p className="text-xs text-red-500">{errors.question.message}</p>}
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="answer">Answer</Label>
-            <Input id="answer" placeholder="We're open Monday–Friday, 9am–6pm." {...register("answer")} />
-            {errors.answer && <p className="text-xs text-red-500">{errors.answer.message}</p>}
-          </div>
-          <div className="flex gap-2">
+        <form onSubmit={handleSubmit(handleAdd)} className="rounded-xl border border-indigo-200 bg-indigo-50 p-5">
+          <FieldGroup>
+            <Field data-invalid={!!errors.question || undefined}>
+              <FieldLabel htmlFor="question">Question</FieldLabel>
+              <Input
+                id="question"
+                placeholder="What are your business hours?"
+                aria-invalid={!!errors.question || undefined}
+                {...register("question")}
+              />
+              <FieldError errors={[errors.question]} />
+            </Field>
+            <Field data-invalid={!!errors.answer || undefined}>
+              <FieldLabel htmlFor="answer">Answer</FieldLabel>
+              <Input
+                id="answer"
+                placeholder="We're open Monday–Friday, 9am–6pm."
+                aria-invalid={!!errors.answer || undefined}
+                {...register("answer")}
+              />
+              <FieldError errors={[errors.answer]} />
+            </Field>
+          </FieldGroup>
+          <div className="flex gap-2 mt-4">
             <Button type="submit" disabled={adding}>
               {adding ? "Saving…" : "Save"}
             </Button>
@@ -128,11 +140,11 @@ export function KnowledgeBaseTab() {
       {/* Items list */}
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="h-12 w-12 rounded-2xl bg-neutral-100 flex items-center justify-center mb-4">
-            <BookOpen size={20} className="text-neutral-400" />
+          <div className="size-12 rounded-2xl bg-muted flex items-center justify-center mb-4">
+            <BookOpen className="text-muted-foreground" />
           </div>
-          <h3 className="font-semibold text-neutral-700">No Q&A pairs yet</h3>
-          <p className="text-sm text-neutral-400 mt-1">
+          <h3 className="font-semibold text-foreground">No Q&A pairs yet</h3>
+          <p className="text-sm text-muted-foreground mt-1">
             Add your business hours, services, pricing, and FAQs.
           </p>
         </div>
@@ -141,18 +153,18 @@ export function KnowledgeBaseTab() {
           {items.map((item) => (
             <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-5 flex gap-4">
               <div className="flex-1 space-y-1 min-w-0">
-                <p className="font-medium text-neutral-900 text-sm">{item.question}</p>
-                <p className="text-sm text-neutral-500">{item.answer}</p>
+                <p className="font-medium text-foreground text-sm">{item.question}</p>
+                <p className="text-sm text-muted-foreground">{item.answer}</p>
               </div>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 onClick={() => handleDelete(item.id)}
-                className="shrink-0 h-7 w-7 text-neutral-300 hover:text-red-500 mt-0.5"
+                className="shrink-0 size-7 text-muted-foreground/40 hover:text-red-500 mt-0.5"
                 aria-label="Delete"
               >
-                <Trash2 size={16} />
+                <Trash2 />
               </Button>
             </div>
           ))}

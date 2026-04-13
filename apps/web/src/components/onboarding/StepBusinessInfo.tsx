@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { FieldGroup, Field, FieldLabel, FieldError, FieldDescription } from "@/components/ui/field"
 import {
   Select,
   SelectContent,
@@ -68,66 +68,63 @@ export function StepBusinessInfo({ defaultValues, onNext }: Props) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-      <div className="space-y-2">
-        <Label htmlFor="businessName" className="text-sm font-medium text-neutral-700">
-          Business name
-        </Label>
-        <Input
-          id="businessName"
-          placeholder="Sunrise MedSpa"
-          className="h-11 px-4 rounded-xl text-sm"
-          {...register("businessName")}
-        />
-        {errors.businessName && (
-          <p className="text-xs text-red-500">{errors.businessName.message}</p>
-        )}
-      </div>
+      <FieldGroup>
+        <Field data-invalid={!!errors.businessName || undefined}>
+          <FieldLabel htmlFor="businessName">Business name</FieldLabel>
+          <Input
+            id="businessName"
+            placeholder="Sunrise MedSpa"
+            className="h-11 px-4 rounded-xl text-sm"
+            aria-invalid={!!errors.businessName || undefined}
+            {...register("businessName")}
+          />
+          <FieldError errors={[errors.businessName]} />
+        </Field>
 
-      <div className="space-y-2">
-        <Label className="text-sm font-medium text-neutral-700">Business type</Label>
-        <Controller
-          control={control}
-          name="businessType"
-          render={({ field }) => (
-            <Select value={field.value ?? ""} onValueChange={field.onChange}>
-              <SelectTrigger className="w-full rounded-xl px-4 text-sm h-11">
-                <SelectValue placeholder="Select a type…" />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.entries(BUSINESS_TYPE_LABELS) as [FormValues["businessType"], string][]).map(
-                  ([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  )
-                )}
-              </SelectContent>
-            </Select>
-          )}
-        />
-        {errors.businessType && (
-          <p className="text-xs text-red-500">{errors.businessType.message}</p>
-        )}
-      </div>
+        <Field data-invalid={!!errors.businessType || undefined}>
+          <FieldLabel>Business type</FieldLabel>
+          <Controller
+            control={control}
+            name="businessType"
+            render={({ field }) => (
+              <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                <SelectTrigger
+                  className="w-full rounded-xl px-4 text-sm h-11"
+                  aria-invalid={!!errors.businessType || undefined}
+                >
+                  <SelectValue placeholder="Select a type…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.entries(BUSINESS_TYPE_LABELS) as [FormValues["businessType"], string][]).map(
+                    ([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    )
+                  )}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          <FieldError errors={[errors.businessType]} />
+        </Field>
 
-      <div className="space-y-2">
-        <Label htmlFor="businessPhone" className="text-sm font-medium text-neutral-700">
-          Business phone number
-        </Label>
-        <Input
-          id="businessPhone"
-          type="tel"
-          placeholder="(415) 555-0100"
-          className="h-11 px-4 rounded-xl text-sm"
-          {...register("businessPhone")}
-        />
-        <p className="text-xs text-neutral-400 leading-relaxed">
-          We'll provision a new AI number in the same area code as your existing number.
-        </p>
-        {errors.businessPhone && (
-          <p className="text-xs text-red-500">{errors.businessPhone.message}</p>
-        )}
-      </div>
+        <Field data-invalid={!!errors.businessPhone || undefined}>
+          <FieldLabel htmlFor="businessPhone">Business phone number</FieldLabel>
+          <Input
+            id="businessPhone"
+            type="tel"
+            placeholder="(415) 555-0100"
+            className="h-11 px-4 rounded-xl text-sm"
+            aria-invalid={!!errors.businessPhone || undefined}
+            {...register("businessPhone")}
+          />
+          <FieldDescription>
+            We'll provision a new AI number in the same area code as your existing number.
+          </FieldDescription>
+          <FieldError errors={[errors.businessPhone]} />
+        </Field>
+      </FieldGroup>
 
       <Button
         type="submit"
