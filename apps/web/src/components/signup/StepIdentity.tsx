@@ -49,6 +49,7 @@ export function StepIdentity({ onNext, busy }: Props) {
             type="tel"
             placeholder="+1 (415) 555-0100"
             autoComplete="tel"
+            autoFocus
             aria-invalid={!!errors.phone || undefined}
             {...register("phone")}
           />

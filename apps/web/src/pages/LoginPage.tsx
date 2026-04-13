@@ -128,6 +128,7 @@ export function LoginPage() {
               type="tel"
               placeholder="+1 (415) 555-0100"
               autoComplete="tel"
+              autoFocus
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
@@ -155,6 +156,7 @@ export function LoginPage() {
                 if (val.length === 6) handleVerifyOtp(val)
               }}
               disabled={busy}
+              autoFocus
             >
               <InputOTPGroup>
                 <InputOTPSlot index={0} />

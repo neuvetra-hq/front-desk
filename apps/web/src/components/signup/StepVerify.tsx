@@ -81,6 +81,7 @@ export function StepVerify({ phone, onVerified, onBack, busy, setBusy }: Props) 
             if (val.length === 6) handleVerifyToken(val)
           }}
           disabled={busy}
+          autoFocus
         >
           <InputOTPGroup>
             <InputOTPSlot index={0} />
