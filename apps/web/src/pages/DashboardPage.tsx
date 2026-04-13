@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate, Navigate } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
-import { Phone, AlertTriangle } from "lucide-react"
+import { Phone, AlertTriangle, Sun, Moon } from "lucide-react"
+import { useTheme } from "@/contexts/ThemeContext"
 import { Button } from "@/components/ui/button"
 import {
   SidebarInset,
@@ -33,6 +34,21 @@ function getPlanKey(stripePlanId: string | null): keyof typeof PLAN_MAP | null {
   return null
 }
 
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme()
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
+      className="size-8 text-muted-foreground hover:text-foreground shrink-0"
+      aria-label="Toggle theme"
+    >
+      {theme === "dark" ? <Sun /> : <Moon />}
+    </Button>
+  )
+}
+
 export function DashboardPage() {
   const { business, session } = useAuth()
   const { tab: rawTab } = useParams<{ tab: string }>()
@@ -62,18 +78,19 @@ export function DashboardPage() {
       <AppSidebar />
       <SidebarInset>
         {/* Top header */}
-        <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-neutral-200 bg-white px-4">
+        <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-border bg-background px-4">
           <SidebarTrigger className="-ml-1" />
           <div className="flex flex-1 items-center gap-3 overflow-hidden">
             {business?.twilioNumber && (
               <div className="flex items-center gap-2 overflow-hidden">
-                <Phone size={14} className="shrink-0 text-neutral-400" />
-                <span className="font-mono text-sm font-semibold text-neutral-900 truncate">
+                <Phone size={14} className="shrink-0 text-muted-foreground" />
+                <span className="font-mono text-sm font-semibold text-foreground truncate">
                   {business.twilioNumber}
                 </span>
               </div>
             )}
           </div>
+          <ThemeToggle />
         </header>
 
         {/* No-calendar warning */}
