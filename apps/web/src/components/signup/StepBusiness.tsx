@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { FieldGroup, Field, FieldLabel, FieldError } from "@/components/ui/field"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
@@ -38,37 +38,39 @@ export function StepBusiness({ onNext }: Props) {
   })
 
   return (
-    <form onSubmit={handleSubmit(onNext)} className="space-y-4">
-      <div className="space-y-1.5">
-        <Label htmlFor="businessName">Business name</Label>
-        <Input id="businessName" placeholder="Sunrise MedSpa" {...register("businessName")} />
-        {errors.businessName && <p className="text-xs text-red-500">{errors.businessName.message}</p>}
-      </div>
+    <form onSubmit={handleSubmit(onNext)}>
+      <FieldGroup>
+        <Field data-invalid={!!errors.businessName || undefined}>
+          <FieldLabel htmlFor="businessName">Business name</FieldLabel>
+          <Input id="businessName" placeholder="Sunrise MedSpa" aria-invalid={!!errors.businessName || undefined} {...register("businessName")} />
+          <FieldError errors={[errors.businessName]} />
+        </Field>
 
-      <div className="space-y-1.5">
-        <Label>Business type</Label>
-        <Controller
-          control={control}
-          name="businessType"
-          render={({ field }) => (
-            <Select value={field.value ?? ""} onValueChange={field.onChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a type…" />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.entries(BUSINESS_TYPE_LABELS) as [BusinessData["businessType"], string][]).map(
-                  ([value, label]) => (
-                    <SelectItem key={value} value={value}>{label}</SelectItem>
-                  )
-                )}
-              </SelectContent>
-            </Select>
-          )}
-        />
-        {errors.businessType && <p className="text-xs text-red-500">{errors.businessType.message}</p>}
-      </div>
+        <Field data-invalid={!!errors.businessType || undefined}>
+          <FieldLabel>Business type</FieldLabel>
+          <Controller
+            control={control}
+            name="businessType"
+            render={({ field }) => (
+              <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                <SelectTrigger className="w-full" aria-invalid={!!errors.businessType || undefined}>
+                  <SelectValue placeholder="Select a type…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.entries(BUSINESS_TYPE_LABELS) as [BusinessData["businessType"], string][]).map(
+                    ([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    )
+                  )}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          <FieldError errors={[errors.businessType]} />
+        </Field>
 
-      <Button type="submit" className="w-full">Continue →</Button>
+        <Button type="submit" className="w-full">Continue →</Button>
+      </FieldGroup>
     </form>
   )
 }
