@@ -7,7 +7,7 @@ import { Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { FieldGroup, Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/AuthContext"
 
@@ -78,74 +78,80 @@ export function SignupForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-1.5">
-        <Label htmlFor="fullName">Full name</Label>
-        <Input
-          id="fullName"
-          placeholder="Jane Smith"
-          autoComplete="name"
-          {...register("fullName")}
-        />
-        {errors.fullName && <p className="text-xs text-red-500">{errors.fullName.message}</p>}
-      </div>
-
-      <div className="space-y-1.5">
-        <Label htmlFor="phone">Your phone number</Label>
-        <Input
-          id="phone"
-          type="tel"
-          placeholder="+1 (555) 000-0000"
-          autoComplete="tel"
-          {...register("phone")}
-        />
-        <p className="text-xs text-neutral-400">
-          This is your personal number — we'll set up your AI front desk number after.
-        </p>
-        {errors.phone && <p className="text-xs text-red-500">{errors.phone.message}</p>}
-      </div>
-
-      <div className="space-y-1.5">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="you@company.com"
-          autoComplete="email"
-          {...register("email")}
-        />
-        {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
-      </div>
-
-      <div className="space-y-1.5">
-        <Label htmlFor="password">Password</Label>
-        <div className="relative">
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <FieldGroup>
+        <Field data-invalid={!!errors.fullName}>
+          <FieldLabel htmlFor="fullName">Full name</FieldLabel>
           <Input
-            id="password"
-            type={showPassword ? "text" : "password"}
-            placeholder="••••••••"
-            autoComplete="new-password"
-            className="pr-10"
-            {...register("password")}
+            id="fullName"
+            placeholder="Jane Smith"
+            autoComplete="name"
+            aria-invalid={!!errors.fullName}
+            {...register("fullName")}
           />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowPassword((v) => !v)}
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-neutral-400 hover:text-neutral-600"
-          >
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-          </Button>
-        </div>
-        {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
-      </div>
+          <FieldError errors={[errors.fullName]} />
+        </Field>
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Field data-invalid={!!errors.phone}>
+          <FieldLabel htmlFor="phone">Your phone number</FieldLabel>
+          <Input
+            id="phone"
+            type="tel"
+            placeholder="+1 (555) 000-0000"
+            autoComplete="tel"
+            aria-invalid={!!errors.phone}
+            {...register("phone")}
+          />
+          <FieldDescription>
+            This is your personal number — we'll set up your AI front desk number after.
+          </FieldDescription>
+          <FieldError errors={[errors.phone]} />
+        </Field>
+
+        <Field data-invalid={!!errors.email}>
+          <FieldLabel htmlFor="email">Email</FieldLabel>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@company.com"
+            autoComplete="email"
+            aria-invalid={!!errors.email}
+            {...register("email")}
+          />
+          <FieldError errors={[errors.email]} />
+        </Field>
+
+        <Field data-invalid={!!errors.password}>
+          <FieldLabel htmlFor="password">Password</FieldLabel>
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="••••••••"
+              autoComplete="new-password"
+              className="pr-10"
+              aria-invalid={!!errors.password}
+              {...register("password")}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-neutral-400 hover:text-neutral-600"
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </Button>
+          </div>
+          <FieldError errors={[errors.password]} />
+        </Field>
+      </FieldGroup>
+
+      <Button type="submit" className="w-full mt-5" disabled={isSubmitting}>
         {isSubmitting ? "Creating account…" : "Create account"}
       </Button>
 
-      <p className="text-center text-sm text-neutral-500">
+      <p className="text-center text-sm text-neutral-500 mt-4">
         Already have an account?{" "}
         <Link to="/login" className="font-medium text-neutral-900 hover:underline">
           Sign in
