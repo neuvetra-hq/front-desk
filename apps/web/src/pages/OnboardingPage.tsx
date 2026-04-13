@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router"
+import { Check } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { StepBusinessInfo, type BusinessInfoData } from "@/components/onboarding/StepBusinessInfo"
 import { StepConfirm } from "@/components/onboarding/StepConfirm"
@@ -55,9 +56,7 @@ export function OnboardingPage() {
                   }`}
                 >
                   {i < step ? (
-                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
+                    <Check className="size-3.5" strokeWidth={2.5} />
                   ) : (
                     i + 1
                   )}

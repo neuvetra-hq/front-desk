@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Container } from "@/components/layout/Container"
 import { PRICING_TIERS } from "@/constants/landing"
+import { Check } from "lucide-react"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 export function Pricing() {
@@ -107,15 +108,7 @@ export function Pricing() {
                 <ul className="space-y-3">
                   {tier.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2.5 text-sm text-neutral-600">
-                      <svg
-                        className="mt-0.5 h-4 w-4 shrink-0 text-indigo-500"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2.5}
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
+                      <Check className="mt-0.5 size-4 shrink-0 text-indigo-500" strokeWidth={2.5} />
                       {feature}
                     </li>
                   ))}

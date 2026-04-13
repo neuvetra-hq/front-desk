@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Calendar, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 
@@ -33,10 +34,7 @@ export function StepCalendar({ businessId, accessToken, onSkip }: Props) {
       {/* Icon */}
       <div className="flex justify-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 border border-indigo-100">
-          <svg className="h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-              d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-          </svg>
+          <Calendar className="size-8 text-indigo-600" strokeWidth={1.5} />
         </div>
       </div>
 
@@ -57,9 +55,7 @@ export function StepCalendar({ businessId, accessToken, onSkip }: Props) {
           "Never double-books — respects your existing schedule",
         ].map((item) => (
           <div key={item} className="flex items-start gap-2.5">
-            <svg className="h-4 w-4 text-indigo-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-            </svg>
+            <Check className="size-4 text-indigo-500 mt-0.5 shrink-0" strokeWidth={2.5} />
             <span className="text-sm text-neutral-600">{item}</span>
           </div>
         ))}
