@@ -19,7 +19,7 @@
         "@supabase/supabase-js": "^2.50.0",
         "drizzle-orm": "^0.45.1",
         "elysia": "latest",
-        "retell-sdk": "^5.7.0",
+        "retell-sdk": "^5.12.0",
         "stripe": "^22.0.0",
         "twilio": "^5.12.2",
       },
@@ -602,7 +602,7 @@
 
     "buffer-from": ["buffer-from@1.1.2", "", {}, "sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ=="],
 
-    "bun-types": ["bun-types@1.3.11", "", { "dependencies": { "@types/node": "*" } }, "sha512-1KGPpoxQWl9f6wcZh57LvrPIInQMn2TQ7jsgxqpRzg+l0QPOFvJVH7HmvHo/AiPgwXy+/Thf6Ov3EdVn1vOabg=="],
+    "bun-types": ["bun-types@1.3.12", "", { "dependencies": { "@types/node": "*" } }, "sha512-HqOLj5PoFajAQciOMRiIZGNoKxDJSr6qigAttOX40vJuSp6DN/CxWp9s3C1Xwm4oH7ybueITwiaOcWXoYVoRkA=="],
 
     "bundle-name": ["bundle-name@4.1.0", "", { "dependencies": { "run-applescript": "^7.0.0" } }, "sha512-tjwM5exMg6BGRI+kNmTntNsvdZS1X8BFYS6tnJ2hdH0kVxM6/eVZ2xy+FqStSWvYmtfFMDLIxurorHwDKfDz5Q=="],
 
@@ -1290,7 +1290,7 @@
 
     "restore-cursor": ["restore-cursor@5.1.0", "", { "dependencies": { "onetime": "^7.0.0", "signal-exit": "^4.1.0" } }, "sha512-oMA2dcrw6u0YfxJQXm342bFKX/E4sG9rbTzO9ptUcR/e8A33cHuvStiYOwH7fszkZlZ1z/ta9AAoPk2F4qIOHA=="],
 
-    "retell-sdk": ["retell-sdk@5.7.0", "", {}, "sha512-+Y0fZVRlhfXPhfuZYjsTuvA+GNMgBbCHMOZkNuqqqqL0eb+cNKghW6y4d0FDekKqN0Ip4YaOtseUTvF9RF32bA=="],
+    "retell-sdk": ["retell-sdk@5.12.0", "", {}, "sha512-iqA9+gtHvKZLlTgdJEgf5qSUKX9GtIPCo9D441RLlyHF8zG3cE2HpcFcrc//jQeY90RrKmeVvqvYnjBXjY1b/A=="],
 
     "rettime": ["rettime@0.10.1", "", {}, "sha512-uyDrIlUEH37cinabq0AX4QbgV4HbFZ/gqoiunWQ1UqBtRvTTytwhNYjE++pO/MjPTZL5KQCf2bEoJ/BJNVQ5Kw=="],
 

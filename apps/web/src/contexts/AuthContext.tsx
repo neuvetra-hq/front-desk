@@ -17,6 +17,7 @@ export interface Business {
   twilioNumber: string | null
   stripePlanId: string | null
   stripeSubscriptionId: string | null
+  aiConfig: Record<string, unknown> | null
 }
 
 interface AuthContextValue {
@@ -51,7 +52,7 @@ async function fetchProfile(userId: string): Promise<UserProfile | null> {
 async function fetchBusiness(userId: string): Promise<Business | null> {
   const { data } = await supabase
     .from("business_members")
-    .select("businesses(id, name, status, business_type, twilio_number, stripe_plan_id, stripe_subscription_id)")
+    .select("businesses(id, name, status, business_type, twilio_number, stripe_plan_id, stripe_subscription_id, ai_config)")
     .eq("user_id", userId)
     .eq("role", "owner")
     .limit(1)
@@ -67,6 +68,7 @@ async function fetchBusiness(userId: string): Promise<Business | null> {
     twilioNumber: (b.twilio_number as string) ?? null,
     stripePlanId: (b.stripe_plan_id as string) ?? null,
     stripeSubscriptionId: (b.stripe_subscription_id as string) ?? null,
+    aiConfig: (b.ai_config as Record<string, unknown>) ?? null,
   }
 }
 

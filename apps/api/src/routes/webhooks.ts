@@ -1,5 +1,5 @@
 import { Elysia } from "elysia"
-import { db, businesses, calls, callbackRequests } from "@frontdesk/database"
+import { db, businesses, calls, callbackRequests, knowledgeBase } from "@frontdesk/database"
 import { eq } from "drizzle-orm"
 import { retell } from "../services/retell"
 import * as CalendarService from "../services/calendar/index"
@@ -149,13 +149,29 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
 
     const agentId = Bun.env.RETELL_AGENT_ID ?? ""
 
+    // Fetch knowledge base entries for this business
+    const kbRows = await db
+      .select({ question: knowledgeBase.question, answer: knowledgeBase.answer })
+      .from(knowledgeBase)
+      .where(eq(knowledgeBase.businessId, business.id))
+
+    const knowledgeBaseText = kbRows.length > 0
+      ? kbRows.map((r) => `Q: ${r.question}\nA: ${r.answer}`).join("\n\n")
+      : "No specific knowledge base configured for this business."
+
+    const aiConfig = (business.aiConfig as Record<string, unknown>) ?? {}
+
     const phoneCall = await retell.call.registerPhoneCall({
       agent_id: agentId,
       from_number: (body as Record<string, string>).From,
       to_number: called,
       direction: "inbound",
       retell_llm_dynamic_variables: {
-        business_name: business.name,
+        business_name:  business.name,
+        business_type:  business.businessType ?? "service",
+        agent_name:     (aiConfig.agentName as string | undefined) ?? "your virtual receptionist",
+        owner_phone:    (aiConfig.ownerPhone as string | undefined) ?? "+16507434932",
+        knowledge_base: knowledgeBaseText,
       },
     })
 
@@ -167,15 +183,20 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
   // Called by Retell AI — handles function calls mid-call and end-of-call events
   .post("/retell", async ({ body }) => {
     const event = body as Record<string, unknown>
-    console.log("Retell event:", event.event)
+    console.log("Retell event:", event.event ?? event.name)
 
     // ------------------------------------------------------------------
-    // Function calls — invoked mid-call by the Retell LLM node
+    // Function calls — two formats:
+    //   Old LLM webhook:          { event: "function_call", name, call, arguments }
+    //   New conversation flow:    { name, call, args }  (no event field)
     // ------------------------------------------------------------------
-    if (event.event === "function_call") {
+    const isFunctionCall = event.event === "function_call" ||
+      (typeof event.name === "string" && event.event === undefined)
+
+    if (isFunctionCall) {
       const call      = event.call as Record<string, unknown>
       const funcName  = event.name as string
-      const funcArgs  = (event.arguments ?? {}) as Record<string, unknown>
+      const funcArgs  = ((event.args ?? event.arguments) ?? {}) as Record<string, unknown>
 
       const toNumber   = call.to_number as string | undefined
       const fromNumber = call.from_number as string | undefined

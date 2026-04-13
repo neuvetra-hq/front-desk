@@ -42,6 +42,9 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
   const { business, session } = useAuth()
   const [hours, setHours] = useState<BusinessHours>(DEFAULT_HOURS)
   const [saving, setSaving] = useState(false)
+  const [agentName, setAgentName] = useState("")
+  const [ownerPhone, setOwnerPhone] = useState("")
+  const [agentSaving, setAgentSaving] = useState(false)
   const [calendarConn, setCalendarConn] = useState<CalendarConnection | null>(null)
   const [calendarLoading, setCalendarLoading] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
@@ -120,6 +123,37 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
     }
   }
 
+  // Load agent settings and business hours from aiConfig
+  useEffect(() => {
+    if (!business?.aiConfig) return
+    const cfg = business.aiConfig
+    if (cfg.agentName) setAgentName(cfg.agentName as string)
+    if (cfg.ownerPhone) setOwnerPhone(cfg.ownerPhone as string)
+    if (cfg.businessHours) setHours(cfg.businessHours as BusinessHours)
+  }, [business?.id])
+
+  const handleSaveAgent = async () => {
+    if (!business?.id) return
+    setAgentSaving(true)
+    try {
+      const res = await fetch(`${API_URL}/businesses/${business.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token ?? ""}`,
+        },
+        body: JSON.stringify({ aiConfig: { agentName, ownerPhone } }),
+      })
+      const data = await res.json() as { updated?: boolean; error?: string }
+      if (data.error) throw new Error(data.error)
+      toast.success("Agent settings saved")
+    } catch (err) {
+      toast.error((err as Error).message ?? "Failed to save")
+    } finally {
+      setAgentSaving(false)
+    }
+  }
+
   const updateDay = (day: Day, patch: Partial<DayHours>) => {
     setHours((prev) => ({ ...prev, [day]: { ...prev[day], ...patch } }))
   }
@@ -130,7 +164,10 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
     try {
       const res = await fetch(`${API_URL}/businesses/${business.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token ?? ""}`,
+        },
         body: JSON.stringify({ aiConfig: { businessHours: hours } }),
       })
       const data = await res.json() as { updated?: boolean; error?: string }
@@ -145,6 +182,46 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
 
   return (
     <div className="space-y-8 max-w-2xl">
+
+      {/* AI Agent settings */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">AI Agent</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Customize how your AI receptionist introduces itself and who to call in an emergency.
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">Agent name</label>
+            <Input
+              placeholder="e.g. Alex"
+              value={agentName}
+              onChange={(e) => setAgentName(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              How the AI introduces itself — "Hi, I'm Alex, calling on behalf of…"
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">Emergency contact number</label>
+            <Input
+              placeholder="e.g. +14155551234"
+              value={ownerPhone}
+              onChange={(e) => setOwnerPhone(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              If a caller reports an emergency, the AI will immediately transfer to this number.
+            </p>
+          </div>
+        </div>
+
+        <Button onClick={handleSaveAgent} disabled={agentSaving}>
+          {agentSaving ? "Saving…" : "Save agent settings"}
+        </Button>
+      </section>
 
       {/* Business hours */}
       <section className="space-y-4">
