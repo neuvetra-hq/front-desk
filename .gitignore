@@ -24,8 +24,16 @@ node_modules/
 /build
 dist/
 
-# misc 
+# misc
 *.pem
+
+# local tooling
+.remember/
+.superpowers/
+.claude/settings.local.json
+
+# playwright reports
+**/playwright-report/
 
 # debug
 npm-debug.log*
