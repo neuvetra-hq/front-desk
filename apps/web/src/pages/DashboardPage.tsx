@@ -163,12 +163,12 @@ function OverviewTab() {
 
       {/* Call forwarding instructions */}
       {business?.twilioNumber && (
-        <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-6">
-          <h2 className="font-semibold text-indigo-900 mb-1">How to activate call forwarding</h2>
-          <p className="text-sm text-indigo-700 mb-4">
+        <div className="rounded-xl border border-indigo-100 dark:border-indigo-800/50 bg-indigo-50 dark:bg-indigo-950/40 p-6">
+          <h2 className="font-semibold text-indigo-900 dark:text-indigo-100 mb-1">How to activate call forwarding</h2>
+          <p className="text-sm text-indigo-700 dark:text-indigo-300 mb-4">
             Forward missed calls from your existing business number to your AI Front Desk number.
           </p>
-          <div className="space-y-2 text-sm text-indigo-800">
+          <div className="space-y-2 text-sm text-indigo-800 dark:text-indigo-200">
             <p>📱 <strong>iPhone:</strong> Settings → Phone → Call Forwarding → enter <span className="font-mono font-semibold">{business.twilioNumber}</span></p>
             <p>📱 <strong>Android:</strong> Phone app → Settings → Supplementary services → Forward when unanswered → enter <span className="font-mono font-semibold">{business.twilioNumber}</span></p>
             <p>☎️ <strong>VoIP / Office line:</strong> Contact your provider and ask them to forward unanswered calls to <span className="font-mono font-semibold">{business.twilioNumber}</span></p>

@@ -265,9 +265,9 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
 
         {business?.twilioNumber && (
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-            <div className="flex items-center gap-3 rounded-lg bg-indigo-50 border border-indigo-100 px-4 py-3">
-              <span className="text-sm text-indigo-700">Your AI number:</span>
-              <span className="font-mono font-semibold text-indigo-900">{business.twilioNumber}</span>
+            <div className="flex items-center gap-3 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-800/50 px-4 py-3">
+              <span className="text-sm text-indigo-700 dark:text-indigo-300">Your AI number:</span>
+              <span className="font-mono font-semibold text-indigo-900 dark:text-indigo-100">{business.twilioNumber}</span>
             </div>
 
             <div className="space-y-3 text-sm text-muted-foreground">
