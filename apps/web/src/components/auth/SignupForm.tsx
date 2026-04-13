@@ -80,7 +80,7 @@ export function SignupForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <FieldGroup>
-        <Field data-invalid={!!errors.fullName}>
+        <Field data-invalid={!!errors.fullName || undefined}>
           <FieldLabel htmlFor="fullName">Full name</FieldLabel>
           <Input
             id="fullName"
@@ -92,7 +92,7 @@ export function SignupForm() {
           <FieldError errors={[errors.fullName]} />
         </Field>
 
-        <Field data-invalid={!!errors.phone}>
+        <Field data-invalid={!!errors.phone || undefined}>
           <FieldLabel htmlFor="phone">Your phone number</FieldLabel>
           <Input
             id="phone"
@@ -108,7 +108,7 @@ export function SignupForm() {
           <FieldError errors={[errors.phone]} />
         </Field>
 
-        <Field data-invalid={!!errors.email}>
+        <Field data-invalid={!!errors.email || undefined}>
           <FieldLabel htmlFor="email">Email</FieldLabel>
           <Input
             id="email"
@@ -121,7 +121,7 @@ export function SignupForm() {
           <FieldError errors={[errors.email]} />
         </Field>
 
-        <Field data-invalid={!!errors.password}>
+        <Field data-invalid={!!errors.password || undefined}>
           <FieldLabel htmlFor="password">Password</FieldLabel>
           <div className="relative">
             <Input
@@ -138,9 +138,9 @@ export function SignupForm() {
               variant="ghost"
               size="icon"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-neutral-400 hover:text-neutral-600"
+              className="absolute right-1 top-1/2 -translate-y-1/2 size-7 text-muted-foreground hover:text-foreground"
             >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showPassword ? <EyeOff /> : <Eye />}
             </Button>
           </div>
           <FieldError errors={[errors.password]} />
@@ -151,9 +151,9 @@ export function SignupForm() {
         {isSubmitting ? "Creating account…" : "Create account"}
       </Button>
 
-      <p className="text-center text-sm text-neutral-500 mt-4">
+      <p className="text-center text-sm text-muted-foreground mt-4">
         Already have an account?{" "}
-        <Link to="/login" className="font-medium text-neutral-900 hover:underline">
+        <Link to="/login" className="font-medium text-foreground hover:underline">
           Sign in
         </Link>
       </p>
