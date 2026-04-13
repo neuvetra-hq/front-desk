@@ -20,7 +20,7 @@ const API_URL = import.meta.env.VITE_API_URL as string
 // Map Stripe flat price IDs → plan display info
 // Price IDs come from VITE_ vars — we derive plan from the business.stripePlanId
 const PLAN_MAP: Record<string, { name: string; minutes: number; color: string }> = {
-  starter: { name: "Starter", minutes: 150, color: "bg-neutral-100 text-neutral-700" },
+  starter: { name: "Starter", minutes: 150, color: "bg-muted text-muted-foreground" },
   growth:  { name: "Growth",  minutes: 400, color: "bg-indigo-100 text-indigo-700" },
   pro:     { name: "Pro",     minutes: 1000, color: "bg-violet-100 text-violet-700" },
 }
@@ -132,10 +132,10 @@ function OverviewTab() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-neutral-900">
+        <h1 className="text-2xl font-bold text-foreground">
           Welcome back, {profile?.firstName} 👋
         </h1>
-        <p className="mt-1 text-neutral-500 text-sm">
+        <p className="mt-1 text-muted-foreground text-sm">
           Your AI receptionist is {business?.status === "active" ? "live and answering calls." : "not yet active."}
         </p>
       </div>
@@ -151,7 +151,7 @@ function OverviewTab() {
         <SummaryCard
           label="Status"
           value={business?.status === "active" ? "Live" : "Inactive"}
-          valueClass={business?.status === "active" ? "text-green-600" : "text-neutral-400"}
+          valueClass={business?.status === "active" ? "text-green-600" : "text-muted-foreground"}
           hint={business?.status === "active" ? "Your AI is answering calls" : "Complete setup to go live"}
         />
         <SummaryCard
@@ -219,7 +219,7 @@ function MessagesTab() {
   }
 
   if (loading) {
-    return <p className="text-sm text-neutral-400">Loading…</p>
+    return <p className="text-sm text-muted-foreground">Loading…</p>
   }
 
   const pending = messages.filter((m) => m.status === "pending")
@@ -228,21 +228,21 @@ function MessagesTab() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h2 className="text-lg font-semibold text-neutral-900">Callback Requests</h2>
-        <p className="text-sm text-neutral-400 mt-0.5">
+        <h2 className="text-lg font-semibold text-foreground">Callback Requests</h2>
+        <p className="text-sm text-muted-foreground mt-0.5">
           Callers who asked to be called back when scheduling was unavailable.
         </p>
       </div>
 
       {messages.length === 0 ? (
-        <div className="rounded-xl border border-neutral-200 bg-white p-8 text-center">
-          <p className="text-sm text-neutral-400">No callback requests yet.</p>
+        <div className="rounded-xl border border-border bg-card p-8 text-center">
+          <p className="text-sm text-muted-foreground">No callback requests yet.</p>
         </div>
       ) : (
         <div className="space-y-6">
           {pending.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Pending ({pending.length})
               </p>
               {pending.map((m) => (
@@ -253,7 +253,7 @@ function MessagesTab() {
 
           {handled.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Handled ({handled.length})
               </p>
               {handled.map((m) => (
@@ -274,15 +274,15 @@ function MessageCard({ message, onMarkHandled }: { message: CallbackRequest; onM
   })
 
   return (
-    <div className={`rounded-xl border bg-white p-4 flex items-start gap-4 ${
-      message.status === "pending" ? "border-amber-200" : "border-neutral-200 opacity-60"
+    <div className={`rounded-xl border bg-card p-4 flex items-start gap-4 ${
+      message.status === "pending" ? "border-amber-200" : "border-border opacity-60"
     }`}>
       <div className="flex-1 space-y-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-semibold text-neutral-900">
+          <span className="text-sm font-semibold text-foreground">
             {message.callerName ?? "Unknown caller"}
           </span>
-          <span className="font-mono text-xs text-neutral-500">{message.callerPhone}</span>
+          <span className="font-mono text-xs text-muted-foreground">{message.callerPhone}</span>
           {message.status === "pending" && (
             <span className="rounded-full bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5">
               Needs callback
@@ -290,9 +290,9 @@ function MessageCard({ message, onMarkHandled }: { message: CallbackRequest; onM
           )}
         </div>
         {message.message && (
-          <p className="text-sm text-neutral-600 truncate">{message.message}</p>
+          <p className="text-sm text-muted-foreground truncate">{message.message}</p>
         )}
-        <p className="text-xs text-neutral-400">{date}</p>
+        <p className="text-xs text-muted-foreground/60">{date}</p>
       </div>
       {onMarkHandled && message.status === "pending" && (
         <Button
@@ -317,13 +317,12 @@ function SummaryCard({
   valueClass?: string
 }) {
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-5 space-y-1">
-      <p className="text-xs font-medium text-neutral-400 uppercase tracking-wide">{label}</p>
-      <p className={`text-lg font-semibold text-neutral-900 ${mono ? "font-mono" : ""} ${valueClass ?? ""}`}>
+    <div className="rounded-xl border border-border bg-card p-5 space-y-1">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
+      <p className={`text-lg font-semibold text-foreground ${mono ? "font-mono" : ""} ${valueClass ?? ""}`}>
         {value}
       </p>
-      {hint && <p className="text-xs text-neutral-400">{hint}</p>}
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
   )
 }
-

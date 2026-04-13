@@ -149,17 +149,17 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
       {/* Business hours */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-lg font-semibold text-neutral-900">Business Hours</h2>
-          <p className="text-sm text-neutral-400 mt-0.5">
+          <h2 className="text-lg font-semibold text-foreground">Business Hours</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
             Your AI will mention these hours when callers ask. It will still answer calls 24/7.
           </p>
         </div>
 
-        <div className="rounded-xl border border-neutral-200 bg-white overflow-hidden">
+        <div className="rounded-xl border border-border bg-card overflow-hidden">
           {DAYS.map((day, i) => (
             <div
               key={day}
-              className={`flex items-center gap-4 px-5 py-3.5 ${i < DAYS.length - 1 ? "border-b border-neutral-100" : ""}`}
+              className={`flex items-center gap-4 px-5 py-3.5 ${i < DAYS.length - 1 ? "border-b border-border" : ""}`}
             >
               {/* Toggle */}
               <Switch
@@ -168,7 +168,7 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
               />
 
               {/* Day name */}
-              <span className={`w-24 text-sm font-medium ${hours[day].open ? "text-neutral-900" : "text-neutral-400"}`}>
+              <span className={`w-24 text-sm font-medium ${hours[day].open ? "text-foreground" : "text-muted-foreground"}`}>
                 {day}
               </span>
 
@@ -180,7 +180,7 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
                     onChange={(e) => updateDay(day, { from: e.target.value })}
                     className="w-auto px-2.5 py-1.5 text-sm"
                   />
-                  <span className="text-neutral-400">to</span>
+                  <span className="text-muted-foreground">to</span>
                   <Input
                     type="time"
                     value={hours[day].to}
@@ -189,7 +189,7 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
                   />
                 </div>
               ) : (
-                <span className="text-sm text-neutral-400">Closed</span>
+                <span className="text-sm text-muted-foreground">Closed</span>
               )}
             </div>
           ))}
@@ -203,26 +203,26 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
       {/* Calendar integration */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-lg font-semibold text-neutral-900">Calendar</h2>
-          <p className="text-sm text-neutral-400 mt-0.5">
+          <h2 className="text-lg font-semibold text-foreground">Calendar</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
             Connect your calendar so your AI can check availability and book appointments during calls.
           </p>
         </div>
 
-        <div className="rounded-xl border border-neutral-200 bg-white p-5">
+        <div className="rounded-xl border border-border bg-card p-5">
           {calendarConn ? (
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 {/* Google Calendar icon */}
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-100">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
                     <rect width="24" height="24" rx="4" fill="#fff"/>
                     <path d="M17 3h-1V1h-2v2H10V1H8v2H7C5.9 3 5 3.9 5 5v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V9h10v10z" fill="#4285F4"/>
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-neutral-900">Google Calendar</p>
-                  <p className="text-xs text-neutral-400">Connected as {calendarConn.providerEmail}</p>
+                  <p className="text-sm font-medium text-foreground">Google Calendar</p>
+                  <p className="text-xs text-muted-foreground">Connected as {calendarConn.providerEmail}</p>
                 </div>
               </div>
               <Button
@@ -237,8 +237,8 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
           ) : (
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-medium text-neutral-900">No calendar connected</p>
-                <p className="text-xs text-neutral-400 mt-0.5">
+                <p className="text-sm font-medium text-foreground">No calendar connected</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Connect Google Calendar to enable appointment booking.
                 </p>
               </div>
@@ -257,35 +257,35 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
       {/* Call forwarding guide */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-lg font-semibold text-neutral-900">Call Forwarding Setup</h2>
-          <p className="text-sm text-neutral-400 mt-0.5">
+          <h2 className="text-lg font-semibold text-foreground">Call Forwarding Setup</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
             Forward unanswered calls from your existing number to your AI Front Desk number.
           </p>
         </div>
 
         {business?.twilioNumber && (
-          <div className="rounded-xl border border-neutral-200 bg-white p-5 space-y-4">
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
             <div className="flex items-center gap-3 rounded-lg bg-indigo-50 border border-indigo-100 px-4 py-3">
               <span className="text-sm text-indigo-700">Your AI number:</span>
               <span className="font-mono font-semibold text-indigo-900">{business.twilioNumber}</span>
             </div>
 
-            <div className="space-y-3 text-sm text-neutral-600">
+            <div className="space-y-3 text-sm text-muted-foreground">
               <div className="space-y-1">
-                <p className="font-semibold text-neutral-800">📱 iPhone</p>
-                <p className="text-neutral-500 ml-5">Settings → Phone → Call Forwarding → enter <span className="font-mono">{business.twilioNumber}</span></p>
+                <p className="font-semibold text-foreground">📱 iPhone</p>
+                <p className="ml-5">Settings → Phone → Call Forwarding → enter <span className="font-mono">{business.twilioNumber}</span></p>
               </div>
               <div className="space-y-1">
-                <p className="font-semibold text-neutral-800">📱 Android</p>
-                <p className="text-neutral-500 ml-5">Phone app → ⋮ Menu → Settings → Calls → Call forwarding → Forward when unanswered</p>
+                <p className="font-semibold text-foreground">📱 Android</p>
+                <p className="ml-5">Phone app → ⋮ Menu → Settings → Calls → Call forwarding → Forward when unanswered</p>
               </div>
               <div className="space-y-1">
-                <p className="font-semibold text-neutral-800">☎️ VoIP / Office line</p>
-                <p className="text-neutral-500 ml-5">Contact your provider and ask to forward unanswered calls to <span className="font-mono">{business.twilioNumber}</span></p>
+                <p className="font-semibold text-foreground">☎️ VoIP / Office line</p>
+                <p className="ml-5">Contact your provider and ask to forward unanswered calls to <span className="font-mono">{business.twilioNumber}</span></p>
               </div>
               <div className="space-y-1">
-                <p className="font-semibold text-neutral-800">📞 AT&T / T-Mobile / Verizon</p>
-                <p className="text-neutral-500 ml-5">Dial <span className="font-mono">*71{business.twilioNumber.replace(/\D/g, "").slice(-10)}</span> from your phone to enable forwarding when busy/unanswered</p>
+                <p className="font-semibold text-foreground">📞 AT&T / T-Mobile / Verizon</p>
+                <p className="ml-5">Dial <span className="font-mono">*71{business.twilioNumber.replace(/\D/g, "").slice(-10)}</span> from your phone to enable forwarding when busy/unanswered</p>
               </div>
             </div>
           </div>

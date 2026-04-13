@@ -81,7 +81,7 @@ export function KnowledgeBaseTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="size-5 animate-spin rounded-full border-2 border-neutral-300 border-t-primary" />
+        <div className="size-5 animate-spin rounded-full border-2 border-border border-t-primary" />
       </div>
     )
   }
@@ -151,7 +151,7 @@ export function KnowledgeBaseTab() {
       ) : (
         <div className="space-y-3">
           {items.map((item) => (
-            <div key={item.id} className="rounded-xl border border-neutral-200 bg-white p-5 flex gap-4">
+            <div key={item.id} className="rounded-xl border border-border bg-card p-5 flex gap-4">
               <div className="flex-1 space-y-1 min-w-0">
                 <p className="font-medium text-foreground text-sm">{item.question}</p>
                 <p className="text-sm text-muted-foreground">{item.answer}</p>

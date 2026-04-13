@@ -40,13 +40,13 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2.5 px-2 py-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-900">
-            <span className="text-xs font-black text-white">FD</span>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary">
+            <span className="text-xs font-black text-sidebar-primary-foreground">FD</span>
           </div>
           <div className="overflow-hidden group-data-[collapsible=icon]:hidden">
-            <p className="truncate text-sm font-semibold text-neutral-900">Front Desk</p>
+            <p className="truncate text-sm font-semibold text-sidebar-foreground">Front Desk</p>
             {business?.name && (
-              <p className="truncate text-xs text-neutral-400">{business.name}</p>
+              <p className="truncate text-xs text-sidebar-foreground/60">{business.name}</p>
             )}
           </div>
         </div>
@@ -76,7 +76,7 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border">
         <div className="flex items-center justify-between gap-2 px-2 py-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center">
           <div className="overflow-hidden group-data-[collapsible=icon]:hidden">
-            <p className="truncate text-sm font-medium text-neutral-900">
+            <p className="truncate text-sm font-medium text-sidebar-foreground">
               {profile?.firstName} {profile?.lastName}
             </p>
           </div>
@@ -84,7 +84,7 @@ export function AppSidebar() {
             variant="ghost"
             size="icon"
             onClick={signOut}
-            className="h-8 w-8 shrink-0 text-neutral-400 hover:text-neutral-900"
+            className="h-8 w-8 shrink-0 text-sidebar-foreground/60 hover:text-sidebar-foreground"
             title="Sign out"
           >
             <LogOut size={16} />

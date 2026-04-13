@@ -32,7 +32,7 @@ export function UsageTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-indigo-600" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-indigo-600" />
       </div>
     )
   }
@@ -49,7 +49,7 @@ export function UsageTab() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-neutral-900">Usage — {periodLabel}</h2>
+      <h2 className="text-lg font-semibold text-foreground">Usage — {periodLabel}</h2>
 
       {/* Stats row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -64,20 +64,20 @@ export function UsageTab() {
 
       {/* Progress bar */}
       {plan && (
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 space-y-4">
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-neutral-700">{plan.name} Plan — {plan.minutes} min included</span>
-            <span className="text-neutral-500">{minutesUsed} / {plan.minutes} min</span>
+            <span className="font-medium text-foreground">{plan.name} Plan — {plan.minutes} min included</span>
+            <span className="text-muted-foreground">{minutesUsed} / {plan.minutes} min</span>
           </div>
 
-          <div className="h-3 w-full rounded-full bg-neutral-100 overflow-hidden">
+          <div className="h-3 w-full rounded-full bg-muted overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${pct >= 100 ? "bg-red-500" : pct >= 80 ? "bg-amber-400" : "bg-indigo-500"}`}
               style={{ width: `${pct}%` }}
             />
           </div>
 
-          <div className="flex items-center justify-between text-xs text-neutral-400">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>{pct}% used</span>
             {overageMinutes > 0 && (
               <span className="text-amber-600 font-medium">
@@ -91,7 +91,7 @@ export function UsageTab() {
         </div>
       )}
 
-      <p className="text-xs text-neutral-400">
+      <p className="text-xs text-muted-foreground">
         Usage resets on the 1st of each month. Overage is billed automatically via Stripe at the end of your billing period.
       </p>
     </div>
@@ -100,9 +100,9 @@ export function UsageTab() {
 
 function StatCard({ label, value, valueClass }: { label: string; value: string; valueClass?: string }) {
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-5 space-y-1">
-      <p className="text-xs font-medium text-neutral-400 uppercase tracking-wide">{label}</p>
-      <p className={`text-2xl font-bold text-neutral-900 ${valueClass ?? ""}`}>{value}</p>
+    <div className="rounded-xl border border-border bg-card p-5 space-y-1">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
+      <p className={`text-2xl font-bold text-foreground ${valueClass ?? ""}`}>{value}</p>
     </div>
   )
 }
