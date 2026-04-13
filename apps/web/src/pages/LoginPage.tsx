@@ -146,8 +146,7 @@ export function LoginPage() {
 
       {step === "otp" && (
         <form onSubmit={handleVerify} className="space-y-4">
-          <div className="space-y-3">
-            <Label>Verification code</Label>
+          <div className="flex flex-col items-center gap-4 py-2">
             <InputOTP
               maxLength={6}
               value={otp}
@@ -159,15 +158,15 @@ export function LoginPage() {
               autoFocus
             >
               <InputOTPGroup>
-                <InputOTPSlot index={0} />
-                <InputOTPSlot index={1} />
-                <InputOTPSlot index={2} />
-                <InputOTPSlot index={3} />
-                <InputOTPSlot index={4} />
-                <InputOTPSlot index={5} />
+                <InputOTPSlot index={0} className="size-12 text-lg" />
+                <InputOTPSlot index={1} className="size-12 text-lg" />
+                <InputOTPSlot index={2} className="size-12 text-lg" />
+                <InputOTPSlot index={3} className="size-12 text-lg" />
+                <InputOTPSlot index={4} className="size-12 text-lg" />
+                <InputOTPSlot index={5} className="size-12 text-lg" />
               </InputOTPGroup>
             </InputOTP>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-muted-foreground">
               {busy ? "Verifying…" : "Enter the 6-digit code sent to your phone"}
             </p>
           </div>

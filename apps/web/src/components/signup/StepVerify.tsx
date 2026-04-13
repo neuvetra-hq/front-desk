@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
@@ -71,8 +70,7 @@ export function StepVerify({ phone, onVerified, onBack, busy, setBusy }: Props) 
 
   return (
     <form onSubmit={handleVerify} className="space-y-4">
-      <div className="space-y-3">
-        <Label>6-digit code</Label>
+      <div className="flex flex-col items-center gap-4 py-2">
         <InputOTP
           maxLength={6}
           value={otp}
@@ -84,15 +82,15 @@ export function StepVerify({ phone, onVerified, onBack, busy, setBusy }: Props) 
           autoFocus
         >
           <InputOTPGroup>
-            <InputOTPSlot index={0} />
-            <InputOTPSlot index={1} />
-            <InputOTPSlot index={2} />
-            <InputOTPSlot index={3} />
-            <InputOTPSlot index={4} />
-            <InputOTPSlot index={5} />
+            <InputOTPSlot index={0} className="size-12 text-lg" />
+            <InputOTPSlot index={1} className="size-12 text-lg" />
+            <InputOTPSlot index={2} className="size-12 text-lg" />
+            <InputOTPSlot index={3} className="size-12 text-lg" />
+            <InputOTPSlot index={4} className="size-12 text-lg" />
+            <InputOTPSlot index={5} className="size-12 text-lg" />
           </InputOTPGroup>
         </InputOTP>
-        <p className="text-xs text-neutral-400">Sent to {phone}</p>
+        <p className="text-xs text-muted-foreground">Sent to {phone}</p>
       </div>
 
       <div className="flex items-center justify-between text-sm">
