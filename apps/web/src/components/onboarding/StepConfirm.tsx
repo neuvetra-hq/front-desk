@@ -78,13 +78,13 @@ export function StepConfirm({ businessId, data, onBack, onSuccess }: Props) {
       <div className="rounded-xl bg-neutral-50 border border-neutral-100 divide-y divide-neutral-100">
         {rows.map(({ label, value }) => (
           <div key={label} className="flex items-center justify-between px-4 py-3.5">
-            <span className="text-sm text-neutral-500">{label}</span>
-            <span className="text-sm font-medium text-neutral-900">{value}</span>
+            <span className="text-sm text-muted-foreground">{label}</span>
+            <span className="text-sm font-medium text-foreground">{value}</span>
           </div>
         ))}
       </div>
 
-      <p className="text-sm text-neutral-400 text-center leading-relaxed">
+      <p className="text-sm text-muted-foreground text-center leading-relaxed">
         We'll instantly provision a local number and activate your AI receptionist — no phone changes needed.
       </p>
 
@@ -95,7 +95,7 @@ export function StepConfirm({ businessId, data, onBack, onSuccess }: Props) {
       >
         {activating ? (
           <span className="flex items-center gap-2">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+            <span className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
             Activating…
           </span>
         ) : (
@@ -103,14 +103,15 @@ export function StepConfirm({ businessId, data, onBack, onSuccess }: Props) {
         )}
       </Button>
 
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={onBack}
         disabled={activating}
-        className="w-full text-sm text-neutral-400 hover:text-neutral-600 transition-colors disabled:pointer-events-none"
+        className="w-full text-sm text-muted-foreground hover:text-foreground"
       >
         ← Back
-      </button>
+      </Button>
     </div>
   )
 }

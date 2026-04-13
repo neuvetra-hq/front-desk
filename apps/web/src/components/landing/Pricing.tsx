@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Container } from "@/components/layout/Container"
 import { PRICING_TIERS } from "@/constants/landing"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 export function Pricing() {
   const [annual, setAnnual] = useState(false)
@@ -21,30 +22,23 @@ export function Pricing() {
           </p>
 
           {/* Billing toggle */}
-          <div className="mt-8 inline-flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-1">
-            <button
-              onClick={() => setAnnual(false)}
-              className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
-                !annual
-                  ? "bg-neutral-900 text-white shadow-sm"
-                  : "text-neutral-500 hover:text-neutral-900"
-              }`}
+          <div className="mt-8">
+            <ToggleGroup
+              value={[annual ? "annual" : "monthly"]}
+              onValueChange={(v) => { if (v[0]) setAnnual(v[0] === "annual") }}
+              spacing={1}
+              className="rounded-xl border border-neutral-200 bg-white p-1"
             >
-              Monthly
-            </button>
-            <button
-              onClick={() => setAnnual(true)}
-              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
-                annual
-                  ? "bg-neutral-900 text-white shadow-sm"
-                  : "text-neutral-500 hover:text-neutral-900"
-              }`}
-            >
-              Annual
-              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
-                Save 20%
-              </span>
-            </button>
+              <ToggleGroupItem value="monthly" className="rounded-lg px-4 py-2 text-sm font-semibold">
+                Monthly
+              </ToggleGroupItem>
+              <ToggleGroupItem value="annual" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold">
+                Annual
+                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                  Save 20%
+                </span>
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
         </div>
 
