@@ -25,16 +25,14 @@ test.describe("shadcn component standardisation — auth pages", () => {
     await expect(sendBtn).toBeVisible()
   })
 
-  test("signup page: eye toggle in password field is a button", async ({ page }) => {
+  test("signup page: send verification code button is a proper button element", async ({ page }) => {
     await page.goto("/signup")
     // The signup page redirects authenticated users — skip if redirected
-    const url = page.url()
-    if (!url.includes("signup")) return
+    if (!page.url().includes("signup")) return
 
-    const eyeBtn = page.locator("button[aria-label]").or(
-      page.locator("form button[type='button']")
-    ).first()
-    await expect(eyeBtn).toBeVisible()
+    const submitBtn = page.getByRole("button", { name: /send verification code/i })
+    await expect(submitBtn).toBeVisible()
+    await expect(submitBtn).toBeEnabled()
   })
 })
 
