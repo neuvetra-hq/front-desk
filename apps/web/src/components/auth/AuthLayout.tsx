@@ -12,16 +12,16 @@ export function AuthLayout({ title, description, children }: AuthLayoutProps) {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="mb-8 flex items-center justify-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-900">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-neutral-900">
             <span className="text-sm font-bold text-white">FD</span>
           </div>
-          <span className="text-lg font-semibold text-neutral-900">Front Desk</span>
+          <span className="text-lg font-semibold text-foreground">Front Desk</span>
         </div>
 
         <Card className="border-neutral-200 shadow-sm">
           <CardHeader className="pb-4 text-center">
-            <h1 className="text-xl font-semibold text-neutral-900">{title}</h1>
-            <p className="text-sm text-neutral-500">{description}</p>
+            <h1 className="text-xl font-semibold text-foreground">{title}</h1>
+            <p className="text-sm text-muted-foreground">{description}</p>
           </CardHeader>
           <CardContent>{children}</CardContent>
         </Card>

@@ -124,7 +124,7 @@ export function SignupPage() {
           <div
             key={i}
             className={`h-1 flex-1 rounded-full transition-all ${
-              i <= step ? "bg-indigo-600" : "bg-neutral-200"
+              i <= step ? "bg-indigo-600" : "bg-muted"
             }`}
           />
         ))}
@@ -172,7 +172,7 @@ export function SignupPage() {
         />
       )}
 
-      <p className="mt-4 text-center text-sm text-neutral-500">
+      <p className="mt-4 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
         <Link to="/login" className="font-medium text-indigo-600 hover:underline">Sign in</Link>
       </p>
