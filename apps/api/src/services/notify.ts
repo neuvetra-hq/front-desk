@@ -42,7 +42,7 @@ export async function notifyOwnerAppointment(
       .limit(1)
 
     if (!row?.ownerPhone || !row?.twilioNumber) {
-      console.warn(`notifyOwner: no owner phone or twilio number for business ${businessId}`)
+      console.warn(`notifyOwner [${action}]: no owner phone or twilio number for business ${businessId}`)
       return
     }
 
@@ -53,15 +53,17 @@ export async function notifyOwnerAppointment(
 
     const lines = [
       `${emoji} Front Desk — Appointment ${action}`,
-      `Customer: ${detail.customerName} (${detail.customerPhone})`,
+      `Customer: ${detail.customerName || "Unknown"} (${detail.customerPhone})`,
     ]
     if (detail.when)   lines.push(`Time: ${detail.when}`)
     if (detail.reason) lines.push(`Reason: ${detail.reason}`)
     // No URL — A2P 10DLC campaign was registered without link-sending
 
+    console.log(`notifyOwner [${action}]: sending SMS from ${row.twilioNumber} to ${row.ownerPhone}`)
     await sendSms(row.ownerPhone, row.twilioNumber, lines.join("\n"))
+    console.log(`notifyOwner [${action}]: SMS sent OK`)
   } catch (err) {
     // Never let notification errors surface to the caller
-    console.error("notifyOwnerAppointment failed:", err)
+    console.error(`notifyOwner [${action}]: SMS failed:`, err)
   }
 }
