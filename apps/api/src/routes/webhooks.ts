@@ -628,7 +628,9 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
     }
 
     // ------------------------------------------------------------------
-    // call_ended — save transcript + summary to calls table
+    // call_ended — mark call completed + save transcript/duration.
+    // NOTE: call_analysis is NOT available at call_ended time — Retell
+    // sends it separately via call_analyzed (handled below).
     // ------------------------------------------------------------------
     if (event.event === "call_ended") {
       const call = event.call as Record<string, unknown> | undefined
@@ -638,10 +640,25 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
           .set({
             status:          "completed",
             transcript:      call.transcript as string | undefined ?? null,
-            summary:         (call.call_analysis as Record<string, unknown> | undefined)?.call_summary as string | undefined ?? null,
             durationSeconds: call.duration_ms ? Math.round((call.duration_ms as number) / 1000) : null,
             endedAt:         new Date(),
           })
+          .where(eq(calls.retellCallId, call.call_id as string))
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // call_analyzed — Retell fires this ~30s after call_ended once the
+    // post-call AI analysis is complete. This is the only reliable place
+    // to read call_summary.
+    // ------------------------------------------------------------------
+    if (event.event === "call_analyzed") {
+      const call = event.call as Record<string, unknown> | undefined
+      if (call?.call_id) {
+        const summary = (call.call_analysis as Record<string, unknown> | undefined)?.call_summary as string | undefined ?? null
+        await db
+          .update(calls)
+          .set({ summary })
           .where(eq(calls.retellCallId, call.call_id as string))
       }
     }

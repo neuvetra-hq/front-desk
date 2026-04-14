@@ -161,6 +161,100 @@ test.describe("Retell webhook — graceful handling (no fixtures needed)", () =>
 })
 
 // ---------------------------------------------------------------------------
+// call_analyzed — summary must be written when Retell sends post-call analysis
+// These run without any fixtures (we send a fake call_id — UPDATE affects 0 rows
+// but the handler must not crash and must return { received: true })
+// ---------------------------------------------------------------------------
+
+test.describe("Retell webhook — call_analyzed event", () => {
+
+  test("call_analyzed with valid payload returns { received: true } without crashing", async ({ request }) => {
+    const res = await request.post(`${API_URL}/webhooks/retell`, {
+      data: {
+        event: "call_analyzed",
+        call: {
+          call_id: "test-fake-call-id-for-analyzed-event",
+          call_analysis: {
+            call_summary: "Customer asked about pricing and booked a Thursday 9am appointment.",
+            user_sentiment: "Positive",
+          },
+        },
+      },
+    })
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json() as Record<string, unknown>
+    expect(body.received).toBe(true)
+    // Must NOT have an error key (that would indicate the handler crashed)
+    expect(body.error).toBeUndefined()
+  })
+
+  test("call_analyzed with missing call_id is handled gracefully", async ({ request }) => {
+    const res = await request.post(`${API_URL}/webhooks/retell`, {
+      data: {
+        event: "call_analyzed",
+        call: {},
+      },
+    })
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json() as Record<string, unknown>
+    expect(body.received).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// book_appointment — timezone-offset strings must not crash the handler
+// Regression tests for: LLM sends "2026-04-17T09:00:00-07:00" (tz-aware)
+// which used to fail naiveLocalToDate and cause a silent booking failure.
+// These are gated on TEST_BUSINESS_PHONE because they need a real DB business.
+// ---------------------------------------------------------------------------
+
+test.describe("book_appointment — timezone robustness", () => {
+  const businessPhone = process.env.TEST_BUSINESS_PHONE
+
+  test("book_appointment with TZ-offset start_time returns a result string (not undefined)", async ({ request }) => {
+    test.skip(!businessPhone, "Set TEST_BUSINESS_PHONE=+1xxx to run this test")
+
+    const tzOffsetTime = "2026-12-15T09:00:00-08:00"  // LLM-style: local time + offset
+    const res = await retellCall(
+      request,
+      "book_appointment",
+      {
+        start_time:      tzOffsetTime,
+        duration_minutes: 60,
+        customer_name:   "Test Caller",
+        customer_phone:  "+19999999999",
+      },
+      businessPhone!,
+    )
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json() as { result?: string }
+    // Must always return a result string — never undefined (which would silently skip booking)
+    expect(typeof body.result).toBe("string")
+    expect(body.result!.length).toBeGreaterThan(0)
+  })
+
+  test("book_appointment with missing start_time returns a clarifying question", async ({ request }) => {
+    test.skip(!businessPhone, "Set TEST_BUSINESS_PHONE=+1xxx to run this test")
+
+    const res = await retellCall(
+      request,
+      "book_appointment",
+      {
+        duration_minutes: 60,
+        customer_name:   "Test Caller",
+        customer_phone:  "+19999999999",
+        // start_time intentionally omitted
+      },
+      businessPhone!,
+    )
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json() as { result?: string }
+    expect(typeof body.result).toBe("string")
+    expect(body.result!.toLowerCase()).toMatch(/time|when|confirm/)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // Ownership guard — scaffolded (requires two seeded sessions)
 // ---------------------------------------------------------------------------
 
