@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 
 const API_URL = import.meta.env.VITE_API_URL as string
@@ -44,8 +45,10 @@ export function StepPickNumber({ areaCode, onNext, onBack }: Props) {
       </p>
 
       {loadingNumbers ? (
-        <div className="flex items-center justify-center py-8">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-indigo-600" />
+        <div className="space-y-2">
+          <Skeleton className="h-14 w-full rounded-xl" />
+          <Skeleton className="h-14 w-full rounded-xl" />
+          <Skeleton className="h-14 w-full rounded-xl" />
         </div>
       ) : numbers.length === 0 ? (
         <div className="rounded-xl border border-neutral-200 bg-neutral-50 py-6 text-center text-sm text-neutral-500">

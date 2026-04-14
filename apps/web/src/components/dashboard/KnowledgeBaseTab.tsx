@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
-import { Trash2, Plus, BookOpen, Pencil, Check, X, Loader2 } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Trash2, Plus, BookOpen, Pencil, Check, X, Loader2, AlertTriangle } from "lucide-react"
 import { toast } from "sonner"
 
 const API_URL = import.meta.env.VITE_API_URL as string
@@ -85,11 +89,11 @@ function KBItemRow({
 
       {editing ? (
         <div className="space-y-2">
-          <textarea
+          <Textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             rows={4}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+            className="resize-none"
           />
           <div className="flex gap-2">
             <Button size="sm" onClick={handleSave} disabled={saving}>
@@ -136,22 +140,23 @@ function AddForm({ onAdd, onCancel }: { onAdd: (q: string, a: string) => Promise
   return (
     <form onSubmit={handleSubmit} className="rounded-xl border border-primary/30 bg-primary/5 p-5 space-y-3">
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-foreground">Question</label>
-        <input
+        <Label htmlFor="kb-question">Question</Label>
+        <Input
+          id="kb-question"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="What are your business hours?"
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-foreground">Answer</label>
-        <textarea
+        <Label htmlFor="kb-answer">Answer</Label>
+        <Textarea
+          id="kb-answer"
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           placeholder="We're open Monday–Friday, 9am–5pm."
           rows={3}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+          className="resize-none"
         />
       </div>
       <div className="flex gap-2">
@@ -278,9 +283,12 @@ export function KnowledgeBaseTab() {
 
       {/* Placeholder warning */}
       {placeholderCount > 0 && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800/50 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
-          <strong>{placeholderCount} answer{placeholderCount > 1 ? "s" : ""}</strong> still have placeholders [in brackets] — click the pencil icon to fill them in with your specific details.
-        </div>
+        <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800/50 text-amber-800 dark:text-amber-300">
+          <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" />
+          <AlertDescription className="text-amber-800 dark:text-amber-300">
+            <strong>{placeholderCount} answer{placeholderCount > 1 ? "s" : ""}</strong> still have placeholders [in brackets] — click the pencil icon to fill them in with your specific details.
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Add form */}

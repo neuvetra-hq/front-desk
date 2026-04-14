@@ -4,6 +4,9 @@ import { useAuth } from "@/contexts/AuthContext"
 import { Phone, AlertTriangle, Sun, Moon } from "lucide-react"
 import { useTheme } from "@/contexts/ThemeContext"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   SidebarInset,
   SidebarProvider,
@@ -95,19 +98,19 @@ export function DashboardPage() {
 
         {/* No-calendar warning */}
         {calendarConnected === false && (
-          <div className="border-b border-amber-200 bg-amber-50 px-4 py-2.5 flex items-center gap-3">
-            <AlertTriangle size={15} className="shrink-0 text-amber-600" />
-            <p className="text-sm text-amber-800 flex-1 min-w-0">
-              <strong>No calendar connected</strong> — your AI cannot book appointments.
-            </p>
-            <Button
-              variant="link"
-              className="shrink-0 h-auto p-0 text-sm text-amber-700 hover:text-amber-900"
-              onClick={() => navigate("/dashboard/settings")}
-            >
-              Connect →
-            </Button>
-          </div>
+          <Alert className="rounded-none border-x-0 border-t-0 border-amber-200 bg-amber-50 px-4 py-2.5 text-amber-800">
+            <AlertTriangle className="size-4 text-amber-600" />
+            <AlertDescription className="flex items-center justify-between gap-3 text-amber-800">
+              <span><strong>No calendar connected</strong> — your AI cannot book appointments.</span>
+              <Button
+                variant="link"
+                className="shrink-0 h-auto p-0 text-sm text-amber-700 hover:text-amber-900"
+                onClick={() => navigate("/dashboard/settings")}
+              >
+                Connect →
+              </Button>
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Page content */}
@@ -219,7 +222,13 @@ function MessagesTab() {
   }
 
   if (loading) {
-    return <p className="text-sm text-muted-foreground">Loading…</p>
+    return (
+      <div className="space-y-3 max-w-2xl">
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-16 w-3/4" />
+      </div>
+    )
   }
 
   const pending = messages.filter((m) => m.status === "pending")
@@ -284,9 +293,9 @@ function MessageCard({ message, onMarkHandled }: { message: CallbackRequest; onM
           </span>
           <span className="font-mono text-xs text-muted-foreground">{message.callerPhone}</span>
           {message.status === "pending" && (
-            <span className="rounded-full bg-amber-100 text-amber-700 text-xs font-medium px-2 py-0.5">
+            <Badge className="bg-amber-100 text-amber-700 border-amber-200">
               Needs callback
-            </span>
+            </Badge>
           )}
         </div>
         {message.message && (

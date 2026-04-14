@@ -3,7 +3,16 @@ import { useSearchParams } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { toast } from "sonner"
 
 const API_URL = import.meta.env.VITE_API_URL as string
@@ -212,8 +221,9 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
 
         <div className="rounded-xl border border-border bg-card p-5 space-y-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Agent name</label>
+            <Label htmlFor="agent-name">Agent name</Label>
             <Input
+              id="agent-name"
               placeholder="e.g. Alex"
               value={agentName}
               onChange={(e) => setAgentName(e.target.value)}
@@ -224,8 +234,9 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Emergency contact number</label>
+            <Label htmlFor="emergency-phone">Emergency contact number</Label>
             <Input
+              id="emergency-phone"
               placeholder="e.g. +14155551234"
               value={ownerPhone}
               onChange={(e) => setOwnerPhone(e.target.value)}
@@ -252,16 +263,23 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
 
         <div className="rounded-xl border border-border bg-card p-5">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Timezone</label>
-            <select
+            <Label>Timezone</Label>
+            <Select
+              items={TIMEZONES.map((tz) => ({ label: tz.label, value: tz.value }))}
               value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              onValueChange={(v) => { if (v) setTimezone(v) }}
             >
-              {TIMEZONES.map((tz) => (
-                <option key={tz.value} value={tz.value}>{tz.label}</option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {TIMEZONES.map((tz) => (
+                    <SelectItem key={tz.value} value={tz.value}>{tz.label}</SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
             <p className="text-xs text-muted-foreground">
               All appointment times will be booked in this timezone.
             </p>
