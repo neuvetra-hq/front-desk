@@ -37,9 +37,10 @@ export function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-neutral-900 mb-3">3. TCPA Disclosure & Automated Communications</h2>
             <p>
-              By using Front Desk, you authorize us to send automated SMS messages to phone numbers you provide
-              or that your customers provide in connection with the Service. These messages include but are not
-              limited to: one-time verification codes, appointment confirmations, and emergency alerts.
+              By using Front Desk, you authorize us to send automated SMS messages to the phone number you provide
+              during registration. These messages include but are not limited to: one-time verification codes,
+              appointment booking confirmations, cancellation notices, reschedule notifications, callback request
+              alerts, and emergency alerts triggered by your AI receptionist on your behalf.
             </p>
             <p className="mt-3">
               You are responsible for ensuring that your use of the Service complies with the Telephone Consumer
