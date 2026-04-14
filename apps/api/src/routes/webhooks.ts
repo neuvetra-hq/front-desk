@@ -183,7 +183,9 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
   // Called by Retell AI — handles function calls mid-call and end-of-call events
   .post("/retell", async ({ body }) => {
     const event = body as Record<string, unknown>
-    console.log("Retell event:", event.event ?? event.name)
+    console.log("Retell webhook received:", JSON.stringify(event).slice(0, 300))
+
+    try {
 
     // ------------------------------------------------------------------
     // Function calls — two formats:
@@ -191,7 +193,7 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
     //   New conversation flow:    { name, call, args }  (no event field)
     // ------------------------------------------------------------------
     const isFunctionCall = event.event === "function_call" ||
-      (typeof event.name === "string" && event.event === undefined)
+      (typeof event.name === "string" && event.event === undefined && event.call !== undefined)
 
     if (isFunctionCall) {
       const call      = event.call as Record<string, unknown>
@@ -553,4 +555,11 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
     }
 
     return { received: true }
+
+    } catch (err) {
+      console.error("Retell webhook unhandled error:", err)
+      console.error("Event body was:", JSON.stringify(event))
+      // Return 200 so Retell doesn't retry — log the error for investigation
+      return { received: true, error: (err as Error).message }
+    }
   })
