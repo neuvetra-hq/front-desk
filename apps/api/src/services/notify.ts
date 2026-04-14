@@ -57,7 +57,7 @@ export async function notifyOwnerAppointment(
     ]
     if (detail.when)   lines.push(`Time: ${detail.when}`)
     if (detail.reason) lines.push(`Reason: ${detail.reason}`)
-    lines.push("→ neuvetra.com/dashboard/calls")
+    // No URL — A2P 10DLC campaign was registered without link-sending
 
     await sendSms(row.ownerPhone, row.twilioNumber, lines.join("\n"))
   } catch (err) {
