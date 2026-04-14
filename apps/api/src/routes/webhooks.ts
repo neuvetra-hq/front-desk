@@ -133,36 +133,37 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
   // Called by Twilio on every inbound call
   .post("/voice", async ({ body }) => {
     const called = (body as Record<string, string>).To
-
-    if (!called) return twiml("<Hangup/>")
-
-    const [business] = await db
-      .select()
-      .from(businesses)
-      .where(eq(businesses.twilioNumber, called))
-      .limit(1)
-
-    if (!business) {
-      console.error(`No business found for number ${called}`)
-      return twiml("<Say>Sorry, this number is not configured. Goodbye.</Say><Hangup/>")
-    }
-
-    const agentId = Bun.env.RETELL_AGENT_ID ?? ""
-    console.log(`/voice: business=${business.id} agentId=${agentId} from=${(body as Record<string, string>).From} to=${called}`)
-
-    // Fetch knowledge base entries for this business
-    const kbRows = await db
-      .select({ question: knowledgeBase.question, answer: knowledgeBase.answer })
-      .from(knowledgeBase)
-      .where(eq(knowledgeBase.businessId, business.id))
-
-    const knowledgeBaseText = kbRows.length > 0
-      ? kbRows.map((r) => `Q: ${r.question}\nA: ${r.answer}`).join("\n\n")
-      : "No specific knowledge base configured for this business."
-
-    const aiConfig = (business.aiConfig as Record<string, unknown>) ?? {}
+    console.log(`/voice incoming: To=${called} From=${(body as Record<string, string>).From}`)
 
     try {
+      if (!called) return twiml("<Hangup/>")
+
+      const [business] = await db
+        .select()
+        .from(businesses)
+        .where(eq(businesses.twilioNumber, called))
+        .limit(1)
+
+      if (!business) {
+        console.error(`/voice: no business found for number ${called}`)
+        return twiml("<Say>Sorry, this number is not configured. Goodbye.</Say><Hangup/>")
+      }
+
+      const agentId = Bun.env.RETELL_AGENT_ID ?? ""
+      console.log(`/voice: business=${business.id} agentId=${agentId}`)
+
+      // Fetch knowledge base entries for this business
+      const kbRows = await db
+        .select({ question: knowledgeBase.question, answer: knowledgeBase.answer })
+        .from(knowledgeBase)
+        .where(eq(knowledgeBase.businessId, business.id))
+
+      const knowledgeBaseText = kbRows.length > 0
+        ? kbRows.map((r) => `Q: ${r.question}\nA: ${r.answer}`).join("\n\n")
+        : "No specific knowledge base configured for this business."
+
+      const aiConfig = (business.aiConfig as Record<string, unknown>) ?? {}
+
       const phoneCall = await retell.call.registerPhoneCall({
         agent_id: agentId,
         from_number: (body as Record<string, string>).From,
@@ -176,12 +177,13 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
           knowledge_base: knowledgeBaseText,
         },
       })
+
       console.log(`/voice: registered call ${phoneCall.call_id}`)
       return twiml(
         `<Dial><Sip>sip:${phoneCall.call_id}@sip.retellai.com</Sip></Dial>`
       )
     } catch (err) {
-      console.error("/voice: registerPhoneCall failed:", err)
+      console.error("/voice: unhandled error:", err)
       return twiml("<Say>We're sorry, we couldn't connect your call right now. Please try again shortly.</Say><Hangup/>")
     }
   })
