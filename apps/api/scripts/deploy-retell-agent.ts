@@ -306,22 +306,28 @@ const nodes: ConversationFlowCreateParams["nodes"] = [
       text: `Help the caller book an appointment at {{business_name}}.
 
 Steps:
-1. Ask for their preferred date and time (and the reason/service if not already mentioned)
-2. Call check_availability with the requested_time — NEVER promise a time before checking
-3. If available, confirm with the caller: "I have [time] available, shall I book that for you?"
-4. Collect: full name, callback phone number, and email if needed
-5. Call book_appointment once you have all details and the caller confirms
-6. Confirm the booking details back to the caller
+1. Ask for their preferred date and time, and the reason/service if not already known
+2. Call check_availability with requested_time as ISO 8601 — NEVER promise a time before checking
+   - Times are in the business local timezone. If the caller says "Monday at 11 AM", use that literally as the local time (e.g. 2026-04-21T11:00:00)
+3. If available, confirm with the caller: "I have [day] at [time] available, shall I book that for you?"
+4. Collect full name and callback phone number
+5. YOU MUST call book_appointment with all details before saying anything is confirmed
 
-If a time is unavailable, the result will include alternatives — offer those.
-Never book without checking availability first.`,
+CRITICAL:
+- Do NOT say "booked", "confirmed", "all set", or any synonym until AFTER book_appointment returns successfully
+- Do NOT exit or wrap up this node until book_appointment has been called and returned a success result
+- If book_appointment returns an error or alternative times, relay that to the caller and try again
+- Read the confirmed time back from the tool result, not from memory`,
     },
     tool_ids: [TOOL_IDS.checkAvailability, TOOL_IDS.bookAppointment],
     edges: [
       {
         id: "edge-book-wrapup",
         destination_node_id: IDS.wrapUp,
-        transition_condition: { type: "prompt", prompt: "Appointment has been successfully booked and confirmed to caller" },
+        transition_condition: {
+          type: "prompt",
+          prompt: "book_appointment tool was called and returned successfully AND the confirmed booking was read back to the caller",
+        },
       },
     ],
     display_position: { x: 1302, y: -1800 },
@@ -351,6 +357,16 @@ After answering, ask: "Is there anything else I can help you with?"`,
         id: "edge-faq-book",
         destination_node_id: IDS.book,
         transition_condition: { type: "prompt", prompt: "Caller wants to book an appointment" },
+      },
+      {
+        id: "edge-faq-cancel",
+        destination_node_id: IDS.cancelFind,
+        transition_condition: { type: "prompt", prompt: "Caller wants to cancel an appointment" },
+      },
+      {
+        id: "edge-faq-reschedule",
+        destination_node_id: IDS.rescheduleFind,
+        transition_condition: { type: "prompt", prompt: "Caller wants to reschedule an appointment" },
       },
       {
         id: "edge-faq-message",
@@ -474,13 +490,38 @@ Do not transition until you have their name, a phone number, and what they need.
     name: "Wrap Up",
     instruction: {
       type: "prompt",
-      text: `Thank the caller by name if you have it, say goodbye on behalf of {{business_name}}, and end with "Have a great day!" Keep it to 1-2 sentences.`,
+      text: `You just completed a task for the caller. Ask: "Is there anything else I can help you with today?" If not, thank them by name if you have it, say goodbye on behalf of {{business_name}}, and end with "Have a great day!" Keep it to 1-2 sentences.`,
     },
     edges: [
       {
+        id: "edge-wrapup-book",
+        destination_node_id: IDS.book,
+        transition_condition: { type: "prompt", prompt: "Caller wants to book an appointment" },
+      },
+      {
+        id: "edge-wrapup-cancel",
+        destination_node_id: IDS.cancelFind,
+        transition_condition: { type: "prompt", prompt: "Caller wants to cancel an appointment" },
+      },
+      {
+        id: "edge-wrapup-reschedule",
+        destination_node_id: IDS.rescheduleFind,
+        transition_condition: { type: "prompt", prompt: "Caller wants to reschedule an appointment" },
+      },
+      {
+        id: "edge-wrapup-faq",
+        destination_node_id: IDS.faq,
+        transition_condition: { type: "prompt", prompt: "Caller has another question" },
+      },
+      {
+        id: "edge-wrapup-message",
+        destination_node_id: IDS.takeMessageConv,
+        transition_condition: { type: "prompt", prompt: "Caller wants to leave a message" },
+      },
+      {
         id: "edge-wrapup-goodbye",
         destination_node_id: IDS.goodbye,
-        transition_condition: { type: "prompt", prompt: "Conversation is complete" },
+        transition_condition: { type: "prompt", prompt: "Caller has no more requests and is ready to hang up" },
       },
     ],
     display_position: { x: 2900, y: 294 },
@@ -530,23 +571,29 @@ Do not transition until you have their name, a phone number, and what they need.
     name: "Confirm & Cancel",
     instruction: {
       type: "prompt",
-      text: `You have just retrieved the caller's upcoming appointments. They are available in {{appointments_json}} as a JSON array with fields: eventId, summary, startTime.
+      text: `You have just retrieved the caller's upcoming appointments. They are in {{appointments_json}} as a JSON array with fields: eventId, summary, startTime.
 
-The result of the lookup was already spoken to the caller. Now:
-1. Ask which appointment they want to cancel (e.g. "Which one would you like to cancel?")
-2. When they identify one (by date, time, or description), match it to the correct eventId from {{appointments_json}}
-3. Confirm with them: "Just to confirm, you'd like to cancel [appointment description] — is that right?"
-4. Call cancel_appointment with the correct event_id
-5. Never ask the caller for an event_id — extract it yourself from the data
+Steps:
+1. Present the appointments clearly — e.g. "I see you have: 1. [reason] on [date], 2. [reason] on [date]. Which would you like to cancel?"
+2. When the caller identifies one, match it to the correct eventId from {{appointments_json}}
+3. Confirm: "Just to confirm — you'd like to cancel [description] on [date]. Is that correct?"
+4. YOU MUST call cancel_appointment with the correct event_id
 
-After cancellation confirm it's done.`,
+CRITICAL:
+- Do NOT say "cancelled", "done", "taken care of", or any synonym until AFTER cancel_appointment returns successfully
+- Do NOT exit or wrap up until cancel_appointment has been called and returned a success result
+- Never ask the caller for an event_id — extract it from {{appointments_json}} yourself
+- If cancel_appointment returns an error, tell the caller and offer to take a message`,
     },
     tool_ids: [TOOL_IDS.cancelAppointment],
     edges: [
       {
         id: "edge-cancelFound-wrapup",
         destination_node_id: IDS.wrapUp,
-        transition_condition: { type: "prompt", prompt: "Appointment has been cancelled or caller no longer wants to cancel" },
+        transition_condition: {
+          type: "prompt",
+          prompt: "cancel_appointment tool was called and returned successfully AND cancellation confirmed to caller, OR caller decided not to cancel",
+        },
       },
     ],
     display_position: { x: 2100, y: -700 },
@@ -622,18 +669,21 @@ After cancellation confirm it's done.`,
     name: "Confirm & Reschedule",
     instruction: {
       type: "prompt",
-      text: `You have just retrieved the caller's upcoming appointments. They are available in {{appointments_json}} as a JSON array with fields: eventId, summary, startTime.
+      text: `You have just retrieved the caller's upcoming appointments. They are in {{appointments_json}} as a JSON array with fields: eventId, summary, startTime.
 
-The result was already spoken to the caller. Now:
-1. Ask which appointment they want to reschedule
-2. When they identify one, match it to the correct eventId from {{appointments_json}}
+Steps:
+1. Present the appointments — ask which one they want to reschedule
+2. When identified, match it to the correct eventId from {{appointments_json}}
 3. Ask for their preferred new date and time
-4. Call check_availability first to confirm the new time is open — NEVER promise a time before checking
-5. Once availability is confirmed, confirm with the caller: "I can reschedule [old appointment] to [new time] — does that work?"
-6. Call reschedule_appointment with the event_id and new_start_time
-7. Never ask the caller for an event_id — extract it yourself from the data
+4. Call check_availability with the new time as ISO 8601 local time (e.g. 2026-04-21T11:00:00) — NEVER promise a time before checking
+5. Once availability is confirmed, confirm: "I can reschedule [old appointment] to [new time] — does that work?"
+6. YOU MUST call reschedule_appointment with event_id and new_start_time
 
-After rescheduling, confirm the new appointment details.`,
+CRITICAL:
+- Do NOT say "rescheduled", "updated", "all set", or any synonym until AFTER reschedule_appointment returns successfully
+- Do NOT exit or wrap up until reschedule_appointment has been called and returned a success result
+- Never ask the caller for an event_id — extract it from {{appointments_json}} yourself
+- If reschedule_appointment returns an error or the slot is taken, relay that to the caller and offer alternatives`,
     },
     tool_ids: [TOOL_IDS.checkAvailability, TOOL_IDS.rescheduleAppointment],
     edges: [
@@ -642,7 +692,7 @@ After rescheduling, confirm the new appointment details.`,
         destination_node_id: IDS.wrapUp,
         transition_condition: {
           type: "prompt",
-          prompt: "Appointment has been rescheduled or caller no longer wants to reschedule",
+          prompt: "reschedule_appointment tool was called and returned successfully AND new appointment details confirmed to caller, OR caller decided not to reschedule",
         },
       },
     ],
