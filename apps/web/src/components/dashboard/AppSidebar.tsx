@@ -40,7 +40,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2.5 px-2 py-3">
-          <img src="/logo.png" alt="Front Desk" className="h-8 w-8 shrink-0 object-contain" />
+          <img src="/logo-v2.png" alt="Front Desk" className="h-8 w-8 shrink-0 object-contain" />
           <div className="overflow-hidden group-data-[collapsible=icon]:hidden">
             <p className="truncate text-sm font-semibold text-sidebar-foreground">Front Desk</p>
             {business?.name && (

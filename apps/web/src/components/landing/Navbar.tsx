@@ -9,7 +9,7 @@ export function Navbar() {
       <Container className="flex h-16 items-center justify-between">
         {/* Logo */}
         <a href="/" className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="Front Desk" className="h-9 w-9 object-contain" />
+          <img src="/logo-v2.png" alt="Front Desk" className="h-9 w-9 object-contain" />
           <span className="text-lg font-bold text-neutral-900 tracking-tight">Front Desk</span>
         </a>
 

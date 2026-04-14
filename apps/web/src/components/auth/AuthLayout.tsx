@@ -12,9 +12,7 @@ export function AuthLayout({ title, description, children }: AuthLayoutProps) {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="mb-8 flex items-center justify-center gap-2">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-neutral-900">
-            <span className="text-sm font-bold text-white">FD</span>
-          </div>
+          <img src="/logo-v2.png" alt="Front Desk" className="h-9 w-9 object-contain" />
           <span className="text-lg font-semibold text-foreground">Front Desk</span>
         </div>
 
