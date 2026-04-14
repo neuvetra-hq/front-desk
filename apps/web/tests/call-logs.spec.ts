@@ -182,11 +182,34 @@ test.describe("Call Logs tab", () => {
     await expect(page.getByText("+14155550101")).toBeVisible()
     await expect(page.getByText("Answered")).toBeVisible()
     await expect(page.getByText(/3m 5s/)).toBeVisible()
-    await expect(page.getByText(/Caller asked about pricing/)).toBeVisible()
+    // Summary is behind a "View summary" button, not inline
+    await expect(page.getByRole("button", { name: /view summary/i })).toBeVisible()
 
     // Missed call row
     await expect(page.getByText("+14155550202")).toBeVisible()
     await expect(page.getByText("Missed")).toBeVisible()
+  })
+
+  test("clicking summary button opens modal with full summary text", async ({ page }) => {
+    await mockSupabaseRoutes(page)
+    await page.route("**/businesses/*/calls*", (route) =>
+      route.fulfill({ json: { calls: MOCK_CALLS } })
+    )
+
+    await page.goto("/dashboard/calls")
+    await expect(page.getByRole("columnheader", { name: /summary/i })).toBeVisible({ timeout: 10000 })
+
+    // Summary cell should show a "View" button, not the raw text inline
+    await expect(page.getByRole("button", { name: /view summary/i })).toBeVisible()
+
+    // Click it — modal should open with full summary
+    await page.getByRole("button", { name: /view summary/i }).click()
+    await expect(page.getByRole("dialog")).toBeVisible()
+    await expect(page.getByText("Caller asked about pricing and booked an appointment for Thursday 9am.")).toBeVisible()
+
+    // Close button dismisses modal
+    await page.getByRole("button", { name: /close/i }).click()
+    await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 3000 })
   })
 
   test("shows call count in header", async ({ page }) => {
