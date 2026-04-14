@@ -532,11 +532,14 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             return { result: "I'm not sure which appointment to cancel — could you clarify which one?" }
           }
 
-          await CalendarService.cancelAppointment(business.id, fromNumber, eventId)
+          const cancelled = await CalendarService.cancelAppointment(business.id, fromNumber, eventId)
+          const aiConfig  = business.aiConfig as { timezone?: string } | null
+          const tz        = aiConfig?.timezone ?? "America/Los_Angeles"
 
           notifyOwnerAppointment(business.id, "cancelled", {
-            customerName:  "",   // not available at cancel time — caller's phone is the identifier
+            customerName:  "",
             customerPhone: fromNumber,
+            when:          formatForSpeech(cancelled.startTime, tz),
           })
 
           return { result: "Done, that appointment has been cancelled." }

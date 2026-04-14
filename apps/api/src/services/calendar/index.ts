@@ -185,7 +185,7 @@ export async function cancelAppointment(
   businessId: string,
   customerPhone: string,
   eventId: string,
-): Promise<void> {
+): Promise<AppointmentRecord> {
   const connection = await getActiveConnection(businessId)
   if (!connection) throw new Error("No calendar connected for this business")
 
@@ -197,6 +197,7 @@ export async function cancelAppointment(
   if (!match) throw new Error("No appointment found for this caller with that ID")
 
   await adapter.cancelEvent(connection, eventId)
+  return match
 }
 
 /**
