@@ -453,7 +453,7 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
           })
 
           const endTime = new Date(new Date(booking.startTime).getTime() + duration * 60 * 1000)
-          const confirmText = `Your appointment is confirmed for ${formatForSpeech(booking.startTime, tz)} to ${formatTimeOnly(endTime.toISOString(), tz)} for ${customerName}. Is there anything else I can help you with?`
+          const confirmText = `Your appointment is confirmed for ${formatForSpeech(booking.startTime, tz)} to ${formatTimeOnly(endTime.toISOString(), tz)} for ${customerName}.`
 
           // Fire-and-forget — never awaited so it can't delay or break the response
           notifyOwnerAppointment(business.id, "booked", {
@@ -539,7 +539,7 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             customerPhone: fromNumber,
           })
 
-          return { result: "Done, that appointment has been cancelled. Is there anything else I can help you with?" }
+          return { result: "Done, that appointment has been cancelled." }
         } catch (err) {
           const msg = (err as Error).message ?? ""
           console.error("cancel_appointment error:", err)
@@ -589,7 +589,7 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
           })
 
           return {
-            result: `Done! Your appointment has been rescheduled to ${formatForSpeech(updated.startTime, tz)}. Is there anything else I can help you with?`,
+            result: `Done! Your appointment has been rescheduled to ${formatForSpeech(updated.startTime, tz)}.`,
           }
         } catch (err) {
           const msg = (err as Error).message ?? ""
@@ -636,7 +636,7 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
 
           const nameClause = callerName ? `, ${callerName},` : ""
           return {
-            result: `Done! I've noted that down. Someone will call${nameClause} back at ${callerPhone} shortly. Is there anything else I can help you with?`,
+            result: `Done! I've noted that down. Someone will call${nameClause} back at ${callerPhone} shortly.`,
           }
         } catch (err) {
           console.error("take_message error:", err)
