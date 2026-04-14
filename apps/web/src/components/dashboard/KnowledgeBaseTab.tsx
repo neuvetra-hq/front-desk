@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
-import { Trash2, Plus, BookOpen, Pencil, Check, X, Sparkles } from "lucide-react"
+import { Trash2, Plus, BookOpen, Pencil, Check, X, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 const API_URL = import.meta.env.VITE_API_URL as string
@@ -261,13 +261,30 @@ export function KnowledgeBaseTab() {
   const [items, setItems]       = useState<KBItem[]>([])
   const [loading, setLoading]   = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [seeding, setSeeding]   = useState(false)
 
   const fetchItems = async () => {
     if (!business?.id) return
     const res  = await fetch(`${API_URL}/businesses/${business.id}/knowledge-base`)
     const data = await res.json() as { items: KBItem[] }
-    setItems(data.items ?? [])
+    const fetched = data.items ?? []
+
+    // Auto-seed if empty — no button needed, just load defaults silently
+    if (fetched.length === 0) {
+      const seedRes    = await fetch(`${API_URL}/businesses/${business.id}/knowledge-base/seed`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+      })
+      const seedResult = await seedRes.json() as { seeded?: boolean; count?: number }
+      if (seedResult.seeded) {
+        const res2  = await fetch(`${API_URL}/businesses/${business.id}/knowledge-base`)
+        const data2 = await res2.json() as { items: KBItem[] }
+        setItems(data2.items ?? [])
+        setLoading(false)
+        return
+      }
+    }
+
+    setItems(fetched)
     setLoading(false)
   }
 
@@ -310,29 +327,6 @@ export function KnowledgeBaseTab() {
     toast.success("Removed")
   }
 
-  const handleSeed = async () => {
-    if (!business?.id) return
-    setSeeding(true)
-    try {
-      const res    = await fetch(`${API_URL}/businesses/${business.id}/knowledge-base/seed`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
-      })
-      const result = await res.json() as { seeded?: boolean; skipped?: boolean; count?: number; error?: string }
-      if (result.error) throw new Error(result.error)
-      if (result.skipped) {
-        toast.info("Your knowledge base already has entries — no defaults loaded.")
-      } else {
-        toast.success(`Loaded ${result.count} default Q&A pairs`)
-        await fetchItems()
-      }
-    } catch (err) {
-      toast.error((err as Error).message ?? "Failed to load defaults")
-    } finally {
-      setSeeding(false)
-    }
-  }
-
   // Group by category
   const categories = Array.from(
     new Set(items.map((i) => i.category ?? "General"))
@@ -344,7 +338,7 @@ export function KnowledgeBaseTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="size-5 animate-spin rounded-full border-2 border-border border-t-primary" />
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
       </div>
     )
   }
@@ -389,13 +383,9 @@ export function KnowledgeBaseTab() {
             <BookOpen className="text-muted-foreground" />
           </div>
           <h3 className="font-semibold text-foreground">No Q&A pairs yet</h3>
-          <p className="text-sm text-muted-foreground mt-1 mb-6 max-w-xs">
-            Load your industry defaults to get started — then customize each answer to match your business.
+          <p className="text-sm text-muted-foreground mt-1 max-w-xs">
+            Click "Add Q&A" to add your first entry.
           </p>
-          <Button onClick={handleSeed} disabled={seeding} className="gap-2">
-            <Sparkles size={14} />
-            {seeding ? "Loading defaults…" : "Load default Q&A for my business"}
-          </Button>
         </div>
       )}
 
