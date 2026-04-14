@@ -217,6 +217,21 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
       })
 
       console.log(`/voice: registered call ${phoneCall.call_id}`)
+
+      // Record the call so it appears in the dashboard immediately
+      try {
+        await db.insert(calls).values({
+          businessId:   business.id,
+          callerNumber: (body as Record<string, string>).From ?? "",
+          retellCallId: phoneCall.call_id,
+          status:       "in_progress",
+          startedAt:    new Date(),
+        })
+      } catch (insertErr) {
+        // Don't fail the call if the insert fails — log and continue
+        console.error("/voice: failed to insert call record:", insertErr)
+      }
+
       return twiml(
         `<Dial><Sip>sip:${phoneCall.call_id}@sip.retellai.com</Sip></Dial>`
       )

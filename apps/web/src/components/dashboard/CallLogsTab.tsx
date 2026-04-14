@@ -41,6 +41,7 @@ export function CallLogsTab() {
 
   useEffect(() => {
     if (!business?.id) return
+
     const fetchCalls = async () => {
       try {
         const res = await fetch(`${API_URL}/businesses/${business.id}/calls`)
@@ -50,7 +51,10 @@ export function CallLogsTab() {
         setLoading(false)
       }
     }
+
     fetchCalls()
+    const interval = setInterval(fetchCalls, 30_000)
+    return () => clearInterval(interval)
   }, [business?.id])
 
   if (loading) {

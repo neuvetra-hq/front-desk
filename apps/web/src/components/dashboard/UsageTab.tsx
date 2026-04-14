@@ -23,10 +23,16 @@ export function UsageTab() {
 
   useEffect(() => {
     if (!business?.id) return
-    fetch(`${API_URL}/businesses/${business.id}/usage`)
-      .then((r) => r.json())
-      .then((d) => setUsage(d as UsageData))
-      .finally(() => setLoading(false))
+
+    const fetchUsage = () =>
+      fetch(`${API_URL}/businesses/${business.id}/usage`)
+        .then((r) => r.json())
+        .then((d) => setUsage(d as UsageData))
+        .finally(() => setLoading(false))
+
+    fetchUsage()
+    const interval = setInterval(fetchUsage, 30_000)
+    return () => clearInterval(interval)
   }, [business?.id])
 
   if (loading) {
@@ -40,7 +46,8 @@ export function UsageTab() {
   const plan = usage?.stripePlanId ? PLAN_LIMITS[usage.stripePlanId] : null
   const minutesUsed = usage?.minutesUsed ?? 0
   const includedMinutes = plan?.minutes ?? 0
-  const overageMinutes = Math.max(0, minutesUsed - includedMinutes)
+  // Only calculate overage when a plan is known — without a plan limit there's no overage
+  const overageMinutes = plan ? Math.max(0, minutesUsed - includedMinutes) : 0
   const pct = includedMinutes > 0 ? Math.min(100, Math.round((minutesUsed / includedMinutes) * 100)) : 0
 
   const periodLabel = usage?.periodStart
