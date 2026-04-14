@@ -207,8 +207,8 @@ test.describe("Call Logs tab", () => {
     await expect(page.getByRole("dialog")).toBeVisible()
     await expect(page.getByText("Caller asked about pricing and booked an appointment for Thursday 9am.")).toBeVisible()
 
-    // Close button dismisses modal
-    await page.getByRole("button", { name: /close/i }).click()
+    // Close button dismisses modal (first match = X button in dialog header)
+    await page.getByRole("button", { name: /close/i }).first().click()
     await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 3000 })
   })
 

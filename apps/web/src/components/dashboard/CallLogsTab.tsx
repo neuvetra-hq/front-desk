@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
-import { PhoneIncoming, PhoneMissed, PhoneCall, X } from "lucide-react"
+import { PhoneIncoming, PhoneMissed, PhoneCall } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
 const API_URL = import.meta.env.VITE_API_URL as string
 
@@ -33,71 +41,6 @@ const STATUS_CONFIG = {
   transferred: { label: "Transferred", icon: <PhoneCall size={14} />,     class: "text-blue-600 bg-blue-50" },
   in_progress: { label: "Live",        icon: <PhoneCall size={14} />,     class: "text-amber-600 bg-amber-50" },
 }
-
-// ---------------------------------------------------------------------------
-// Summary modal
-// ---------------------------------------------------------------------------
-
-function SummaryModal({
-  call,
-  onClose,
-}: {
-  call: CallLog
-  onClose: () => void
-}) {
-  // Close on Escape
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose() }
-    window.addEventListener("keydown", handler)
-    return () => window.removeEventListener("keydown", handler)
-  }, [onClose])
-
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-    >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Panel */}
-      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-card shadow-xl">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4 p-5 border-b border-border">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">
-              Call summary
-            </p>
-            <p className="font-semibold text-foreground">{call.callerNumber}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{formatDate(call.startedAt)}</p>
-          </div>
-          <button
-            aria-label="Close"
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="p-5">
-          <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-            {call.summary}
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Main tab
-// ---------------------------------------------------------------------------
 
 export function CallLogsTab() {
   const { business } = useAuth()
@@ -199,9 +142,23 @@ export function CallLogsTab() {
         </div>
       </div>
 
-      {selectedCall && (
-        <SummaryModal call={selectedCall} onClose={() => setSelectedCall(null)} />
-      )}
+      <Dialog
+        open={selectedCall !== null}
+        onOpenChange={(open) => { if (!open) setSelectedCall(null) }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Call Summary</DialogTitle>
+            <DialogDescription>
+              {selectedCall?.callerNumber} · {selectedCall && formatDate(selectedCall.startedAt)}
+            </DialogDescription>
+          </DialogHeader>
+          <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+            {selectedCall?.summary}
+          </p>
+          <DialogFooter showCloseButton />
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
