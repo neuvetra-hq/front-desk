@@ -8,11 +8,9 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-neutral-100 bg-white/90 backdrop-blur-md">
       <Container className="flex h-16 items-center justify-between">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-900">
-            <span className="text-sm font-black text-white tracking-tight">N</span>
-          </div>
-          <span className="text-lg font-bold text-neutral-900 tracking-tight">Neuvetra</span>
+        <a href="/" className="flex items-center gap-2.5">
+          <img src="/logo.png" alt="Front Desk" className="h-9 w-9 object-contain" />
+          <span className="text-lg font-bold text-neutral-900 tracking-tight">Front Desk</span>
         </a>
 
         {/* Nav links */}
