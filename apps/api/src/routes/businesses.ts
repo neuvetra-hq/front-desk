@@ -48,12 +48,11 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
     if (template && template.length > 0) {
       await db.insert(knowledgeBase).values(
         template.map((entry) => ({
-          businessId:   business.id,
-          question:     entry.question,
-          answer:       entry.answer,
-          questionType: entry.questionType,
-          category:     entry.category,
-          sortOrder:    entry.sortOrder,
+          businessId: business.id,
+          question:   entry.question,
+          answer:     entry.answer,
+          category:   entry.category,
+          sortOrder:  entry.sortOrder,
         }))
       )
     }
@@ -263,29 +262,27 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
 
   // POST /:id/knowledge-base
   .post("/:id/knowledge-base", async ({ params, body }) => {
-    const { question, answer, questionType, category, sortOrder } = body as {
+    const { question, answer, category, sortOrder } = body as {
       question: string; answer: string
-      questionType?: string; category?: string; sortOrder?: number
+      category?: string; sortOrder?: number
     }
     const [item] = await db
       .insert(knowledgeBase)
       .values({
-        businessId:   params.id,
+        businessId: params.id,
         question,
         answer,
-        questionType: questionType ?? "text",
-        category:     category ?? null,
-        sortOrder:    sortOrder ?? 0,
+        category:  category ?? null,
+        sortOrder: sortOrder ?? 0,
       })
       .returning()
     return { item }
   }, {
     body: t.Object({
-      question:     t.String(),
-      answer:       t.String(),
-      questionType: t.Optional(t.String()),
-      category:     t.Optional(t.String()),
-      sortOrder:    t.Optional(t.Number()),
+      question:  t.String(),
+      answer:    t.String(),
+      category:  t.Optional(t.String()),
+      sortOrder: t.Optional(t.Number()),
     }),
   })
 
@@ -339,12 +336,11 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
 
     await db.insert(knowledgeBase).values(
       template.map((entry) => ({
-        businessId:   params.id,
-        question:     entry.question,
-        answer:       entry.answer,
-        questionType: entry.questionType,
-        category:     entry.category,
-        sortOrder:    entry.sortOrder,
+        businessId: params.id,
+        question:   entry.question,
+        answer:     entry.answer,
+        category:   entry.category,
+        sortOrder:  entry.sortOrder,
       }))
     )
 

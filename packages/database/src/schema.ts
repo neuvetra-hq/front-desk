@@ -118,8 +118,6 @@ export const knowledgeBase = pgTable("knowledge_base", {
     .references(() => businesses.id, { onDelete: "cascade" }),
   question:     text("question").notNull(),
   answer:       text("answer").notNull(),
-  // "text" | "yesno" | "currency" | "phone" — controls the edit widget in the UI
-  questionType: text("question_type").notNull().default("text"),
   // Groups entries into labeled sections (e.g. "Emergencies", "Pricing")
   category:     text("category"),
   // Display order within the category

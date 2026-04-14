@@ -6,106 +6,13 @@ import { toast } from "sonner"
 
 const API_URL = import.meta.env.VITE_API_URL as string
 
-type QuestionType = "text" | "yesno" | "currency" | "phone"
-
 interface KBItem {
-  id:           string
-  question:     string
-  answer:       string
-  questionType: QuestionType
-  category:     string | null
-  sortOrder:    number
-  createdAt:    string
-}
-
-// ---------------------------------------------------------------------------
-// Answer editor — renders the right input based on questionType
-// ---------------------------------------------------------------------------
-
-function AnswerEditor({
-  value,
-  type,
-  onChange,
-}: {
-  value: string
-  type: QuestionType
-  onChange: (v: string) => void
-}) {
-  if (type === "yesno") {
-    const isYes = value.toLowerCase().startsWith("yes")
-    return (
-      <div className="space-y-2">
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => onChange(isYes ? value : "Yes. " + value.replace(/^no\.?\s*/i, ""))}
-            className={`px-3 py-1 rounded-md text-sm font-medium border transition-colors ${
-              isYes
-                ? "bg-green-600 text-white border-green-600"
-                : "bg-background text-muted-foreground border-border hover:border-green-400"
-            }`}
-          >
-            Yes
-          </button>
-          <button
-            type="button"
-            onClick={() => onChange(isYes ? "No. " + value.replace(/^yes\.?\s*/i, "") : value)}
-            className={`px-3 py-1 rounded-md text-sm font-medium border transition-colors ${
-              !isYes
-                ? "bg-red-500 text-white border-red-500"
-                : "bg-background text-muted-foreground border-border hover:border-red-400"
-            }`}
-          >
-            No
-          </button>
-        </div>
-        <textarea
-          value={value.replace(/^(yes|no)\.?\s*/i, "")}
-          onChange={(e) => onChange((isYes ? "Yes. " : "No. ") + e.target.value)}
-          rows={3}
-          placeholder="Optional — add details the AI should say after Yes/No…"
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-        />
-      </div>
-    )
-  }
-
-  if (type === "currency") {
-    return (
-      <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
-        <input
-          type="text"
-          value={value.replace(/^\$/, "")}
-          onChange={(e) => onChange("$" + e.target.value)}
-          placeholder="e.g. 89"
-          className="w-full rounded-md border border-input bg-background pl-7 pr-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        />
-      </div>
-    )
-  }
-
-  if (type === "phone") {
-    return (
-      <input
-        type="tel"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="+1 (555) 000-0000"
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-      />
-    )
-  }
-
-  // default: text
-  return (
-    <textarea
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      rows={4}
-      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-    />
-  )
+  id:        string
+  question:  string
+  answer:    string
+  category:  string | null
+  sortOrder: number
+  createdAt: string
 }
 
 // ---------------------------------------------------------------------------
@@ -178,7 +85,12 @@ function KBItemRow({
 
       {editing ? (
         <div className="space-y-2">
-          <AnswerEditor value={draft} type={item.questionType} onChange={setDraft} />
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            rows={4}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+          />
           <div className="flex gap-2">
             <Button size="sm" onClick={handleSave} disabled={saving}>
               <Check size={13} className="mr-1" />
