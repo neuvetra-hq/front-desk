@@ -112,13 +112,19 @@ export const businessMembers = pgTable(
 // ---------------------------------------------------------------------------
 
 export const knowledgeBase = pgTable("knowledge_base", {
-  id:         uuid("id").primaryKey().defaultRandom(),
-  businessId: uuid("business_id")
+  id:           uuid("id").primaryKey().defaultRandom(),
+  businessId:   uuid("business_id")
     .notNull()
     .references(() => businesses.id, { onDelete: "cascade" }),
-  question:   text("question").notNull(),
-  answer:     text("answer").notNull(),
-  createdAt:  timestamp("created_at").notNull().defaultNow(),
+  question:     text("question").notNull(),
+  answer:       text("answer").notNull(),
+  // "text" | "yesno" | "currency" | "phone" — controls the edit widget in the UI
+  questionType: text("question_type").notNull().default("text"),
+  // Groups entries into labeled sections (e.g. "Emergencies", "Pricing")
+  category:     text("category"),
+  // Display order within the category
+  sortOrder:    integer("sort_order").notNull().default(0),
+  createdAt:    timestamp("created_at").notNull().defaultNow(),
 })
 
 // ---------------------------------------------------------------------------

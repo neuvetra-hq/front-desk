@@ -2,6 +2,7 @@ import { Elysia, t } from "elysia"
 import { db, businesses, businessMembers, calls, knowledgeBase, callbackRequests } from "@frontdesk/database"
 import { eq, desc, gte, sql, asc, and } from "drizzle-orm"
 import { searchAvailableNumbers, provisionNumber, releaseNumber } from "../services/twilio"
+import { KB_TEMPLATES } from "../data/kb-templates"
 
 export const businessesRoutes = new Elysia({ prefix: "/businesses" })
 
@@ -41,6 +42,21 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
       userId,
       role: "owner",
     })
+
+    // Seed default knowledge base for this business type
+    const template = KB_TEMPLATES[businessType]
+    if (template && template.length > 0) {
+      await db.insert(knowledgeBase).values(
+        template.map((entry) => ({
+          businessId:   business.id,
+          question:     entry.question,
+          answer:       entry.answer,
+          questionType: entry.questionType,
+          category:     entry.category,
+          sortOrder:    entry.sortOrder,
+        }))
+      )
+    }
 
     return { businessId: business.id }
   }, {
@@ -241,20 +257,55 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
       .select()
       .from(knowledgeBase)
       .where(eq(knowledgeBase.businessId, params.id))
-      .orderBy(asc(knowledgeBase.createdAt))
+      .orderBy(asc(knowledgeBase.sortOrder), asc(knowledgeBase.createdAt))
     return { items: rows }
   })
 
   // POST /:id/knowledge-base
   .post("/:id/knowledge-base", async ({ params, body }) => {
-    const { question, answer } = body
+    const { question, answer, questionType, category, sortOrder } = body as {
+      question: string; answer: string
+      questionType?: string; category?: string; sortOrder?: number
+    }
     const [item] = await db
       .insert(knowledgeBase)
-      .values({ businessId: params.id, question, answer })
+      .values({
+        businessId:   params.id,
+        question,
+        answer,
+        questionType: questionType ?? "text",
+        category:     category ?? null,
+        sortOrder:    sortOrder ?? 0,
+      })
       .returning()
     return { item }
   }, {
-    body: t.Object({ question: t.String(), answer: t.String() }),
+    body: t.Object({
+      question:     t.String(),
+      answer:       t.String(),
+      questionType: t.Optional(t.String()),
+      category:     t.Optional(t.String()),
+      sortOrder:    t.Optional(t.Number()),
+    }),
+  })
+
+  // PATCH /:id/knowledge-base/:itemId — edit answer (and optionally question)
+  .patch("/:id/knowledge-base/:itemId", async ({ params, body }) => {
+    const { answer, question } = body as { answer?: string; question?: string }
+    const [item] = await db
+      .update(knowledgeBase)
+      .set({
+        ...(answer   !== undefined ? { answer }   : {}),
+        ...(question !== undefined ? { question } : {}),
+      })
+      .where(eq(knowledgeBase.id, params.itemId))
+      .returning()
+    return { item }
+  }, {
+    body: t.Object({
+      answer:   t.Optional(t.String()),
+      question: t.Optional(t.String()),
+    }),
   })
 
   // DELETE /:id/knowledge-base/:itemId
@@ -263,6 +314,41 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
       .delete(knowledgeBase)
       .where(eq(knowledgeBase.id, params.itemId))
     return { deleted: true }
+  })
+
+  // POST /:id/knowledge-base/seed — seed defaults for this business type (only if KB is empty)
+  .post("/:id/knowledge-base/seed", async ({ params }) => {
+    const [business] = await db
+      .select({ businessType: businesses.businessType })
+      .from(businesses)
+      .where(eq(businesses.id, params.id))
+      .limit(1)
+
+    if (!business) return { error: "Business not found" }
+
+    const existing = await db
+      .select({ id: knowledgeBase.id })
+      .from(knowledgeBase)
+      .where(eq(knowledgeBase.businessId, params.id))
+      .limit(1)
+
+    if (existing.length > 0) return { skipped: true, reason: "KB already has entries" }
+
+    const template = KB_TEMPLATES[business.businessType ?? ""]
+    if (!template) return { skipped: true, reason: "No template for this business type" }
+
+    await db.insert(knowledgeBase).values(
+      template.map((entry) => ({
+        businessId:   params.id,
+        question:     entry.question,
+        answer:       entry.answer,
+        questionType: entry.questionType,
+        category:     entry.category,
+        sortOrder:    entry.sortOrder,
+      }))
+    )
+
+    return { seeded: true, count: template.length }
   })
 
   // GET /:id/messages — callback requests left by callers when scheduling was unavailable
