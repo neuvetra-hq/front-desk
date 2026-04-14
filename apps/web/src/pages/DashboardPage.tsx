@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useParams, useNavigate, Navigate } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
-import { Phone, AlertTriangle, Sun, Moon } from "lucide-react"
+import { Phone, AlertTriangle, Sun, Moon, Search } from "lucide-react"
 import { useTheme } from "@/contexts/ThemeContext"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   SidebarInset,
@@ -195,23 +196,60 @@ interface CallbackRequest {
   createdAt: string
 }
 
+const MSG_PAGE_SIZE = 20
+
 function MessagesTab() {
   const { business, session } = useAuth()
-  const [messages, setMessages] = useState<CallbackRequest[]>([])
-  const [loading, setLoading] = useState(true)
+  const [messages, setMessages]       = useState<CallbackRequest[]>([])
+  const [total, setTotal]             = useState(0)
+  const [hasMore, setHasMore]         = useState(false)
+  const [loading, setLoading]         = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [search, setSearch]           = useState("")
+  const offsetRef   = useRef(0)
+  const searchRef   = useRef("")
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const fetchMessages = useCallback(async (opts: { search: string; offset: number; append: boolean }) => {
+    if (!business?.id) return
+    const params = new URLSearchParams({
+      limit:  String(MSG_PAGE_SIZE),
+      offset: String(opts.offset),
+      ...(opts.search ? { search: opts.search } : {}),
+    })
+    const res  = await fetch(`${API_URL}/businesses/${business.id}/messages?${params}`, {
+      headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+    })
+    const data = await res.json() as { messages?: CallbackRequest[]; total?: number; hasMore?: boolean }
+    setTotal(data.total ?? 0)
+    setHasMore(data.hasMore ?? false)
+    setMessages((prev) => opts.append ? [...prev, ...(data.messages ?? [])] : (data.messages ?? []))
+  }, [business?.id, session?.access_token])
 
   useEffect(() => {
     if (!business?.id) return
-    fetch(`${API_URL}/businesses/${business.id}/messages`, {
-      headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
-    })
-      .then((r) => r.json())
-      .then((data: { messages?: CallbackRequest[] }) => {
-        setMessages(data.messages ?? [])
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [business?.id])
+    setLoading(true)
+    fetchMessages({ search: "", offset: 0, append: false }).finally(() => setLoading(false))
+  }, [business?.id, fetchMessages])
+
+  const handleSearch = (value: string) => {
+    setSearch(value)
+    searchRef.current = value
+    offsetRef.current = 0
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setLoading(true)
+      fetchMessages({ search: value, offset: 0, append: false }).finally(() => setLoading(false))
+    }, 300)
+  }
+
+  const handleLoadMore = async () => {
+    const nextOffset = offsetRef.current + MSG_PAGE_SIZE
+    offsetRef.current = nextOffset
+    setLoadingMore(true)
+    await fetchMessages({ search: searchRef.current, offset: nextOffset, append: true })
+    setLoadingMore(false)
+  }
 
   const markHandled = async (messageId: string) => {
     await fetch(`${API_URL}/businesses/${business!.id}/messages/${messageId}`, {
@@ -236,16 +274,29 @@ function MessagesTab() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground">Callback Requests</h2>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          Callers who asked to be called back when scheduling was unavailable.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Callback Requests</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Callers who asked to be called back when scheduling was unavailable.
+          </p>
+        </div>
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <Input
+            placeholder="Search by phone or name…"
+            value={search}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="pl-8 w-56 h-8 text-sm"
+          />
+        </div>
       </div>
 
       {messages.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-8 text-center">
-          <p className="text-sm text-muted-foreground">No callback requests yet.</p>
+          <p className="text-sm text-muted-foreground">
+            {search ? "No callback requests match your search." : "No callback requests yet."}
+          </p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -271,6 +322,25 @@ function MessagesTab() {
             </div>
           )}
         </div>
+      )}
+
+      {hasMore && (
+        <div className="flex justify-center pt-2">
+          <Button
+            variant="outline"
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="w-40"
+          >
+            {loadingMore ? "Loading…" : "Load more"}
+          </Button>
+        </div>
+      )}
+
+      {!search && (
+        <p className="text-xs text-muted-foreground text-center">
+          Showing {messages.length} of {total}
+        </p>
       )}
     </div>
   )

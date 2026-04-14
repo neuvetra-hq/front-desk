@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { useAuth } from "@/contexts/AuthContext"
-import { PhoneIncoming, PhoneMissed, PhoneCall } from "lucide-react"
+import { PhoneIncoming, PhoneMissed, PhoneCall, Search } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
   DialogContent,
@@ -11,6 +14,7 @@ import {
 } from "@/components/ui/dialog"
 
 const API_URL = import.meta.env.VITE_API_URL as string
+const PAGE_SIZE = 20
 
 interface CallLog {
   id: string
@@ -43,38 +47,79 @@ const STATUS_CONFIG = {
 }
 
 export function CallLogsTab() {
-  const { business } = useAuth()
-  const [callLogs, setCallLogs] = useState<CallLog[]>([])
-  const [loading, setLoading] = useState(true)
+  const { business, session } = useAuth()
+  const [callLogs, setCallLogs]       = useState<CallLog[]>([])
+  const [total, setTotal]             = useState(0)
+  const [hasMore, setHasMore]         = useState(false)
+  const [loading, setLoading]         = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [search, setSearch]           = useState("")
   const [selectedCall, setSelectedCall] = useState<CallLog | null>(null)
+  const offsetRef = useRef(0)
+  const searchRef = useRef("")
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  const fetchCalls = useCallback(async (opts: { search: string; offset: number; append: boolean }) => {
+    if (!business?.id) return
+    const params = new URLSearchParams({
+      limit:  String(PAGE_SIZE),
+      offset: String(opts.offset),
+      ...(opts.search ? { search: opts.search } : {}),
+    })
+    const res  = await fetch(`${API_URL}/businesses/${business.id}/calls?${params}`, {
+      headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+    })
+    const data = await res.json() as { calls: CallLog[]; total: number; hasMore: boolean }
+    setTotal(data.total ?? 0)
+    setHasMore(data.hasMore ?? false)
+    setCallLogs((prev) => opts.append ? [...prev, ...(data.calls ?? [])] : (data.calls ?? []))
+  }, [business?.id, session?.access_token])
+
+  // Initial load + polling (no append, no search)
   useEffect(() => {
     if (!business?.id) return
+    setLoading(true)
+    fetchCalls({ search: "", offset: 0, append: false }).finally(() => setLoading(false))
 
-    const fetchCalls = async () => {
-      try {
-        const res = await fetch(`${API_URL}/businesses/${business.id}/calls`)
-        const data = await res.json() as { calls: CallLog[] }
-        setCallLogs(data.calls ?? [])
-      } finally {
-        setLoading(false)
+    const interval = setInterval(() => {
+      // Only auto-refresh if user hasn't searched or paged — keep it simple
+      if (!searchRef.current && offsetRef.current === 0) {
+        fetchCalls({ search: "", offset: 0, append: false })
       }
-    }
-
-    fetchCalls()
-    const interval = setInterval(fetchCalls, 30_000)
+    }, 30_000)
     return () => clearInterval(interval)
-  }, [business?.id])
+  }, [business?.id, fetchCalls])
+
+  // Debounced search
+  const handleSearch = (value: string) => {
+    setSearch(value)
+    searchRef.current = value
+    offsetRef.current = 0
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setLoading(true)
+      fetchCalls({ search: value, offset: 0, append: false }).finally(() => setLoading(false))
+    }, 300)
+  }
+
+  const handleLoadMore = async () => {
+    const nextOffset = offsetRef.current + PAGE_SIZE
+    offsetRef.current = nextOffset
+    setLoadingMore(true)
+    await fetchCalls({ search: searchRef.current, offset: nextOffset, append: true })
+    setLoadingMore(false)
+  }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-indigo-600" />
+      <div className="space-y-4">
+        <Skeleton className="h-9 w-64" />
+        <Skeleton className="h-64 w-full" />
       </div>
     )
   }
 
-  if (callLogs.length === 0) {
+  if (callLogs.length === 0 && !search) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mb-4">
@@ -91,55 +136,85 @@ export function CallLogsTab() {
   return (
     <>
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <h2 className="text-lg font-semibold text-foreground">Recent Calls</h2>
-          <span className="text-sm text-muted-foreground">{callLogs.length} calls</span>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="Search by phone…"
+                value={search}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="pl-8 w-52 h-8 text-sm"
+              />
+            </div>
+            <span className="text-sm text-muted-foreground whitespace-nowrap">{total} calls</span>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/50">
-                <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Caller</th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Duration</th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Date</th>
-                <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Summary</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {callLogs.map((call) => {
-                const cfg = STATUS_CONFIG[call.status] ?? STATUS_CONFIG.completed
-                return (
-                  <tr key={call.id} className="hover:bg-muted/50 transition-colors">
-                    <td className="px-5 py-4 font-mono text-foreground">{call.callerNumber}</td>
-                    <td className="px-5 py-4">
-                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.class}`}>
-                        {cfg.icon}
-                        {cfg.label}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-muted-foreground">{formatDuration(call.durationSeconds)}</td>
-                    <td className="px-5 py-4 text-muted-foreground whitespace-nowrap">{formatDate(call.startedAt)}</td>
-                    <td className="px-5 py-4">
-                      {call.summary ? (
-                        <button
-                          aria-label="View summary"
-                          onClick={() => setSelectedCall(call)}
-                          className="text-xs text-indigo-600 hover:text-indigo-700 hover:underline font-medium"
-                        >
-                          View summary
-                        </button>
-                      ) : (
-                        <span className="text-muted-foreground/50 text-xs">No summary</span>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        {callLogs.length === 0 ? (
+          <div className="rounded-xl border border-border bg-card p-8 text-center">
+            <p className="text-sm text-muted-foreground">No calls match your search.</p>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Caller</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Duration</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Date</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Summary</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {callLogs.map((call) => {
+                  const cfg = STATUS_CONFIG[call.status] ?? STATUS_CONFIG.completed
+                  return (
+                    <tr key={call.id} className="hover:bg-muted/50 transition-colors">
+                      <td className="px-5 py-4 font-mono text-foreground">{call.callerNumber}</td>
+                      <td className="px-5 py-4">
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.class}`}>
+                          {cfg.icon}
+                          {cfg.label}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-muted-foreground">{formatDuration(call.durationSeconds)}</td>
+                      <td className="px-5 py-4 text-muted-foreground whitespace-nowrap">{formatDate(call.startedAt)}</td>
+                      <td className="px-5 py-4">
+                        {call.summary ? (
+                          <button
+                            aria-label="View summary"
+                            onClick={() => setSelectedCall(call)}
+                            className="text-xs text-indigo-600 hover:text-indigo-700 hover:underline font-medium"
+                          >
+                            View summary
+                          </button>
+                        ) : (
+                          <span className="text-muted-foreground/50 text-xs">No summary</span>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {hasMore && (
+          <div className="flex justify-center pt-2">
+            <Button
+              variant="outline"
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              className="w-40"
+            >
+              {loadingMore ? "Loading…" : "Load more"}
+            </Button>
+          </div>
+        )}
       </div>
 
       <Dialog

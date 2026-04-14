@@ -116,6 +116,19 @@ const MOCK_CALLS = [
   },
 ]
 
+// Second page of calls for load-more tests
+const MOCK_CALLS_PAGE2 = [
+  {
+    id: "call-3",
+    callerNumber: "+14155550303",
+    status: "completed",
+    durationSeconds: 90,
+    summary: null,
+    startedAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+    endedAt:   new Date(Date.now() - 48 * 60 * 60 * 1000 + 90 * 1000).toISOString(),
+  },
+]
+
 const MOCK_USAGE = {
   minutesUsed: 47,
   totalCalls: 12,
@@ -154,7 +167,7 @@ test.describe("Call Logs tab", () => {
   test("shows empty state when there are no calls", async ({ page }) => {
     await mockSupabaseRoutes(page)
     await page.route("**/businesses/*/calls*", (route) =>
-      route.fulfill({ json: { calls: [] } })
+      route.fulfill({ json: { calls: [], total: 0, hasMore: false } })
     )
 
     await page.goto("/dashboard/calls")
@@ -167,7 +180,7 @@ test.describe("Call Logs tab", () => {
   test("renders a table row for each call", async ({ page }) => {
     await mockSupabaseRoutes(page)
     await page.route("**/businesses/*/calls*", (route) =>
-      route.fulfill({ json: { calls: MOCK_CALLS } })
+      route.fulfill({ json: { calls: MOCK_CALLS, total: 2, hasMore: false } })
     )
 
     await page.goto("/dashboard/calls")
@@ -193,7 +206,7 @@ test.describe("Call Logs tab", () => {
   test("clicking summary button opens modal with full summary text", async ({ page }) => {
     await mockSupabaseRoutes(page)
     await page.route("**/businesses/*/calls*", (route) =>
-      route.fulfill({ json: { calls: MOCK_CALLS } })
+      route.fulfill({ json: { calls: MOCK_CALLS, total: 2, hasMore: false } })
     )
 
     await page.goto("/dashboard/calls")
@@ -215,11 +228,85 @@ test.describe("Call Logs tab", () => {
   test("shows call count in header", async ({ page }) => {
     await mockSupabaseRoutes(page)
     await page.route("**/businesses/*/calls*", (route) =>
-      route.fulfill({ json: { calls: MOCK_CALLS } })
+      route.fulfill({ json: { calls: MOCK_CALLS, total: 2, hasMore: false } })
     )
 
     await page.goto("/dashboard/calls")
     await expect(page.getByText("2 calls")).toBeVisible({ timeout: 10000 })
+  })
+
+  test("Load more button hidden when hasMore is false", async ({ page }) => {
+    await mockSupabaseRoutes(page)
+    await page.route("**/businesses/*/calls*", (route) =>
+      route.fulfill({ json: { calls: MOCK_CALLS, total: 2, hasMore: false } })
+    )
+
+    await page.goto("/dashboard/calls")
+    await expect(page.getByRole("columnheader", { name: /caller/i })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole("button", { name: /load more/i })).not.toBeVisible()
+  })
+
+  test("Load more button appears and appends results when hasMore is true", async ({ page }) => {
+    await mockSupabaseRoutes(page)
+    let callCount = 0
+    await page.route("**/businesses/*/calls*", (route) => {
+      callCount++
+      if (callCount === 1) {
+        return route.fulfill({ json: { calls: MOCK_CALLS, total: 3, hasMore: true } })
+      }
+      return route.fulfill({ json: { calls: MOCK_CALLS_PAGE2, total: 3, hasMore: false } })
+    })
+
+    await page.goto("/dashboard/calls")
+    await expect(page.getByText("+14155550101")).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole("button", { name: /load more/i })).toBeVisible()
+
+    await page.getByRole("button", { name: /load more/i }).click()
+
+    // Page 2 row appended
+    await expect(page.getByText("+14155550303")).toBeVisible({ timeout: 5000 })
+    // Page 1 rows still visible
+    await expect(page.getByText("+14155550101")).toBeVisible()
+    // Load more gone now
+    await expect(page.getByRole("button", { name: /load more/i })).not.toBeVisible()
+  })
+
+  test("search input filters calls by phone number", async ({ page }) => {
+    await mockSupabaseRoutes(page)
+    await page.route("**/businesses/*/calls*", (route) => {
+      const url = new URL(route.request().url())
+      const search = url.searchParams.get("search") ?? ""
+      const filtered = MOCK_CALLS.filter((c) => c.callerNumber.includes(search))
+      return route.fulfill({ json: { calls: filtered, total: filtered.length, hasMore: false } })
+    })
+
+    await page.goto("/dashboard/calls")
+    await expect(page.getByText("+14155550101")).toBeVisible({ timeout: 10000 })
+
+    // Type in search
+    await page.getByPlaceholder(/search/i).fill("0202")
+    await expect(page.getByText("+14155550202")).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText("+14155550101")).not.toBeVisible()
+  })
+
+  test("clearing search restores full list", async ({ page }) => {
+    await mockSupabaseRoutes(page)
+    await page.route("**/businesses/*/calls*", (route) => {
+      const url = new URL(route.request().url())
+      const search = url.searchParams.get("search") ?? ""
+      const filtered = MOCK_CALLS.filter((c) => c.callerNumber.includes(search))
+      return route.fulfill({ json: { calls: filtered, total: filtered.length, hasMore: false } })
+    })
+
+    await page.goto("/dashboard/calls")
+    await expect(page.getByText("+14155550101")).toBeVisible({ timeout: 10000 })
+
+    await page.getByPlaceholder(/search/i).fill("0202")
+    await expect(page.getByText("+14155550101")).not.toBeVisible({ timeout: 5000 })
+
+    await page.getByPlaceholder(/search/i).clear()
+    await expect(page.getByText("+14155550101")).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText("+14155550202")).toBeVisible()
   })
 })
 
@@ -271,7 +358,7 @@ test.describe("Messages tab", () => {
   test("shows empty state when there are no messages", async ({ page }) => {
     await mockSupabaseRoutes(page)
     await page.route("**/businesses/*/messages*", (route) =>
-      route.fulfill({ json: { messages: [] } })
+      route.fulfill({ json: { messages: [], total: 0, hasMore: false } })
     )
 
     await page.goto("/dashboard/messages")
@@ -281,7 +368,7 @@ test.describe("Messages tab", () => {
   test("renders pending and handled sections", async ({ page }) => {
     await mockSupabaseRoutes(page)
     await page.route("**/businesses/*/messages*", (route) =>
-      route.fulfill({ json: { messages: MOCK_MESSAGES } })
+      route.fulfill({ json: { messages: MOCK_MESSAGES, total: 2, hasMore: false } })
     )
 
     await page.goto("/dashboard/messages")
@@ -302,7 +389,7 @@ test.describe("Messages tab", () => {
       if (route.request().method() === "PATCH") {
         return route.fulfill({ json: { updated: true } })
       }
-      return route.fulfill({ json: { messages: MOCK_MESSAGES } })
+      return route.fulfill({ json: { messages: MOCK_MESSAGES, total: 2, hasMore: false } })
     })
 
     await page.goto("/dashboard/messages")
@@ -312,5 +399,51 @@ test.describe("Messages tab", () => {
 
     // Pending section should disappear after optimistic update
     await expect(page.getByText(/Pending \(1\)/i)).not.toBeVisible({ timeout: 3000 })
+  })
+
+  test("search input filters messages by phone number", async ({ page }) => {
+    await mockSupabaseRoutes(page)
+    await page.route("**/businesses/*/messages*", (route) => {
+      if (route.request().method() === "PATCH") return route.fulfill({ json: { updated: true } })
+      const url = new URL(route.request().url())
+      const search = url.searchParams.get("search") ?? ""
+      const filtered = MOCK_MESSAGES.filter((m) => m.callerPhone.includes(search) || (m.callerName ?? "").toLowerCase().includes(search.toLowerCase()))
+      return route.fulfill({ json: { messages: filtered, total: filtered.length, hasMore: false } })
+    })
+
+    await page.goto("/dashboard/messages")
+    await expect(page.getByText("John Smith")).toBeVisible({ timeout: 10000 })
+
+    await page.getByPlaceholder(/search/i).fill("0404")
+    await expect(page.getByText("Sara Lee")).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText("John Smith")).not.toBeVisible()
+  })
+
+  test("Load more button appears and appends messages when hasMore is true", async ({ page }) => {
+    await mockSupabaseRoutes(page)
+    const extraMessage = {
+      id: "msg-3",
+      callerPhone: "+14155550505",
+      callerName: "Bob Jones",
+      message: "Third message",
+      status: "pending",
+      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    }
+    let callCount = 0
+    await page.route("**/businesses/*/messages*", (route) => {
+      if (route.request().method() === "PATCH") return route.fulfill({ json: { updated: true } })
+      callCount++
+      if (callCount === 1) return route.fulfill({ json: { messages: MOCK_MESSAGES, total: 3, hasMore: true } })
+      return route.fulfill({ json: { messages: [extraMessage], total: 3, hasMore: false } })
+    })
+
+    await page.goto("/dashboard/messages")
+    await expect(page.getByText("John Smith")).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole("button", { name: /load more/i })).toBeVisible()
+
+    await page.getByRole("button", { name: /load more/i }).click()
+    await expect(page.getByText("Bob Jones")).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText("John Smith")).toBeVisible()
+    await expect(page.getByRole("button", { name: /load more/i })).not.toBeVisible()
   })
 })

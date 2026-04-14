@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia"
 import { db, businesses, businessMembers, calls, knowledgeBase, callbackRequests } from "@frontdesk/database"
-import { eq, desc, gte, sql, asc, and } from "drizzle-orm"
+import { eq, desc, gte, sql, asc, and, ilike, or } from "drizzle-orm"
 import { searchAvailableNumbers, provisionNumber, releaseNumber } from "../services/twilio"
 import { KB_TEMPLATES } from "../data/kb-templates"
 
@@ -192,27 +192,41 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
     return { released: true }
   })
 
-  // GET /:id/calls — recent call logs for the dashboard
+  // GET /:id/calls — paginated call logs with optional phone search
   .get("/:id/calls", async ({ params, query }) => {
     const { id } = params
-    const limit = Math.min(Number((query as Record<string, string>).limit ?? 50), 100)
+    const q      = query as Record<string, string>
+    const limit  = Math.min(Number(q.limit  ?? 20), 100)
+    const offset = Math.max(Number(q.offset ?? 0),  0)
+    const search = (q.search ?? "").trim()
 
-    const rows = await db
-      .select({
-        id: calls.id,
-        callerNumber: calls.callerNumber,
-        status: calls.status,
-        durationSeconds: calls.durationSeconds,
-        summary: calls.summary,
-        startedAt: calls.startedAt,
-        endedAt: calls.endedAt,
-      })
-      .from(calls)
-      .where(eq(calls.businessId, id))
-      .orderBy(desc(calls.startedAt))
-      .limit(limit)
+    const where = search
+      ? and(eq(calls.businessId, id), ilike(calls.callerNumber, `%${search}%`))
+      : eq(calls.businessId, id)
 
-    return { calls: rows }
+    const [rows, [{ total }]] = await Promise.all([
+      db
+        .select({
+          id:              calls.id,
+          callerNumber:    calls.callerNumber,
+          status:          calls.status,
+          durationSeconds: calls.durationSeconds,
+          summary:         calls.summary,
+          startedAt:       calls.startedAt,
+          endedAt:         calls.endedAt,
+        })
+        .from(calls)
+        .where(where)
+        .orderBy(desc(calls.startedAt))
+        .limit(limit)
+        .offset(offset),
+      db
+        .select({ total: sql<number>`count(*)::int` })
+        .from(calls)
+        .where(where),
+    ])
+
+    return { calls: rows, total, hasMore: offset + rows.length < total }
   })
 
   // GET /:id/usage — minutes used this billing period
@@ -347,16 +361,38 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
     return { seeded: true, count: template.length }
   })
 
-  // GET /:id/messages — callback requests left by callers when scheduling was unavailable
+  // GET /:id/messages — paginated callback requests with optional phone/name search
   .get("/:id/messages", async ({ params, query }) => {
-    const limit = Math.min(Number((query as Record<string, string>).limit ?? 50), 100)
-    const rows = await db
-      .select()
-      .from(callbackRequests)
-      .where(eq(callbackRequests.businessId, params.id))
-      .orderBy(desc(callbackRequests.createdAt))
-      .limit(limit)
-    return { messages: rows }
+    const q      = query as Record<string, string>
+    const limit  = Math.min(Number(q.limit  ?? 20), 100)
+    const offset = Math.max(Number(q.offset ?? 0),  0)
+    const search = (q.search ?? "").trim()
+
+    const where = search
+      ? and(
+          eq(callbackRequests.businessId, params.id),
+          or(
+            ilike(callbackRequests.callerPhone, `%${search}%`),
+            ilike(callbackRequests.callerName,  `%${search}%`),
+          ),
+        )
+      : eq(callbackRequests.businessId, params.id)
+
+    const [rows, [{ total }]] = await Promise.all([
+      db
+        .select()
+        .from(callbackRequests)
+        .where(where)
+        .orderBy(desc(callbackRequests.createdAt))
+        .limit(limit)
+        .offset(offset),
+      db
+        .select({ total: sql<number>`count(*)::int` })
+        .from(callbackRequests)
+        .where(where),
+    ])
+
+    return { messages: rows, total, hasMore: offset + rows.length < total }
   })
 
   // PATCH /:id/messages/:messageId — mark a callback request as handled
