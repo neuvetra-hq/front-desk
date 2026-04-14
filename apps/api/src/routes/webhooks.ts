@@ -148,6 +148,7 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
     }
 
     const agentId = Bun.env.RETELL_AGENT_ID ?? ""
+    console.log(`/voice: business=${business.id} agentId=${agentId} from=${(body as Record<string, string>).From} to=${called}`)
 
     // Fetch knowledge base entries for this business
     const kbRows = await db
@@ -161,23 +162,28 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
 
     const aiConfig = (business.aiConfig as Record<string, unknown>) ?? {}
 
-    const phoneCall = await retell.call.registerPhoneCall({
-      agent_id: agentId,
-      from_number: (body as Record<string, string>).From,
-      to_number: called,
-      direction: "inbound",
-      retell_llm_dynamic_variables: {
-        business_name:  business.name,
-        business_type:  business.businessType ?? "service",
-        agent_name:     (aiConfig.agentName as string | undefined) ?? "your virtual receptionist",
-        owner_phone:    (aiConfig.ownerPhone as string | undefined) ?? "+16507434932",
-        knowledge_base: knowledgeBaseText,
-      },
-    })
-
-    return twiml(
-      `<Dial><Sip>sip:${phoneCall.call_id}@sip.retellai.com</Sip></Dial>`
-    )
+    try {
+      const phoneCall = await retell.call.registerPhoneCall({
+        agent_id: agentId,
+        from_number: (body as Record<string, string>).From,
+        to_number: called,
+        direction: "inbound",
+        retell_llm_dynamic_variables: {
+          business_name:  business.name,
+          business_type:  business.businessType ?? "service",
+          agent_name:     (aiConfig.agentName as string | undefined) ?? "your virtual receptionist",
+          owner_phone:    (aiConfig.ownerPhone as string | undefined) ?? "+16507434932",
+          knowledge_base: knowledgeBaseText,
+        },
+      })
+      console.log(`/voice: registered call ${phoneCall.call_id}`)
+      return twiml(
+        `<Dial><Sip>sip:${phoneCall.call_id}@sip.retellai.com</Sip></Dial>`
+      )
+    } catch (err) {
+      console.error("/voice: registerPhoneCall failed:", err)
+      return twiml("<Say>We're sorry, we couldn't connect your call right now. Please try again shortly.</Say><Hangup/>")
+    }
   })
 
   // Called by Retell AI — handles function calls mid-call and end-of-call events
