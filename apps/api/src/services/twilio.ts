@@ -38,3 +38,7 @@ export async function provisionNumber(phoneNumber: string) {
 export async function releaseNumber(sid: string) {
   await client.incomingPhoneNumbers(sid).remove()
 }
+
+export async function sendSms(to: string, from: string, body: string) {
+  await client.messages.create({ to, from, body })
+}

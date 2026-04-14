@@ -3,6 +3,7 @@ import { db, businesses, calls, callbackRequests, knowledgeBase } from "@frontde
 import { eq } from "drizzle-orm"
 import { retell } from "../services/retell"
 import * as CalendarService from "../services/calendar/index"
+import { notifyOwnerAppointment } from "../services/notify"
 
 const twiml = (xml: string) =>
   new Response(`<?xml version="1.0" encoding="UTF-8"?><Response>${xml}</Response>`, {
@@ -452,9 +453,17 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
           })
 
           const endTime = new Date(new Date(booking.startTime).getTime() + duration * 60 * 1000)
-          return {
-            result: `Your appointment is confirmed for ${formatForSpeech(booking.startTime, tz)} to ${formatTimeOnly(endTime.toISOString(), tz)} for ${customerName}. Is there anything else I can help you with?`,
-          }
+          const confirmText = `Your appointment is confirmed for ${formatForSpeech(booking.startTime, tz)} to ${formatTimeOnly(endTime.toISOString(), tz)} for ${customerName}. Is there anything else I can help you with?`
+
+          // Fire-and-forget — never awaited so it can't delay or break the response
+          notifyOwnerAppointment(business.id, "booked", {
+            customerName,
+            customerPhone: funcArgs.customer_phone as string ?? fromNumber ?? "",
+            when:          `${formatForSpeech(booking.startTime, tz)} – ${formatTimeOnly(endTime.toISOString(), tz)}`,
+            reason:        funcArgs.reason as string | undefined,
+          })
+
+          return { result: confirmText }
         } catch (err) {
           const msg = (err as Error).message ?? ""
           console.error("book_appointment error:", err)
@@ -525,6 +534,11 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
 
           await CalendarService.cancelAppointment(business.id, fromNumber, eventId)
 
+          notifyOwnerAppointment(business.id, "cancelled", {
+            customerName:  "",   // not available at cancel time — caller's phone is the identifier
+            customerPhone: fromNumber,
+          })
+
           return { result: "Done, that appointment has been cancelled. Is there anything else I can help you with?" }
         } catch (err) {
           const msg = (err as Error).message ?? ""
@@ -567,6 +581,12 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             newStartTimeUtc,
             duration,
           )
+
+          notifyOwnerAppointment(business.id, "rescheduled", {
+            customerName:  "",
+            customerPhone: fromNumber,
+            when:          formatForSpeech(updated.startTime, tz),
+          })
 
           return {
             result: `Done! Your appointment has been rescheduled to ${formatForSpeech(updated.startTime, tz)}. Is there anything else I can help you with?`,

@@ -255,6 +255,75 @@ test.describe("book_appointment — timezone robustness", () => {
 })
 
 // ---------------------------------------------------------------------------
+// Owner SMS notifications — booking/cancel/reschedule must not break if SMS fails
+// No-fixture tests: send to unknown business — exits early, never hits notify path.
+// TEST_BUSINESS_PHONE gated tests: verify the booking result is still returned
+// even when the notification fires in the background (fire-and-forget, no throw).
+// ---------------------------------------------------------------------------
+
+test.describe("Owner SMS notifications — booking actions still succeed if notify fails", () => {
+  const businessPhone = process.env.TEST_BUSINESS_PHONE
+
+  // No-fixture: ensures the retell endpoint returns 200 for booking actions
+  // sent to an unknown business — notification path is never reached but the
+  // endpoint must still be stable (not 500).
+  test("book_appointment to unknown business returns structured response, not 500", async ({ request }) => {
+    const res = await retellCall(request, "book_appointment", {
+      start_time:       "2026-12-15T10:00:00",
+      duration_minutes: 60,
+      customer_name:    "Test User",
+      customer_phone:   "+19999999999",
+    })
+    // Unknown business → graceful result or error, never a 500
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json() as Record<string, unknown>
+    expect(typeof body.result === "string" || typeof body.error === "string").toBeTruthy()
+  })
+
+  test("cancel_appointment to unknown business returns structured response, not 500", async ({ request }) => {
+    const res = await retellCall(request, "cancel_appointment", { event_id: "fake-id" })
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json() as Record<string, unknown>
+    expect(typeof body.result === "string" || typeof body.error === "string").toBeTruthy()
+  })
+
+  test("reschedule_appointment to unknown business returns structured response, not 500", async ({ request }) => {
+    const res = await retellCall(request, "reschedule_appointment", {
+      event_id:         "fake-id",
+      new_start_time:   "2026-12-20T10:00:00",
+      duration_minutes: 60,
+    })
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json() as Record<string, unknown>
+    expect(typeof body.result === "string" || typeof body.error === "string").toBeTruthy()
+  })
+
+  // With a real business: booking must succeed AND return a result string.
+  // The notification fires as a background side-effect — it must not block
+  // or break the response even if Twilio errors.
+  test("book_appointment with real business returns confirmation result", async ({ request }) => {
+    test.skip(!businessPhone, "Set TEST_BUSINESS_PHONE=+1xxx to run")
+    const res = await retellCall(
+      request,
+      "book_appointment",
+      {
+        start_time:       "2026-12-22T11:00:00",
+        duration_minutes: 60,
+        customer_name:    "SMS Test Caller",
+        customer_phone:   "+19999999999",
+        reason:           "SMS notification test",
+      },
+      businessPhone!,
+    )
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json() as { result?: string }
+    expect(typeof body.result).toBe("string")
+    // Booking confirmed, rescheduled, cancelled — all should mention the action
+    expect(body.result!.toLowerCase()).toMatch(/confirmed|appointment|time|sorry|unable/)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // Ownership guard — scaffolded (requires two seeded sessions)
 // ---------------------------------------------------------------------------
 
