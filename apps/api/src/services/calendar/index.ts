@@ -53,25 +53,42 @@ export async function assertWithinBusinessHours(
 
   if (!business) throw new Error("Business not found")
 
-  const hoursMap = (business.aiConfig as { businessHours?: BusinessHoursMap } | null)
-    ?.businessHours
+  const aiCfg    = business.aiConfig as { businessHours?: BusinessHoursMap; timezone?: string } | null
+  const hoursMap = aiCfg?.businessHours
+  const tz       = aiCfg?.timezone ?? "America/Los_Angeles"
 
   // No hours configured → no restriction
   if (!hoursMap) return
 
   const start   = new Date(startTime)
   const end     = new Date(start.getTime() + durationMinutes * 60 * 1000)
-  const dayName = DAY_NAMES[start.getDay()]
+
+  // Get the weekday name in the business timezone (not UTC — they differ near midnight)
+  const dayName = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long" }).format(start)
   const day     = hoursMap[dayName]
 
   if (!day?.open) {
     throw new Error(`The business is closed on ${dayName}. Please choose a different day.`)
   }
 
-  const [openH, openM]  = day.from.split(":").map(Number)
-  const [closeH, closeM] = day.to.split(":").map(Number)
-  const dayOpen  = new Date(start.getFullYear(), start.getMonth(), start.getDate(), openH,  openM,  0)
-  const dayClose = new Date(start.getFullYear(), start.getMonth(), start.getDate(), closeH, closeM, 0)
+  // Build open/close as UTC dates in the business timezone
+  const dtf     = new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" })
+  const parts   = Object.fromEntries(dtf.formatToParts(start).map(p => [p.type, p.value]))
+  const dateStr = `${parts.year}-${parts.month}-${parts.day}`
+
+  function naiveToUtc(localStr: string, zone: string): Date {
+    const guess   = new Date(localStr + "Z")
+    const f       = new Intl.DateTimeFormat("en-CA", {
+      timeZone: zone, year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+    })
+    const p       = Object.fromEntries(f.formatToParts(guess).map(x => [x.type, x.value]))
+    const asLocal = new Date(`${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}Z`)
+    return new Date(guess.getTime() + (guess.getTime() - asLocal.getTime()))
+  }
+
+  const dayOpen  = naiveToUtc(`${dateStr}T${day.from}:00`, tz)
+  const dayClose = naiveToUtc(`${dateStr}T${day.to}:00`, tz)
 
   if (start < dayOpen || end > dayClose) {
     throw new Error(

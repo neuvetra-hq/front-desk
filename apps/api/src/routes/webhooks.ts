@@ -14,7 +14,7 @@ const twiml = (xml: string) =>
 // ---------------------------------------------------------------------------
 
 /** Format an ISO datetime string for human speech — full date + time. */
-function formatForSpeech(iso: string): string {
+function formatForSpeech(iso: string, tz?: string): string {
   return new Date(iso).toLocaleString("en-US", {
     weekday:      "long",
     month:        "long",
@@ -22,15 +22,17 @@ function formatForSpeech(iso: string): string {
     hour:         "numeric",
     minute:       "2-digit",
     timeZoneName: "short",
+    ...(tz ? { timeZone: tz } : {}),
   })
 }
 
 /** Format just the time portion of an ISO string (e.g. "1:30 PM PDT"). */
-function formatTimeOnly(iso: string): string {
+function formatTimeOnly(iso: string, tz?: string): string {
   return new Date(iso).toLocaleString("en-US", {
     hour:         "numeric",
     minute:       "2-digit",
     timeZoneName: "short",
+    ...(tz ? { timeZone: tz } : {}),
   })
 }
 
@@ -74,21 +76,57 @@ function closestSlots(
 }
 
 /**
+ * Convert a naive local datetime string (e.g. "2026-04-17T09:00:00", no timezone suffix)
+ * interpreted in the given IANA timezone, to a proper UTC Date.
+ *
+ * Example: naiveLocalToDate("2026-04-17T09:00:00", "America/Los_Angeles")
+ *          → Date for 2026-04-17T16:00:00Z  (9 AM PDT = 4 PM UTC)
+ */
+function naiveLocalToDate(localDateStr: string, tz: string): Date {
+  const guess   = new Date(localDateStr + "Z")
+  const dtf     = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    hour12: false,
+  })
+  const parts   = Object.fromEntries(dtf.formatToParts(guess).map(p => [p.type, p.value]))
+  const asLocal = new Date(`${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}Z`)
+  return new Date(guess.getTime() + (guess.getTime() - asLocal.getTime()))
+}
+
+/**
+ * Build a day's business hours window as UTC Dates, using the business timezone.
+ * Correctly handles DST — e.g. "09:00–17:00 America/Los_Angeles" becomes 16:00–00:00 UTC in PDT.
+ */
+function buildDayWindowTz(dateUtc: Date, hours: DayHours, tz: string): { start: Date; end: Date } {
+  const dtf   = new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric", month: "2-digit", day: "2-digit",
+  })
+  const parts = Object.fromEntries(dtf.formatToParts(dateUtc).map(p => [p.type, p.value]))
+  const d     = `${parts.year}-${parts.month}-${parts.day}`
+  return {
+    start: naiveLocalToDate(`${d}T${hours.from}:00`, tz),
+    end:   naiveLocalToDate(`${d}T${hours.to}:00`, tz),
+  }
+}
+
+/**
  * When a requested time is outside business hours, build a human-readable
  * response that includes the reason AND the closest free alternatives within
  * that day's open window — so the AI can offer them in the same turn without
  * a second function call.
- *
- * Returns null if the day is closed entirely (no alternatives to offer).
  */
 async function outsideHoursResponse(
   businessId: string,
-  requestedTime: string,
+  requestedTimeUtc: string,
   durationMinutes: number,
   hoursMap: BusinessHours | undefined,
+  tz: string,
 ): Promise<string> {
-  const requested = new Date(requestedTime)
-  const dayName   = DAY_NAMES[requested.getDay()]
+  const requested = new Date(requestedTimeUtc)
+  const dayName   = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long" }).format(requested)
   const dayHours  = hoursMap?.[dayName]
 
   // Day is closed entirely
@@ -97,7 +135,7 @@ async function outsideHoursResponse(
   }
 
   // Day is open but time is outside the window — find in-hours alternatives
-  const reason = `${formatForSpeech(requestedTime)} is outside our business hours` +
+  const reason = `${formatForSpeech(requestedTimeUtc, tz)} is outside our business hours` +
     (dayHours ? ` (${dayHours.from}–${dayHours.to} on ${dayName})` : "") + "."
 
   if (!dayHours?.open) {
@@ -105,7 +143,7 @@ async function outsideHoursResponse(
   }
 
   try {
-    const { start: dayOpen, end: dayClose } = buildDayWindow(requested, dayHours)
+    const { start: dayOpen, end: dayClose } = buildDayWindowTz(requested, dayHours, tz)
     const allSlots = await CalendarService.checkAvailability(businessId, {
       from:            dayOpen.toISOString(),
       to:              dayClose.toISOString(),
@@ -117,7 +155,7 @@ async function outsideHoursResponse(
     }
 
     const alternatives = closestSlots(allSlots, requested)
-    const formatted    = alternatives.map((s) => formatTimeOnly(s.start)).join(", ")
+    const formatted    = alternatives.map((s) => formatTimeOnly(s.start, tz)).join(", ")
     return `${reason} I have openings at ${formatted}. Which of those works for you?`
   } catch {
     return `${reason} Could you choose a different time?`
@@ -266,10 +304,15 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             //   2. Is the time within open hours?
             //   3. Is the slot free (freebusy)?
 
-            const requested = new Date(requestedTime)
+            const aiConfig  = business.aiConfig as { businessHours?: BusinessHours; timezone?: string } | null
+            const tz        = aiConfig?.timezone ?? "America/Los_Angeles"
+
+            // Convert naive local time ("2026-04-17T09:00:00") to proper UTC using business timezone
+            const requested = naiveLocalToDate(requestedTime, tz)
             const reqEnd    = new Date(requested.getTime() + duration * 60 * 1000)
-            const aiConfig  = business.aiConfig as { businessHours?: BusinessHours } | null
-            const dayName   = DAY_NAMES[requested.getDay()]
+
+            // Get day name in business timezone (not UTC — they can differ near midnight)
+            const dayName   = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long" }).format(requested)
             const dayHours  = aiConfig?.businessHours?.[dayName]
 
             // 1. Day closed entirely
@@ -281,7 +324,7 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
 
             // 2. Day is open — check if the requested time falls within hours
             if (dayHours?.open) {
-              const { start: dayOpen, end: dayClose } = buildDayWindow(requested, dayHours)
+              const { start: dayOpen, end: dayClose } = buildDayWindowTz(requested, dayHours, tz)
 
               if (requested < dayOpen || reqEnd > dayClose) {
                 // Outside hours — scan the open window for alternatives
@@ -298,7 +341,7 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
                 }
 
                 const alternatives = closestSlots(allSlots, requested)
-                const formatted    = alternatives.map((s) => formatTimeOnly(s.start)).join(", ")
+                const formatted    = alternatives.map((s) => formatTimeOnly(s.start, tz)).join(", ")
                 return {
                   result: `That time is outside our business hours (${dayHours.from}–${dayHours.to}). I have openings at ${formatted}. Which of those works for you?`,
                 }
@@ -313,16 +356,16 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             })
 
             if (exactSlots.length > 0) {
-              return { result: `${formatForSpeech(requested.toISOString())} is available. Shall I go ahead and book that?` }
+              return { result: `${formatForSpeech(requested.toISOString(), tz)} is available. Shall I go ahead and book that?` }
             }
 
             // Slot is taken — find closest alternatives within business hours
             const fallbackHours = dayHours?.open ? dayHours : null
             if (!fallbackHours) {
-              return { result: `${formatForSpeech(requested.toISOString())} is already taken. Could you suggest a different time?` }
+              return { result: `${formatForSpeech(requested.toISOString(), tz)} is already taken. Could you suggest a different time?` }
             }
 
-            const { start: dayStart, end: dayEnd } = buildDayWindow(requested, fallbackHours)
+            const { start: dayStart, end: dayEnd } = buildDayWindowTz(requested, fallbackHours, tz)
             const allSlots = await CalendarService.checkAvailability(business.id, {
               from:            dayStart.toISOString(),
               to:              dayEnd.toISOString(),
@@ -330,13 +373,13 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             })
 
             if (allSlots.length === 0) {
-              return { result: `${formatForSpeech(requested.toISOString())} is taken and there are no other openings that day. Could you try a different day?` }
+              return { result: `${formatForSpeech(requested.toISOString(), tz)} is taken and there are no other openings that day. Could you try a different day?` }
             }
 
             const alternatives = closestSlots(allSlots, requested)
-            const formatted    = alternatives.map((s) => formatTimeOnly(s.start)).join(", ")
+            const formatted    = alternatives.map((s) => formatTimeOnly(s.start, tz)).join(", ")
             return {
-              result: `${formatForSpeech(requested.toISOString())} is already taken. The closest available times are: ${formatted}. Which works best?`,
+              result: `${formatForSpeech(requested.toISOString(), tz)} is already taken. The closest available times are: ${formatted}. Which works best?`,
             }
           }
 
@@ -370,9 +413,12 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
       if (funcName === "book_appointment") {
         const customerName = funcArgs.customer_name as string
         const duration     = (funcArgs.duration_minutes as number | undefined) ?? 60
+        const aiConfig     = business.aiConfig as { businessHours?: BusinessHours; timezone?: string } | null
+        const tz           = aiConfig?.timezone ?? "America/Los_Angeles"
+        const startTimeUtc = naiveLocalToDate(funcArgs.start_time as string, tz).toISOString()
         try {
           const booking  = await CalendarService.bookAppointment(business.id, {
-            startTime:       funcArgs.start_time as string,
+            startTime:       startTimeUtc,
             durationMinutes: duration,
             customerName,
             customerPhone:   funcArgs.customer_phone as string ?? fromNumber ?? "",
@@ -382,15 +428,13 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
 
           const endTime = new Date(new Date(booking.startTime).getTime() + duration * 60 * 1000)
           return {
-            result: `Your appointment is confirmed for ${formatForSpeech(booking.startTime)} to ${formatTimeOnly(endTime.toISOString())} for ${customerName}. Is there anything else I can help you with?`,
+            result: `Your appointment is confirmed for ${formatForSpeech(booking.startTime, tz)} to ${formatTimeOnly(endTime.toISOString(), tz)} for ${customerName}. Is there anything else I can help you with?`,
           }
         } catch (err) {
           const msg = (err as Error).message ?? ""
           console.error("book_appointment error:", err)
           if (msg.includes("outside business hours") || msg.includes("closed on")) {
-            const aiConfig  = business.aiConfig as { businessHours?: BusinessHours } | null
-            const startTime = funcArgs.start_time as string
-            const response  = await outsideHoursResponse(business.id, startTime, duration, aiConfig?.businessHours)
+            const response = await outsideHoursResponse(business.id, startTimeUtc, duration, aiConfig?.businessHours, tz)
             return { result: response }
           }
           return { result: "I wasn't able to complete the booking just now. Please try again or call back and we'll get that sorted." }
@@ -466,16 +510,17 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
       // Ownership re-verified; new slot availability checked before patching.
       // ----------------------------------------------------------------
       if (funcName === "reschedule_appointment") {
+        const aiConfig        = business.aiConfig as { businessHours?: BusinessHours; timezone?: string } | null
+        const tz              = aiConfig?.timezone ?? "America/Los_Angeles"
+        const duration        = (funcArgs.duration_minutes as number | undefined) ?? 60
+        const newStartTimeUtc = naiveLocalToDate(funcArgs.new_start_time as string, tz).toISOString()
         try {
           if (!fromNumber) {
             return { result: "I wasn't able to verify your phone number, so I can't reschedule the appointment." }
           }
 
-          const eventId      = funcArgs.event_id as string
-          const newStartTime = funcArgs.new_start_time as string
-          const duration     = (funcArgs.duration_minutes as number | undefined) ?? 60
-
-          if (!eventId || !newStartTime) {
+          const eventId = funcArgs.event_id as string
+          if (!eventId || !newStartTimeUtc) {
             return { result: "I need both the appointment and the new time to reschedule — could you confirm those details?" }
           }
 
@@ -483,12 +528,12 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             business.id,
             fromNumber,
             eventId,
-            newStartTime,
+            newStartTimeUtc,
             duration,
           )
 
           return {
-            result: `Done! Your appointment has been rescheduled to ${formatForSpeech(updated.startTime)}. Is there anything else I can help you with?`,
+            result: `Done! Your appointment has been rescheduled to ${formatForSpeech(updated.startTime, tz)}. Is there anything else I can help you with?`,
           }
         } catch (err) {
           const msg = (err as Error).message ?? ""
@@ -497,10 +542,7 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             return { result: "I couldn't find that appointment linked to your number, so no changes were made." }
           }
           if (msg.includes("outside business hours") || msg.includes("closed on")) {
-            const aiConfig   = business.aiConfig as { businessHours?: BusinessHours } | null
-            const newStart   = funcArgs.new_start_time as string
-            const durMinutes = (funcArgs.duration_minutes as number | undefined) ?? 60
-            const response   = await outsideHoursResponse(business.id, newStart, durMinutes, aiConfig?.businessHours)
+            const response = await outsideHoursResponse(business.id, newStartTimeUtc, duration, aiConfig?.businessHours, tz)
             return { result: response }
           }
           if (msg.includes("not available")) {

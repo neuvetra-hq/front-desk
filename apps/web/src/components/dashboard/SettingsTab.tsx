@@ -11,6 +11,22 @@ const API_URL = import.meta.env.VITE_API_URL as string
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const
 type Day = typeof DAYS[number]
 
+const TIMEZONES = [
+  { value: "America/New_York",    label: "Eastern Time (ET) — New York, Miami" },
+  { value: "America/Chicago",     label: "Central Time (CT) — Chicago, Dallas" },
+  { value: "America/Denver",      label: "Mountain Time (MT) — Denver, Salt Lake City" },
+  { value: "America/Phoenix",     label: "Mountain Time — Arizona (no DST)" },
+  { value: "America/Los_Angeles", label: "Pacific Time (PT) — Los Angeles, Seattle" },
+  { value: "America/Anchorage",   label: "Alaska Time (AKT)" },
+  { value: "Pacific/Honolulu",    label: "Hawaii Time (HT)" },
+  { value: "Europe/London",       label: "London (GMT/BST)" },
+  { value: "Europe/Paris",        label: "Central European Time (CET)" },
+  { value: "Asia/Dubai",          label: "Gulf Standard Time (GST) — Dubai" },
+  { value: "Asia/Kolkata",        label: "India Standard Time (IST)" },
+  { value: "Asia/Singapore",      label: "Singapore Time (SGT)" },
+  { value: "Australia/Sydney",    label: "Australian Eastern Time (AET)" },
+] as const
+
 interface DayHours {
   open: boolean
   from: string
@@ -41,6 +57,7 @@ interface SettingsTabProps {
 export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
   const { business, session } = useAuth()
   const [hours, setHours] = useState<BusinessHours>(DEFAULT_HOURS)
+  const [timezone, setTimezone] = useState("America/Los_Angeles")
   const [saving, setSaving] = useState(false)
   const [agentName, setAgentName] = useState("")
   const [ownerPhone, setOwnerPhone] = useState("")
@@ -130,6 +147,7 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
     if (cfg.agentName) setAgentName(cfg.agentName as string)
     if (cfg.ownerPhone) setOwnerPhone(cfg.ownerPhone as string)
     if (cfg.businessHours) setHours(cfg.businessHours as BusinessHours)
+    if (cfg.timezone) setTimezone(cfg.timezone as string)
   }, [business?.id])
 
   const handleSaveAgent = async () => {
@@ -168,7 +186,7 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session?.access_token ?? ""}`,
         },
-        body: JSON.stringify({ aiConfig: { businessHours: hours } }),
+        body: JSON.stringify({ aiConfig: { businessHours: hours, timezone } }),
       })
       const data = await res.json() as { updated?: boolean; error?: string }
       if (data.error) throw new Error(data.error)
@@ -230,6 +248,24 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
           <p className="text-sm text-muted-foreground mt-0.5">
             Your AI will mention these hours when callers ask. It will still answer calls 24/7.
           </p>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-5">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">Timezone</label>
+            <select
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              {TIMEZONES.map((tz) => (
+                <option key={tz.value} value={tz.value}>{tz.label}</option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              All appointment times will be booked in this timezone.
+            </p>
+          </div>
         </div>
 
         <div className="rounded-xl border border-border bg-card overflow-hidden">
