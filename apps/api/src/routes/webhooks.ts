@@ -83,7 +83,13 @@ function closestSlots(
  *          → Date for 2026-04-17T16:00:00Z  (9 AM PDT = 4 PM UTC)
  */
 function naiveLocalToDate(localDateStr: string, tz: string): Date {
-  const guess   = new Date(localDateStr + "Z")
+  if (!localDateStr) throw new Error("naiveLocalToDate: empty datetime string")
+  // Strip any timezone suffix the LLM may have added (Z or ±HH:MM / ±HHMM)
+  // e.g. "2026-04-17T09:00:00-07:00" → "2026-04-17T09:00:00"
+  // e.g. "2026-04-17T09:00:00Z"      → "2026-04-17T09:00:00"
+  const stripped = localDateStr.replace(/Z$|[+-]\d{2}:?\d{2}$/, "").trim()
+  if (!stripped) throw new Error(`naiveLocalToDate: could not parse "${localDateStr}"`)
+  const guess   = new Date(stripped + "Z")
   const dtf     = new Intl.DateTimeFormat("en-CA", {
     timeZone: tz,
     year: "numeric", month: "2-digit", day: "2-digit",
@@ -426,12 +432,16 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
       // book_appointment
       // ----------------------------------------------------------------
       if (funcName === "book_appointment") {
-        const customerName = funcArgs.customer_name as string
-        const duration     = (funcArgs.duration_minutes as number | undefined) ?? 60
-        const aiConfig     = business.aiConfig as { businessHours?: BusinessHours; timezone?: string } | null
-        const tz           = aiConfig?.timezone ?? "America/Los_Angeles"
-        const startTimeUtc = naiveLocalToDate(funcArgs.start_time as string, tz).toISOString()
+        const duration = (funcArgs.duration_minutes as number | undefined) ?? 60
+        const aiConfig = business.aiConfig as { businessHours?: BusinessHours; timezone?: string } | null
+        const tz       = aiConfig?.timezone ?? "America/Los_Angeles"
         try {
+          const rawStartTime = funcArgs.start_time as string | undefined
+          if (!rawStartTime) {
+            return { result: "I'm missing the appointment time — could you confirm what time you'd like?" }
+          }
+          const startTimeUtc = naiveLocalToDate(rawStartTime, tz).toISOString()
+          const customerName = funcArgs.customer_name as string
           const booking  = await CalendarService.bookAppointment(business.id, {
             startTime:       startTimeUtc,
             durationMinutes: duration,
@@ -449,8 +459,15 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
           const msg = (err as Error).message ?? ""
           console.error("book_appointment error:", err)
           if (msg.includes("outside business hours") || msg.includes("closed on")) {
-            const response = await outsideHoursResponse(business.id, startTimeUtc, duration, aiConfig?.businessHours, tz)
-            return { result: response }
+            // startTimeUtc may not be defined if naiveLocalToDate threw — fall back to generic message
+            const startForFallback = (funcArgs.start_time as string | undefined) ?? new Date().toISOString()
+            try {
+              const utcFallback = naiveLocalToDate(startForFallback, aiConfig?.timezone ?? "America/Los_Angeles").toISOString()
+              const response = await outsideHoursResponse(business.id, utcFallback, duration, aiConfig?.businessHours, aiConfig?.timezone ?? "America/Los_Angeles")
+              return { result: response }
+            } catch {
+              // ignore
+            }
           }
           return { result: "I wasn't able to complete the booking just now. Please try again or call back and we'll get that sorted." }
         }
@@ -525,11 +542,15 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
       // Ownership re-verified; new slot availability checked before patching.
       // ----------------------------------------------------------------
       if (funcName === "reschedule_appointment") {
-        const aiConfig        = business.aiConfig as { businessHours?: BusinessHours; timezone?: string } | null
-        const tz              = aiConfig?.timezone ?? "America/Los_Angeles"
-        const duration        = (funcArgs.duration_minutes as number | undefined) ?? 60
-        const newStartTimeUtc = naiveLocalToDate(funcArgs.new_start_time as string, tz).toISOString()
+        const aiConfig = business.aiConfig as { businessHours?: BusinessHours; timezone?: string } | null
+        const tz       = aiConfig?.timezone ?? "America/Los_Angeles"
+        const duration = (funcArgs.duration_minutes as number | undefined) ?? 60
         try {
+          const rawNewStart = funcArgs.new_start_time as string | undefined
+          if (!rawNewStart) {
+            return { result: "I'm missing the new appointment time — could you confirm when you'd like to reschedule to?" }
+          }
+          const newStartTimeUtc = naiveLocalToDate(rawNewStart, tz).toISOString()
           if (!fromNumber) {
             return { result: "I wasn't able to verify your phone number, so I can't reschedule the appointment." }
           }
@@ -557,8 +578,14 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             return { result: "I couldn't find that appointment linked to your number, so no changes were made." }
           }
           if (msg.includes("outside business hours") || msg.includes("closed on")) {
-            const response = await outsideHoursResponse(business.id, newStartTimeUtc, duration, aiConfig?.businessHours, tz)
-            return { result: response }
+            try {
+              const rawFallback = funcArgs.new_start_time as string | undefined
+              if (rawFallback) {
+                const utcFallback = naiveLocalToDate(rawFallback, tz).toISOString()
+                const response = await outsideHoursResponse(business.id, utcFallback, duration, aiConfig?.businessHours, tz)
+                return { result: response }
+              }
+            } catch { /* ignore */ }
           }
           if (msg.includes("not available")) {
             return { result: "That time slot is already taken — could you choose a different time?" }

@@ -126,6 +126,23 @@ export const GoogleCalendarAdapter: CalendarAdapter = {
   async checkAvailability(params: CheckAvailabilityParams): Promise<TimeSlot[]> {
     const conn = await this.refreshIfNeeded(params.connection)
 
+    // Fetch all calendars the user has access to, so we check every one for conflicts.
+    // If the list fetch fails, fall back to primary only.
+    let calendarIds: string[] = ["primary"]
+    try {
+      const listRes = await fetch(
+        `${GOOGLE_CALENDAR_API}/users/me/calendarList?minAccessRole=freeBusyReader`,
+        { headers: { Authorization: `Bearer ${conn.accessToken}` } }
+      )
+      if (listRes.ok) {
+        const listData = await listRes.json() as { items?: Array<{ id: string }> }
+        const ids = (listData.items ?? []).map((c) => c.id).filter(Boolean)
+        if (ids.length > 0) calendarIds = ids
+      }
+    } catch {
+      // fall back to primary
+    }
+
     const res = await fetch(`${GOOGLE_CALENDAR_API}/freeBusy`, {
       method: "POST",
       headers: {
@@ -135,7 +152,7 @@ export const GoogleCalendarAdapter: CalendarAdapter = {
       body: JSON.stringify({
         timeMin: params.from,
         timeMax: params.to,
-        items: [{ id: "primary" }],
+        items: calendarIds.map((id) => ({ id })),
       }),
     })
 
@@ -145,9 +162,11 @@ export const GoogleCalendarAdapter: CalendarAdapter = {
     }
 
     const data = await res.json() as {
-      calendars: { primary: { busy: Array<{ start: string; end: string }> } }
+      calendars: Record<string, { busy: Array<{ start: string; end: string }> }>
     }
-    const busyBlocks = data.calendars.primary?.busy ?? []
+
+    // Merge busy blocks from all calendars
+    const busyBlocks = Object.values(data.calendars).flatMap((cal) => cal.busy ?? [])
 
     return buildOpenSlots(
       busyBlocks,
