@@ -48,15 +48,16 @@ const STATUS_CONFIG = {
 
 export function CallLogsTab() {
   const { business, session } = useAuth()
-  const [callLogs, setCallLogs]       = useState<CallLog[]>([])
-  const [total, setTotal]             = useState(0)
-  const [hasMore, setHasMore]         = useState(false)
-  const [loading, setLoading]         = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [search, setSearch]           = useState("")
+  const [callLogs, setCallLogs]         = useState<CallLog[]>([])
+  const [total, setTotal]               = useState(0)
+  const [hasMore, setHasMore]           = useState(false)
+  const [loading, setLoading]           = useState(true)
+  const [searching, setSearching]       = useState(false)
+  const [loadingMore, setLoadingMore]   = useState(false)
+  const [search, setSearch]             = useState("")
   const [selectedCall, setSelectedCall] = useState<CallLog | null>(null)
-  const offsetRef = useRef(0)
-  const searchRef = useRef("")
+  const offsetRef   = useRef(0)
+  const searchRef   = useRef("")
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const fetchCalls = useCallback(async (opts: { search: string; offset: number; append: boolean }) => {
@@ -97,9 +98,9 @@ export function CallLogsTab() {
     offsetRef.current = 0
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      setLoading(true)
-      fetchCalls({ search: value, offset: 0, append: false }).finally(() => setLoading(false))
-    }, 300)
+      setSearching(true)
+      fetchCalls({ search: value, offset: 0, append: false }).finally(() => setSearching(false))
+    }, 400)
   }
 
   const handleLoadMore = async () => {
@@ -140,7 +141,10 @@ export function CallLogsTab() {
           <h2 className="text-lg font-semibold text-foreground">Recent Calls</h2>
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              {searching
+                ? <div className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin rounded-full border-2 border-border border-t-indigo-600" />
+                : <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              }
               <Input
                 placeholder="Search by phone…"
                 value={search}
@@ -157,7 +161,7 @@ export function CallLogsTab() {
             <p className="text-sm text-muted-foreground">No calls match your search.</p>
           </div>
         ) : (
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className={`rounded-xl border border-border bg-card overflow-hidden transition-opacity ${searching ? "opacity-50" : "opacity-100"}`}>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/50">

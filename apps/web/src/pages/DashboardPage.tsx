@@ -204,6 +204,7 @@ function MessagesTab() {
   const [total, setTotal]             = useState(0)
   const [hasMore, setHasMore]         = useState(false)
   const [loading, setLoading]         = useState(true)
+  const [searching, setSearching]     = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [search, setSearch]           = useState("")
   const offsetRef   = useRef(0)
@@ -238,9 +239,9 @@ function MessagesTab() {
     offsetRef.current = 0
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      setLoading(true)
-      fetchMessages({ search: value, offset: 0, append: false }).finally(() => setLoading(false))
-    }, 300)
+      setSearching(true)
+      fetchMessages({ search: value, offset: 0, append: false }).finally(() => setSearching(false))
+    }, 400)
   }
 
   const handleLoadMore = async () => {
@@ -282,7 +283,10 @@ function MessagesTab() {
           </p>
         </div>
         <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          {searching
+            ? <div className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin rounded-full border-2 border-border border-t-indigo-600" />
+            : <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          }
           <Input
             placeholder="Search by phone or name…"
             value={search}
@@ -292,6 +296,7 @@ function MessagesTab() {
         </div>
       </div>
 
+      <div className={`space-y-6 transition-opacity ${searching ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
       {messages.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-8 text-center">
           <p className="text-sm text-muted-foreground">
@@ -342,6 +347,7 @@ function MessagesTab() {
           Showing {messages.length} of {total}
         </p>
       )}
+      </div>
     </div>
   )
 }
