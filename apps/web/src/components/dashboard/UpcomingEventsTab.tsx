@@ -152,7 +152,10 @@ export function UpcomingEventsTab() {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Showing all events from your connected Google Calendar. For full calendar management, open Google Calendar directly.
+        Showing all events from your connected Google Calendar. For full calendar management,{" "}
+        <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+          open Google Calendar
+        </a>.
       </p>
 
       {groups.map((group) => (
