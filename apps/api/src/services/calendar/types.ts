@@ -105,4 +105,14 @@ export interface CalendarAdapter {
     eventId: string,
     params: UpdateEventParams,
   ): Promise<void>
+
+  /**
+   * Return all Front Desk bookings within a time window, regardless of customer.
+   * Used to render the Upcoming Events dashboard tab.
+   */
+  getUpcomingEvents(
+    connection: CalendarConnection,
+    from: string,
+    to: string,
+  ): Promise<AppointmentRecord[]>
 }

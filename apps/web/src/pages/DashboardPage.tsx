@@ -18,6 +18,7 @@ import { CallLogsTab } from "@/components/dashboard/CallLogsTab"
 import { UsageTab } from "@/components/dashboard/UsageTab"
 import { KnowledgeBaseTab } from "@/components/dashboard/KnowledgeBaseTab"
 import { SettingsTab } from "@/components/dashboard/SettingsTab"
+import { UpcomingEventsTab } from "@/components/dashboard/UpcomingEventsTab"
 
 const API_URL = import.meta.env.VITE_API_URL as string
 
@@ -119,6 +120,7 @@ export function DashboardPage() {
           {tab === "overview"  && <OverviewTab />}
           {tab === "calls"     && <CallLogsTab />}
           {tab === "messages"  && <MessagesTab />}
+          {tab === "upcoming"  && <UpcomingEventsTab />}
           {tab === "usage"     && <UsageTab />}
           {tab === "knowledge" && <KnowledgeBaseTab />}
           {tab === "settings"  && <SettingsTab onCalendarChange={setCalendarConnected} />}

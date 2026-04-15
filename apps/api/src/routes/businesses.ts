@@ -2,6 +2,7 @@ import { Elysia, t } from "elysia"
 import { db, businesses, businessMembers, calls, knowledgeBase, callbackRequests } from "@frontdesk/database"
 import { eq, desc, gte, sql, asc, and, ilike, or } from "drizzle-orm"
 import { searchAvailableNumbers, provisionNumber, releaseNumber } from "../services/twilio"
+import * as CalendarService from "../services/calendar/index"
 import { KB_TEMPLATES } from "../data/kb-templates"
 
 export const businessesRoutes = new Elysia({ prefix: "/businesses" })
@@ -359,6 +360,21 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
     )
 
     return { seeded: true, count: template.length }
+  })
+
+  // GET /:id/upcoming-events — next N days of Front Desk bookings from the calendar
+  .get("/:id/upcoming-events", async ({ params, query }) => {
+    const days = Math.min(Number((query as Record<string, string>).days ?? 14), 60)
+    const connection = await CalendarService.getActiveConnection(params.id)
+    if (!connection) return { events: [], noCalendar: true }
+
+    try {
+      const events = await CalendarService.getUpcomingEvents(params.id, days)
+      return { events }
+    } catch (err) {
+      console.error("upcoming-events error:", err)
+      return { events: [], error: (err as Error).message }
+    }
   })
 
   // GET /:id/messages — paginated callback requests with optional phone/name search

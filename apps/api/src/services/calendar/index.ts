@@ -165,6 +165,20 @@ export async function bookAppointment(
  * Find all upcoming appointments for a customer phone number across the
  * connected calendar. Uses provider-native metadata queries (no DB scan).
  */
+export async function getUpcomingEvents(
+  businessId: string,
+  days = 14,
+): Promise<AppointmentRecord[]> {
+  const connection = await getActiveConnection(businessId)
+  if (!connection) return []
+
+  const from = new Date().toISOString()
+  const to   = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
+
+  const adapter = getAdapter(connection.provider)
+  return adapter.getUpcomingEvents(connection, from, to)
+}
+
 export async function findAppointmentsByPhone(
   businessId: string,
   customerPhone: string,

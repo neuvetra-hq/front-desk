@@ -295,6 +295,60 @@ export const GoogleCalendarAdapter: CalendarAdapter = {
     }
   },
 
+  /**
+   * Return all Front Desk bookings in a time window for the dashboard.
+   * Filters by frontdesk_created=true so personal calendar events are excluded.
+   */
+  async getUpcomingEvents(
+    connection: CalendarConnection,
+    from: string,
+    to: string,
+  ): Promise<AppointmentRecord[]> {
+    const conn = await this.refreshIfNeeded(connection)
+
+    const params = new URLSearchParams({
+      privateExtendedProperty: `${EXT.created}=true`,
+      timeMin:      from,
+      timeMax:      to,
+      singleEvents: "true",
+      orderBy:      "startTime",
+      maxResults:   "100",
+    })
+
+    const res = await fetch(`${GOOGLE_CALENDAR_API}/calendars/primary/events?${params}`, {
+      headers: { Authorization: `Bearer ${conn.accessToken}` },
+    })
+
+    if (!res.ok) {
+      const err = await res.text()
+      throw new Error(`Google events.list (upcoming) failed: ${err}`)
+    }
+
+    const data = await res.json() as {
+      items?: Array<{
+        id: string
+        summary: string
+        start: { dateTime: string }
+        end: { dateTime: string }
+        extendedProperties?: { private?: Record<string, string> }
+      }>
+    }
+
+    return (data.items ?? []).map((item) => {
+      const priv = item.extendedProperties?.private ?? {}
+      return {
+        eventId:       item.id,
+        summary:       item.summary,
+        startTime:     item.start.dateTime,
+        endTime:       item.end.dateTime,
+        customerPhone: priv[EXT.phone] ?? "",
+        customerEmail: priv[EXT.email] || undefined,
+        customerName:  priv[EXT.name]  ?? "",
+        reason:        priv[EXT.reason] ?? "",
+      }
+    })
+  },
+
   /** Patch the start/end of an event. Ownership must be verified by the caller (service layer). */
   async updateEvent(
     connection: CalendarConnection,

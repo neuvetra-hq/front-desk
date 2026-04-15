@@ -30,4 +30,7 @@ export const OutlookCalendarAdapter: CalendarAdapter = {
   async updateEvent(_connection, _eventId, _params) {
     throw new Error("Outlook calendar adapter not yet implemented")
   },
+  async getUpcomingEvents(_connection, _from, _to) {
+    throw new Error("Outlook calendar adapter not yet implemented")
+  },
 }
