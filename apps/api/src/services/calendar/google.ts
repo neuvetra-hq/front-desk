@@ -307,7 +307,6 @@ export const GoogleCalendarAdapter: CalendarAdapter = {
     const conn = await this.refreshIfNeeded(connection)
 
     const params = new URLSearchParams({
-      privateExtendedProperty: `${EXT.created}=true`,
       timeMin:      from,
       timeMax:      to,
       singleEvents: "true",

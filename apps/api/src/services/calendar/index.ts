@@ -167,7 +167,7 @@ export async function bookAppointment(
  */
 export async function getUpcomingEvents(
   businessId: string,
-  days = 14,
+  days = 7,
 ): Promise<AppointmentRecord[]> {
   const connection = await getActiveConnection(businessId)
   if (!connection) return []

@@ -160,6 +160,6 @@ test.describe("Upcoming Events tab", () => {
     )
 
     await page.goto("/dashboard/upcoming")
-    await expect(page.getByText(/3 appointment/i)).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText(/3 event/i)).toBeVisible({ timeout: 10000 })
   })
 })

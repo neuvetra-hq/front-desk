@@ -364,7 +364,7 @@ export const businessesRoutes = new Elysia({ prefix: "/businesses" })
 
   // GET /:id/upcoming-events — next N days of Front Desk bookings from the calendar
   .get("/:id/upcoming-events", async ({ params, query }) => {
-    const days = Math.min(Number((query as Record<string, string>).days ?? 14), 60)
+    const days = Math.min(Number((query as Record<string, string>).days ?? 7), 60)
     const connection = await CalendarService.getActiveConnection(params.id)
     if (!connection) return { events: [], noCalendar: true }
 

@@ -84,7 +84,7 @@ export function UpcomingEventsTab() {
 
   useEffect(() => {
     if (!business?.id) return
-    fetch(`${API_URL}/businesses/${business.id}/upcoming-events?days=14`, {
+    fetch(`${API_URL}/businesses/${business.id}/upcoming-events?days=7`, {
       headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
     })
       .then((r) => r.json())
@@ -147,9 +147,13 @@ export function UpcomingEventsTab() {
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-foreground">Upcoming Events</h2>
         <span className="text-sm text-muted-foreground">
-          {events.length} appointment{events.length !== 1 ? "s" : ""} · next 14 days
+          {events.length} event{events.length !== 1 ? "s" : ""} · next 7 days
         </span>
       </div>
+
+      <p className="text-xs text-muted-foreground">
+        Showing all events from your connected Google Calendar. For full calendar management, open Google Calendar directly.
+      </p>
 
       {groups.map((group) => (
         <div key={group.dateKey} className="space-y-2">
