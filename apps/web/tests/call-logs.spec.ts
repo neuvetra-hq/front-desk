@@ -248,10 +248,9 @@ test.describe("Call Logs tab", () => {
 
   test("Load more button appears and appends results when hasMore is true", async ({ page }) => {
     await mockSupabaseRoutes(page)
-    let callCount = 0
     await page.route("**/businesses/*/calls*", (route) => {
-      callCount++
-      if (callCount === 1) {
+      const offset = Number(new URL(route.request().url()).searchParams.get("offset") ?? "0")
+      if (offset === 0) {
         return route.fulfill({ json: { calls: MOCK_CALLS, total: 3, hasMore: true } })
       }
       return route.fulfill({ json: { calls: MOCK_CALLS_PAGE2, total: 3, hasMore: false } })
@@ -429,11 +428,10 @@ test.describe("Messages tab", () => {
       status: "pending",
       createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     }
-    let callCount = 0
     await page.route("**/businesses/*/messages*", (route) => {
       if (route.request().method() === "PATCH") return route.fulfill({ json: { updated: true } })
-      callCount++
-      if (callCount === 1) return route.fulfill({ json: { messages: MOCK_MESSAGES, total: 3, hasMore: true } })
+      const offset = Number(new URL(route.request().url()).searchParams.get("offset") ?? "0")
+      if (offset === 0) return route.fulfill({ json: { messages: MOCK_MESSAGES, total: 3, hasMore: true } })
       return route.fulfill({ json: { messages: [extraMessage], total: 3, hasMore: false } })
     })
 
