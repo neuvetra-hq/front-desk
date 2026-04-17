@@ -38,6 +38,12 @@ test.describe("Calendar OAuth callback — unauthenticated", () => {
 //     await expect(page.getByRole("button", { name: /connect google calendar/i })).toBeVisible()
 //   })
 //
+//   test("Connect Outlook Calendar button is visible when not connected", async ({ page }) => {
+//     await page.goto("/dashboard")
+//     await page.getByRole("button", { name: /settings/i }).click()
+//     await expect(page.getByRole("button", { name: /connect outlook/i })).toBeVisible()
+//   })
+//
 //   test("connected state shows provider email and Disconnect button", async ({ page }) => {
 //     // Assumes the seeded test business has a connected calendar_connection row
 //     await page.goto("/dashboard")
@@ -56,4 +62,24 @@ test.describe("Calendar OAuth callback — unauthenticated", () => {
 //     // We just verify the redirect target is Google — we don't complete the OAuth flow in tests
 //     await expect(page).toHaveURL(/accounts\.google\.com|google\.com\/o\/oauth2/, { timeout: 5000 })
 //   })
+//
+//   test("clicking Connect Outlook redirects to Microsoft OAuth", async ({ page }) => {
+//     await page.goto("/dashboard")
+//     await page.getByRole("button", { name: /settings/i }).click()
+//     page.getByRole("button", { name: /connect outlook/i }).click()
+//     // We just verify the redirect target is Microsoft — we don't complete the OAuth flow in tests
+//     await expect(page).toHaveURL(/login\.microsoftonline\.com/, { timeout: 5000 })
+//   })
 // })
+
+test.describe("Outlook OAuth callback — unauthenticated", () => {
+  test("redirects to /login when landing on /calendar/microsoft/callback without session", async ({ page }) => {
+    await page.goto("/calendar/microsoft/callback")
+    await expect(page).toHaveURL(/login/, { timeout: 5000 })
+  })
+
+  test("redirects to /login when Microsoft returns an error", async ({ page }) => {
+    await page.goto("/calendar/microsoft/callback?error=access_denied")
+    await expect(page).toHaveURL(/login/, { timeout: 5000 })
+  })
+})

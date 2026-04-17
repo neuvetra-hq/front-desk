@@ -55,6 +55,7 @@ const DEFAULT_HOURS: BusinessHours = {
 }
 
 interface CalendarConnection {
+  provider: "google" | "outlook"
   providerEmail: string | null
   isActive: boolean
 }
@@ -94,7 +95,7 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
   useEffect(() => {
     const status = searchParams.get("calendar")
     if (status === "connected") {
-      toast.success("Google Calendar connected!")
+      toast.success("Calendar connected!")
       setSearchParams({}, { replace: true })
       onCalendarChange?.(true)
       // Re-fetch connection
@@ -112,11 +113,14 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
     }
   }, [searchParams])
 
-  const handleConnectCalendar = async () => {
+  const handleConnectCalendar = async (provider: "google" | "outlook") => {
     if (!business?.id) return
     setCalendarLoading(true)
     try {
-      const res = await fetch(`${API_URL}/calendar/auth-url?businessId=${business.id}`, {
+      const endpoint = provider === "outlook"
+        ? `${API_URL}/calendar/microsoft/auth-url?businessId=${business.id}`
+        : `${API_URL}/calendar/auth-url?businessId=${business.id}`
+      const res = await fetch(endpoint, {
         headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
       })
       const data = await res.json() as { url?: string; error?: string }
@@ -344,15 +348,25 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
           {calendarConn ? (
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                {/* Google Calendar icon */}
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
-                    <rect width="24" height="24" rx="4" fill="#fff"/>
-                    <path d="M17 3h-1V1h-2v2H10V1H8v2H7C5.9 3 5 3.9 5 5v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V9h10v10z" fill="#4285F4"/>
-                  </svg>
+                  {calendarConn.provider === "outlook" ? (
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                      <rect width="24" height="24" rx="4" fill="#0078D4"/>
+                      <path d="M13 6h6.5A1.5 1.5 0 0 1 21 7.5v9a1.5 1.5 0 0 1-1.5 1.5H13V6z" fill="#fff" fillOpacity=".3"/>
+                      <path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h8A1.5 1.5 0 0 1 14 8.5v7A1.5 1.5 0 0 1 12.5 17h-8A1.5 1.5 0 0 1 3 15.5v-7z" fill="#fff"/>
+                      <path d="M8.5 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" fill="#0078D4"/>
+                    </svg>
+                  ) : (
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                      <rect width="24" height="24" rx="4" fill="#fff"/>
+                      <path d="M17 3h-1V1h-2v2H10V1H8v2H7C5.9 3 5 3.9 5 5v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V9h10v10z" fill="#4285F4"/>
+                    </svg>
+                  )}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Google Calendar</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {calendarConn.provider === "outlook" ? "Outlook Calendar" : "Google Calendar"}
+                  </p>
                   <p className="text-xs text-muted-foreground">Connected as {calendarConn.providerEmail}</p>
                 </div>
               </div>
@@ -366,20 +380,40 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
               </Button>
             </div>
           ) : (
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-medium text-foreground">No calendar connected</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Connect Google Calendar to enable appointment booking.
-                </p>
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Connect your calendar so your AI can check availability and book appointments.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={() => handleConnectCalendar("google")}
+                  disabled={calendarLoading}
+                  variant="outline"
+                  className="text-sm"
+                >
+                  {/* Google icon */}
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <rect width="24" height="24" rx="4" fill="#fff"/>
+                    <path d="M17 3h-1V1h-2v2H10V1H8v2H7C5.9 3 5 3.9 5 5v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V9h10v10z" fill="#4285F4"/>
+                  </svg>
+                  Connect Google Calendar
+                </Button>
+                <Button
+                  onClick={() => handleConnectCalendar("outlook")}
+                  disabled={calendarLoading}
+                  variant="outline"
+                  className="text-sm"
+                >
+                  {/* Outlook icon */}
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <rect width="24" height="24" rx="4" fill="#0078D4"/>
+                    <path d="M13 6h6.5A1.5 1.5 0 0 1 21 7.5v9a1.5 1.5 0 0 1-1.5 1.5H13V6z" fill="#fff" fillOpacity=".3"/>
+                    <path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h8A1.5 1.5 0 0 1 14 8.5v7A1.5 1.5 0 0 1 12.5 17h-8A1.5 1.5 0 0 1 3 15.5v-7z" fill="#fff"/>
+                    <path d="M8.5 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" fill="#0078D4"/>
+                  </svg>
+                  Connect Outlook
+                </Button>
               </div>
-              <Button
-                onClick={handleConnectCalendar}
-                disabled={calendarLoading}
-                className="shrink-0 text-sm"
-              >
-                {calendarLoading ? "Connecting…" : "Connect Google Calendar"}
-              </Button>
             </div>
           )}
         </div>
