@@ -140,7 +140,7 @@ export function CalDAVConnectDialog({
             <Select
               items={Object.entries(PRESETS).map(([value, p]) => ({ value, label: p.label }))}
               value={preset}
-              onValueChange={handlePresetChange}
+              onValueChange={(v) => { if (v) handlePresetChange(v) }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />
