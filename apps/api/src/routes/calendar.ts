@@ -2,6 +2,7 @@ import { Elysia, t } from "elysia"
 import { createClient } from "@supabase/supabase-js"
 import { db, calendarConnections, businesses, businessMembers } from "@frontdesk/database"
 import { eq, and } from "drizzle-orm"
+import { discoverCaldavCalendar } from "../services/calendar/caldav"
 
 const GOOGLE_AUTH_URL     = "https://accounts.google.com/o/oauth2/v2/auth"
 const GOOGLE_TOKEN_URL    = "https://oauth2.googleapis.com/token"
@@ -300,6 +301,84 @@ export const calendarRoutes = new Elysia({ prefix: "/calendar" })
       if (!(await assertMember(businessId, userId))) { set.status = 403; return { error: "Forbidden" } }
 
       return { url: buildMicrosoftAuthUrl(businessId) }
+    },
+  )
+
+  // POST /calendar/caldav/connect — validate CalDAV credentials + store connection
+  .post(
+    "/caldav/connect",
+    async ({ body, headers, set }) => {
+      const { businessId, serverUrl, username, password } = body as {
+        businessId: string
+        serverUrl:  string
+        username:   string
+        password:   string
+      }
+
+      const userId = await getUserId(headers)
+      if (!userId) { set.status = 401; return { error: "Unauthorized" } }
+      if (!(await assertMember(businessId, userId))) { set.status = 403; return { error: "Forbidden" } }
+
+      const [business] = await db
+        .select()
+        .from(businesses)
+        .where(eq(businesses.id, businessId))
+        .limit(1)
+      if (!business) { set.status = 404; return { error: "Business not found" } }
+
+      let calendarUrl: string
+      try {
+        const discovered = await discoverCaldavCalendar(serverUrl, username, password)
+        calendarUrl = discovered.calendarUrl
+      } catch (err: unknown) {
+        set.status = 422
+        return { error: (err instanceof Error ? err.message : "Failed to connect to CalDAV server") }
+      }
+
+      // Deactivate any existing active connection
+      await db
+        .update(calendarConnections)
+        .set({ isActive: false, updatedAt: new Date() })
+        .where(and(
+          eq(calendarConnections.businessId, businessId),
+          eq(calendarConnections.isActive, true),
+        ))
+
+      await db
+        .insert(calendarConnections)
+        .values({
+          businessId,
+          provider:          "caldav",
+          providerAccountId: calendarUrl,
+          providerEmail:     username,
+          accessToken:       password,
+          refreshToken:      serverUrl,
+          tokenExpiry:       null,
+          isActive:          true,
+          updatedAt:         new Date(),
+        })
+        .onConflictDoUpdate({
+          target: [calendarConnections.businessId, calendarConnections.provider],
+          set: {
+            providerAccountId: calendarUrl,
+            providerEmail:     username,
+            accessToken:       password,
+            refreshToken:      serverUrl,
+            tokenExpiry:       null,
+            isActive:          true,
+            updatedAt:         new Date(),
+          },
+        })
+
+      return { connected: true, providerEmail: username }
+    },
+    {
+      body: t.Object({
+        businessId: t.String(),
+        serverUrl:  t.String(),
+        username:   t.String(),
+        password:   t.String(),
+      }),
     },
   )
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useSearchParams } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { toast } from "sonner"
+import { CalDAVConnectDialog } from "./CalDAVConnectDialog"
 
 const API_URL = import.meta.env.VITE_API_URL as string
 
@@ -55,9 +56,79 @@ const DEFAULT_HOURS: BusinessHours = {
 }
 
 interface CalendarConnection {
-  provider: "google" | "outlook"
+  provider: "google" | "outlook" | "caldav"
   providerEmail: string | null
   isActive: boolean
+}
+
+const PROVIDER_LABELS: Record<CalendarConnection["provider"], string> = {
+  google:  "Google Calendar",
+  outlook: "Outlook Calendar",
+  caldav:  "Apple / CalDAV Calendar",
+}
+
+function CalendarProviderIcon({ provider, size = 20 }: { provider: CalendarConnection["provider"]; size?: number }) {
+  const s = size
+  if (provider === "outlook") {
+    return (
+      <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+        <rect width="24" height="24" rx="4" fill="#0078D4"/>
+        <path d="M13 6h6.5A1.5 1.5 0 0 1 21 7.5v9a1.5 1.5 0 0 1-1.5 1.5H13V6z" fill="#fff" fillOpacity=".3"/>
+        <path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h8A1.5 1.5 0 0 1 14 8.5v7A1.5 1.5 0 0 1 12.5 17h-8A1.5 1.5 0 0 1 3 15.5v-7z" fill="#fff"/>
+        <path d="M8.5 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" fill="#0078D4"/>
+      </svg>
+    )
+  }
+  if (provider === "caldav") {
+    return (
+      <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+        <rect width="24" height="24" rx="4" fill="#f5f5f7"/>
+        <path d="M17 3h-1V1h-2v2H10V1H8v2H7C5.9 3 5 3.9 5 5v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V9h10v10z" fill="#555"/>
+        <circle cx="15" cy="13" r="1.5" fill="#555"/>
+        <circle cx="11.5" cy="13" r="1.5" fill="#555"/>
+        <circle cx="8" cy="13" r="1.5" fill="#555"/>
+      </svg>
+    )
+  }
+  // google
+  return (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
+      <rect width="24" height="24" rx="4" fill="#fff"/>
+      <path d="M17 3h-1V1h-2v2H10V1H8v2H7C5.9 3 5 3.9 5 5v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V9h10v10z" fill="#4285F4"/>
+    </svg>
+  )
+}
+
+function ProviderRow({
+  icon, name, description, onConnect, loading, border,
+}: {
+  icon:        React.ReactNode
+  name:        string
+  description: string
+  onConnect:   () => void
+  loading:     boolean
+  border?:     boolean
+}) {
+  return (
+    <div className={`flex items-center gap-4 px-5 py-4 ${border ? "border-b border-border" : ""}`}>
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-foreground">{name}</p>
+        <p className="text-xs text-muted-foreground truncate">{description}</p>
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onConnect}
+        disabled={loading}
+        className="shrink-0"
+      >
+        Connect
+      </Button>
+    </div>
+  )
 }
 
 interface SettingsTabProps {
@@ -74,6 +145,7 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
   const [agentSaving, setAgentSaving] = useState(false)
   const [calendarConn, setCalendarConn] = useState<CalendarConnection | null>(null)
   const [calendarLoading, setCalendarLoading] = useState(false)
+  const [caldavOpen, setCaldavOpen] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
 
   // Fetch current calendar connection status on mount
@@ -344,28 +416,17 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
           </p>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5">
-          {calendarConn ? (
+        {calendarConn ? (
+          /* Connected state */
+          <div className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                  {calendarConn.provider === "outlook" ? (
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
-                      <rect width="24" height="24" rx="4" fill="#0078D4"/>
-                      <path d="M13 6h6.5A1.5 1.5 0 0 1 21 7.5v9a1.5 1.5 0 0 1-1.5 1.5H13V6z" fill="#fff" fillOpacity=".3"/>
-                      <path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h8A1.5 1.5 0 0 1 14 8.5v7A1.5 1.5 0 0 1 12.5 17h-8A1.5 1.5 0 0 1 3 15.5v-7z" fill="#fff"/>
-                      <path d="M8.5 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" fill="#0078D4"/>
-                    </svg>
-                  ) : (
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
-                      <rect width="24" height="24" rx="4" fill="#fff"/>
-                      <path d="M17 3h-1V1h-2v2H10V1H8v2H7C5.9 3 5 3.9 5 5v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V9h10v10z" fill="#4285F4"/>
-                    </svg>
-                  )}
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+                  <CalendarProviderIcon provider={calendarConn.provider} size={20} />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">
-                    {calendarConn.provider === "outlook" ? "Outlook Calendar" : "Google Calendar"}
+                    {PROVIDER_LABELS[calendarConn.provider]}
                   </p>
                   <p className="text-xs text-muted-foreground">Connected as {calendarConn.providerEmail}</p>
                 </div>
@@ -379,44 +440,44 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
                 {calendarLoading ? "Disconnecting…" : "Disconnect"}
               </Button>
             </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Connect your calendar so your AI can check availability and book appointments.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  onClick={() => handleConnectCalendar("google")}
-                  disabled={calendarLoading}
-                  variant="outline"
-                  className="text-sm"
-                >
-                  {/* Google icon */}
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-                    <rect width="24" height="24" rx="4" fill="#fff"/>
-                    <path d="M17 3h-1V1h-2v2H10V1H8v2H7C5.9 3 5 3.9 5 5v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V9h10v10z" fill="#4285F4"/>
-                  </svg>
-                  Connect Google Calendar
-                </Button>
-                <Button
-                  onClick={() => handleConnectCalendar("outlook")}
-                  disabled={calendarLoading}
-                  variant="outline"
-                  className="text-sm"
-                >
-                  {/* Outlook icon */}
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-                    <rect width="24" height="24" rx="4" fill="#0078D4"/>
-                    <path d="M13 6h6.5A1.5 1.5 0 0 1 21 7.5v9a1.5 1.5 0 0 1-1.5 1.5H13V6z" fill="#fff" fillOpacity=".3"/>
-                    <path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h8A1.5 1.5 0 0 1 14 8.5v7A1.5 1.5 0 0 1 12.5 17h-8A1.5 1.5 0 0 1 3 15.5v-7z" fill="#fff"/>
-                    <path d="M8.5 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" fill="#0078D4"/>
-                  </svg>
-                  Connect Outlook
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          /* Provider list */
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <ProviderRow
+              icon={<CalendarProviderIcon provider="google" size={20} />}
+              name="Google Calendar"
+              description="Connect via Google OAuth"
+              onConnect={() => handleConnectCalendar("google")}
+              loading={calendarLoading}
+              border
+            />
+            <ProviderRow
+              icon={<CalendarProviderIcon provider="outlook" size={20} />}
+              name="Outlook Calendar"
+              description="Microsoft 365, Outlook.com"
+              onConnect={() => handleConnectCalendar("outlook")}
+              loading={calendarLoading}
+              border
+            />
+            <ProviderRow
+              icon={<CalendarProviderIcon provider="caldav" size={20} />}
+              name="Apple / CalDAV"
+              description="iCloud, Fastmail, Nextcloud, and more"
+              onConnect={() => setCaldavOpen(true)}
+              loading={calendarLoading}
+            />
+          </div>
+        )}
+
+        <CalDAVConnectDialog
+          open={caldavOpen}
+          onOpenChange={setCaldavOpen}
+          onConnected={(email) => {
+            setCalendarConn({ provider: "caldav", providerEmail: email, isActive: true })
+            onCalendarChange?.(true)
+          }}
+        />
       </section>
 
       {/* Call forwarding guide */}

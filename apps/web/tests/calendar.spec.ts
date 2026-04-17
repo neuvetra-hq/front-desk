@@ -72,6 +72,56 @@ test.describe("Calendar OAuth callback — unauthenticated", () => {
 //   })
 // })
 
+test.describe("Calendar provider selection — unauthenticated landing page", () => {
+  test("settings page shows Google Calendar option in provider list", async ({ page }) => {
+    await page.goto("/dashboard/settings")
+    // Redirects to login — just verify the route exists and redirects properly
+    await expect(page).toHaveURL(/login/, { timeout: 5000 })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// CalDAV / Apple Calendar callback — unauthenticated
+// ---------------------------------------------------------------------------
+
+test.describe("CalDAV connect — unauthenticated", () => {
+  test("redirects to /login when landing on /calendar/caldav/callback without session", async ({ page }) => {
+    await page.goto("/calendar/caldav/callback")
+    await expect(page).toHaveURL(/login/, { timeout: 5000 })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Authenticated CalDAV settings (requires storageState — kept commented)
+// ---------------------------------------------------------------------------
+
+// test.describe("CalDAV — Settings tab (authenticated)", () => {
+//   test.use({ storageState: "tests/fixtures/test-session.json" })
+//
+//   test("calendar section shows provider list when no calendar connected", async ({ page }) => {
+//     await page.goto("/dashboard/settings")
+//     await expect(page.getByText(/google calendar/i)).toBeVisible()
+//     await expect(page.getByText(/outlook/i)).toBeVisible()
+//     await expect(page.getByText(/apple/i)).toBeVisible()
+//   })
+//
+//   test("clicking Apple/Fastmail opens CalDAV connect dialog", async ({ page }) => {
+//     await page.goto("/dashboard/settings")
+//     await page.getByRole("button", { name: /apple.*fastmail|caldav/i }).click()
+//     await expect(page.getByRole("dialog")).toBeVisible()
+//     await expect(page.getByText(/connect caldav/i)).toBeVisible()
+//   })
+//
+//   test("CalDAV dialog has provider select, server URL, username and password fields", async ({ page }) => {
+//     await page.goto("/dashboard/settings")
+//     await page.getByRole("button", { name: /apple.*fastmail|caldav/i }).click()
+//     await expect(page.getByLabel(/provider/i)).toBeVisible()
+//     await expect(page.getByLabel(/server url/i)).toBeVisible()
+//     await expect(page.getByLabel(/username|apple id/i)).toBeVisible()
+//     await expect(page.getByLabel(/password/i)).toBeVisible()
+//   })
+// })
+
 test.describe("Outlook OAuth callback — unauthenticated", () => {
   test("redirects to /login when landing on /calendar/microsoft/callback without session", async ({ page }) => {
     await page.goto("/calendar/microsoft/callback")

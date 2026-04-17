@@ -25,9 +25,10 @@ export function App() {
       {/* Legacy redirect */}
       <Route path="/onboarding" element={<Navigate to="/signup" replace />} />
 
-      {/* Calendar OAuth return — protected (Google + Microsoft) */}
+      {/* Calendar OAuth return — protected (Google + Microsoft + CalDAV) */}
       <Route path="/calendar/callback" element={<ProtectedRoute><CalendarCallbackPage /></ProtectedRoute>} />
       <Route path="/calendar/microsoft/callback" element={<ProtectedRoute><CalendarCallbackPage /></ProtectedRoute>} />
+      <Route path="/calendar/caldav/callback" element={<ProtectedRoute><CalendarCallbackPage /></ProtectedRoute>} />
 
       {/* Protected — /dashboard redirects to /dashboard/overview */}
       <Route path="/dashboard" element={<ProtectedRoute><Navigate to="/dashboard/overview" replace /></ProtectedRoute>} />

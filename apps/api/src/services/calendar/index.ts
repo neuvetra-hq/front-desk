@@ -11,6 +11,7 @@ import { db, calendarConnections, businesses } from "@frontdesk/database"
 import { eq, and } from "drizzle-orm"
 import { GoogleCalendarAdapter } from "./google"
 import { OutlookCalendarAdapter } from "./outlook"
+import { CaldavCalendarAdapter } from "./caldav"
 import type {
   CalendarAdapter,
   CalendarProvider,
@@ -101,6 +102,7 @@ function getAdapter(provider: CalendarProvider): CalendarAdapter {
   switch (provider) {
     case "google":  return GoogleCalendarAdapter
     case "outlook": return OutlookCalendarAdapter
+    case "caldav":  return CaldavCalendarAdapter
     default:
       throw new Error(`No adapter for calendar provider: ${provider}`)
   }
