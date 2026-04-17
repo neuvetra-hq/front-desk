@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 ---
 # Task 36: CalDAV Calendar Integration
 
