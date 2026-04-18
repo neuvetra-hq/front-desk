@@ -1,4 +1,4 @@
-import { createDAVClient } from "tsdav"
+import { DAVClient } from "tsdav"
 import nodeFetch from "node-fetch"
 import { db, calendarConnections } from "@frontdesk/database"
 import { eq } from "drizzle-orm"
@@ -171,20 +171,22 @@ function buildOpenSlots(
 // DAV client factory — reads credentials from connection columns
 // ---------------------------------------------------------------------------
 
-function makeClient(connection: CalendarConnection) {
+async function makeClient(connection: CalendarConnection) {
   const serverUrl = connection.refreshToken  // server base URL stored in refreshToken
   const username  = connection.providerEmail ?? ""
   const password  = connection.accessToken   ?? ""
 
   if (!serverUrl || !password) throw new Error("CalDAV connection is missing credentials")
 
-  return createDAVClient({
+  const client = new DAVClient({
     serverUrl,
     credentials: { username, password },
     authMethod: "Basic",
     defaultAccountType: "caldav",
     fetch: nodeFetch as unknown as typeof fetch,
   })
+  await client.login()
+  return client
 }
 
 // ---------------------------------------------------------------------------
@@ -201,13 +203,14 @@ export async function discoverCaldavCalendar(
   username: string,
   password: string,
 ): Promise<{ calendarUrl: string; displayName: string }> {
-  const client = await createDAVClient({
+  const client = new DAVClient({
     serverUrl,
     credentials: { username, password },
     authMethod: "Basic",
     defaultAccountType: "caldav",
     fetch: nodeFetch as unknown as typeof fetch,
   })
+  await client.login()
 
   const calendars = await client.fetchCalendars()
 

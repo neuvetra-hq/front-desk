@@ -331,6 +331,7 @@ export const calendarRoutes = new Elysia({ prefix: "/calendar" })
         const discovered = await discoverCaldavCalendar(serverUrl, username, password)
         calendarUrl = discovered.calendarUrl
       } catch (err: unknown) {
+        console.error("CalDAV connect error:", err)
         set.status = 422
         return { error: (err instanceof Error ? err.message : "Failed to connect to CalDAV server") }
       }
