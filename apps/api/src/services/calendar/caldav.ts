@@ -212,20 +212,29 @@ export async function discoverCaldavCalendar(
   })
   await client.login()
 
-  const calendars = await client.fetchCalendars()
+  // Try fetchCalendars first; fall back to homeUrl from the discovered account.
+  // Apple iCloud sometimes drops the connection between login and the calendar
+  // listing PROPFIND (ECONNRESET), but login already gives us the homeUrl.
+  let calendarUrl: string
+  let displayName = username
 
-  if (!calendars.length) throw new Error("No calendars found on this account")
-
-  // Prefer the default/primary calendar; fall back to first
-  const primary = calendars.find((c) => {
-    const name = caldavDisplayName(c.displayName, "").toLowerCase()
-    return name.includes("calendar") || name.includes("home")
-  }) ?? calendars[0]
-
-  return {
-    calendarUrl: primary.url,
-    displayName: caldavDisplayName(primary.displayName, username),
+  try {
+    const calendars = await client.fetchCalendars()
+    if (!calendars.length) throw new Error("No calendars found on this account")
+    const primary = calendars.find((c) => {
+      const name = caldavDisplayName(c.displayName, "").toLowerCase()
+      return name.includes("calendar") || name.includes("home")
+    }) ?? calendars[0]
+    calendarUrl = primary.url
+    displayName = caldavDisplayName(primary.displayName, username)
+  } catch {
+    // Fall back to the homeUrl discovered during login
+    const homeUrl = (client as unknown as { account?: { homeUrl?: string } }).account?.homeUrl
+    if (!homeUrl) throw new Error("Could not discover calendar URL — check your credentials")
+    calendarUrl = homeUrl
   }
+
+  return { calendarUrl, displayName }
 }
 
 // ---------------------------------------------------------------------------
