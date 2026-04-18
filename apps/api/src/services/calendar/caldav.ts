@@ -1,4 +1,5 @@
 import { createDAVClient } from "tsdav"
+import nodeFetch from "node-fetch"
 import { db, calendarConnections } from "@frontdesk/database"
 import { eq } from "drizzle-orm"
 import { randomUUID } from "crypto"
@@ -182,6 +183,7 @@ function makeClient(connection: CalendarConnection) {
     credentials: { username, password },
     authMethod: "Basic",
     defaultAccountType: "caldav",
+    fetch: nodeFetch as unknown as typeof fetch,
   })
 }
 
@@ -204,6 +206,7 @@ export async function discoverCaldavCalendar(
     credentials: { username, password },
     authMethod: "Basic",
     defaultAccountType: "caldav",
+    fetch: nodeFetch as unknown as typeof fetch,
   })
 
   const calendars = await client.fetchCalendars()
