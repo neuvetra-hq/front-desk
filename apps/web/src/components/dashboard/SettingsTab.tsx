@@ -141,6 +141,7 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
   const [timezone, setTimezone] = useState("America/Los_Angeles")
   const [saving, setSaving] = useState(false)
   const [agentName, setAgentName] = useState("")
+  const [businessName, setBusinessName] = useState("")
   const [ownerPhone, setOwnerPhone] = useState("")
   const [agentSaving, setAgentSaving] = useState(false)
   const [calendarConn, setCalendarConn] = useState<CalendarConnection | null>(null)
@@ -230,6 +231,7 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
     if (!business?.aiConfig) return
     const cfg = business.aiConfig
     if (cfg.agentName) setAgentName(cfg.agentName as string)
+    if (cfg.businessName) setBusinessName(cfg.businessName as string)
     if (cfg.ownerPhone) setOwnerPhone(cfg.ownerPhone as string)
     if (cfg.businessHours) setHours(cfg.businessHours as BusinessHours)
     if (cfg.timezone) setTimezone(cfg.timezone as string)
@@ -245,7 +247,7 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session?.access_token ?? ""}`,
         },
-        body: JSON.stringify({ aiConfig: { agentName, ownerPhone } }),
+        body: JSON.stringify({ aiConfig: { agentName, businessName, ownerPhone } }),
       })
       const data = await res.json() as { updated?: boolean; error?: string }
       if (data.error) throw new Error(data.error)
@@ -306,6 +308,19 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
             />
             <p className="text-xs text-muted-foreground">
               How the AI introduces itself — "Hi, I'm Alex, calling on behalf of…"
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="business-display-name">Business display name</Label>
+            <Input
+              id="business-display-name"
+              placeholder={`e.g. ${business?.name?.split(" ").slice(0, 2).join(" ") ?? "Nima's Plumbing"}`}
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              The name the AI uses when speaking with callers. Leave blank to use your full registered business name.
             </p>
           </div>
 

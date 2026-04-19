@@ -215,7 +215,7 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
         to_number: called,
         direction: "inbound",
         retell_llm_dynamic_variables: {
-          business_name:  business.name,
+          business_name:  (aiConfig.businessName as string | undefined) ?? business.name,
           business_type:  business.businessType ?? "service",
           agent_name:     (aiConfig.agentName as string | undefined) ?? "your virtual receptionist",
           owner_phone:    (aiConfig.ownerPhone as string | undefined) ?? "+16507434932",
