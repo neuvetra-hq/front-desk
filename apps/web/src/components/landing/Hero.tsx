@@ -112,7 +112,7 @@ export function Hero() {
               {headlineLines.map((line, i) => (
                 <span
                   key={i}
-                  className={`block ${i === headlineLines.length - 1 ? "text-primary" : ""}`}
+                  className={`block ${i === headlineLines.length - 1 ? "text-primary text-3xl md:text-4xl" : ""}`}
                 >
                   {line}
                 </span>
