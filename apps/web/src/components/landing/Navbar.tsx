@@ -53,7 +53,8 @@ export function Navbar() {
             </button>
 
             {dropdownOpen && (
-              <div className="absolute left-1/2 top-full mt-2 w-[680px] -translate-x-1/2 rounded-2xl border border-border bg-background shadow-xl">
+              <div className="absolute left-1/2 top-full w-[680px] -translate-x-1/2 pt-2">
+              <div className="rounded-2xl border border-border bg-background shadow-xl">
                 <div className="grid grid-cols-5 gap-6 p-6">
                   {INDUSTRY_CATEGORIES.map((cat) => {
                     const catIndustries = industriesData.industries.filter(
@@ -90,6 +91,7 @@ export function Navbar() {
                     View all industries →
                   </a>
                 </div>
+              </div>
               </div>
             )}
           </div>
