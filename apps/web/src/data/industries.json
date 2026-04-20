@@ -1,11 +1,33 @@
 {
   "categories": [
-    { "id": "all", "label": "All" },
-    { "id": "home-services", "label": "Home Services" },
-    { "id": "healthcare", "label": "Healthcare" },
-    { "id": "beauty-wellness", "label": "Beauty & Wellness" },
-    { "id": "professional", "label": "Professional" },
-    { "id": "automotive", "label": "Automotive" }
+    {
+      "id": "all",
+      "label": "All"
+    },
+    {
+      "id": "home-services",
+      "label": "Home Services"
+    },
+    {
+      "id": "healthcare",
+      "label": "Healthcare"
+    },
+    {
+      "id": "beauty-wellness",
+      "label": "Beauty & Wellness"
+    },
+    {
+      "id": "professional",
+      "label": "Professional"
+    },
+    {
+      "id": "automotive",
+      "label": "Automotive"
+    },
+    {
+      "id": "food-hospitality",
+      "label": "Food & Hospitality"
+    }
   ],
   "industries": [
     {
@@ -13,7 +35,7 @@
       "name": "HVAC",
       "category": "home-services",
       "slug": "hvac",
-      "thumbnail": "/industries/hvac.jpg",
+      "thumbnail": "/industries/hvac.png",
       "painHook": "Emergency calls at 2am — answered instantly",
       "headline": "The HVAC Answering Service That Never Sleeps",
       "subheadline": "Your customers don't wait until 9am when their AC breaks down. Front Desk answers every call instantly — day or night — books service appointments, and routes emergencies to the right technician.",
@@ -35,7 +57,7 @@
       "name": "Plumbing",
       "category": "home-services",
       "slug": "plumbing",
-      "thumbnail": "/industries/plumbing.jpg",
+      "thumbnail": "/industries/plumbing.webp",
       "painHook": "A burst pipe won't wait — and neither will your caller",
       "headline": "Never Miss a Plumbing Emergency Again",
       "subheadline": "Every missed call could be a burst pipe, a flooded basement, or a high-value job going to your competitor. Front Desk answers every call, qualifies the urgency, and gets you the right information instantly.",
@@ -79,7 +101,7 @@
       "name": "Roofing",
       "category": "home-services",
       "slug": "roofing",
-      "thumbnail": "/industries/roofing.jpg",
+      "thumbnail": "/industries/roofing.jpeg",
       "painHook": "Storm damage calls pour in — don't let one go to voicemail",
       "headline": "Capture Every Roofing Lead Before Your Competitor Does",
       "subheadline": "After a storm, homeowners call the first roofer who picks up. Front Desk makes sure that's always you — answering instantly, collecting damage details, and scheduling inspections on your calendar.",
@@ -123,7 +145,7 @@
       "name": "Pest Control",
       "category": "home-services",
       "slug": "pest-control",
-      "thumbnail": "/industries/pest-control.jpg",
+      "thumbnail": "/industries/pest-control.webp",
       "painHook": "Urgent infestations need an immediate answer",
       "headline": "Pest Control Calls Handled With the Urgency They Deserve",
       "subheadline": "A cockroach infestation or rodent problem isn't something a homeowner wants to wait on. Front Desk answers every call, assesses the situation, and books your technicians — fast.",
@@ -145,7 +167,7 @@
       "name": "General Contractor",
       "category": "home-services",
       "slug": "general-contractor",
-      "thumbnail": "/industries/general-contractor.jpg",
+      "thumbnail": "/industries/general-contractor.webp",
       "painHook": "Project inquiries answered while you're on site",
       "headline": "Never Lose a Project Lead to Voicemail",
       "subheadline": "When you're managing a job site, answering every call isn't possible. Front Desk handles new project inquiries, collects project details, and schedules estimate calls — so your pipeline stays full.",
@@ -167,7 +189,7 @@
       "name": "Cleaning Services",
       "category": "home-services",
       "slug": "cleaning-services",
-      "thumbnail": "/industries/cleaning-services.jpg",
+      "thumbnail": "/industries/cleaning-services.webp",
       "painHook": "Last-minute booking requests — caught, not missed",
       "headline": "Every Cleaning Request Answered, Every Client Booked",
       "subheadline": "Clients expect a quick response when they need a clean. Front Desk answers every call, handles service questions, and books appointments directly to your team's schedule — even while you're cleaning.",
@@ -211,7 +233,7 @@
       "name": "Medical Practice",
       "category": "healthcare",
       "slug": "medical-practice",
-      "thumbnail": "/industries/medical-practice.jpg",
+      "thumbnail": "/industries/medical-practice.webp",
       "painHook": "Appointment requests handled around the clock",
       "headline": "Your Medical Practice, Always Reachable",
       "subheadline": "Patients need answers when they're sick — not on hold or sent to voicemail. Front Desk handles appointment scheduling, prescription refill requests, and general questions so your staff can focus on patient care.",
@@ -233,7 +255,7 @@
       "name": "Chiropractic",
       "category": "healthcare",
       "slug": "chiropractic",
-      "thumbnail": "/industries/chiropractic.jpg",
+      "thumbnail": "/industries/chiropractic.webp",
       "painHook": "Pain doesn't wait for office hours",
       "headline": "Chiropractic Patients Answered, Appointments Filled",
       "subheadline": "When someone is in acute pain, they call whoever picks up first. Front Desk ensures that's always your practice — handling new patient questions, scheduling appointments, and covering you after hours.",
@@ -255,7 +277,7 @@
       "name": "Veterinary",
       "category": "healthcare",
       "slug": "veterinary",
-      "thumbnail": "/industries/veterinary.jpg",
+      "thumbnail": "/industries/veterinary.webp",
       "painHook": "Pet emergencies need an immediate answer",
       "headline": "Every Pet Owner Deserves an Immediate Response",
       "subheadline": "A sick or injured pet is an emergency for its owner. Front Desk answers every call with the care and urgency pet owners expect — handling appointment requests, FAQs, and routing emergencies to your team.",
@@ -277,7 +299,7 @@
       "name": "Optometry",
       "category": "healthcare",
       "slug": "optometry",
-      "thumbnail": "/industries/optometry.jpg",
+      "thumbnail": "/industries/optometry.webp",
       "painHook": "Eye care questions answered, exams scheduled",
       "headline": "Your Optometry Practice, Always Available",
       "subheadline": "Patients scheduling eye exams or asking about contacts and glasses deserve a prompt, knowledgeable response. Front Desk handles it all — from booking to insurance questions — freeing your staff for in-office care.",
@@ -299,7 +321,7 @@
       "name": "Salon & Barber",
       "category": "beauty-wellness",
       "slug": "salon-barber",
-      "thumbnail": "/industries/salon-barber.jpg",
+      "thumbnail": "/industries/salon-barber.png",
       "painHook": "Catches last-minute bookings while you're mid-cut",
       "headline": "Every Booking Filled, Even While You're With a Client",
       "subheadline": "You can't answer your phone while holding scissors. Front Desk captures every last-minute booking request, answers questions about services and pricing, and fills your chair — even when you're fully booked.",
@@ -321,7 +343,7 @@
       "name": "MedSpa",
       "category": "beauty-wellness",
       "slug": "medspa",
-      "thumbnail": "/industries/medspa.jpg",
+      "thumbnail": "/industries/medspa.webp",
       "painHook": "Treatment inquiries convert to appointments 24/7",
       "headline": "Your MedSpa, Converting Inquiries Around the Clock",
       "subheadline": "Potential clients researching Botox, fillers, or laser treatments call at all hours. Front Desk answers every inquiry with professionalism, handles treatment questions, and books consultations directly to your calendar.",
@@ -383,6 +405,28 @@
       "featured": false
     },
     {
+      "id": "pet-grooming",
+      "name": "Pet Grooming",
+      "category": "beauty-wellness",
+      "slug": "pet-grooming",
+      "thumbnail": "/industries/pet-grooming.jpg",
+      "painHook": "Grooming appointments booked while your hands are full",
+      "headline": "Every Pet Grooming Request Captured, Every Slot Filled",
+      "subheadline": "You can't answer your phone while bathing or clipping a dog. Front Desk handles every booking request, answers questions about services and breed-specific pricing, and fills your schedule — without interrupting a single groom.",
+      "painPoints": [
+        "Groomers can't answer calls mid-service",
+        "Last-minute cancellations and booking requests go unmanaged",
+        "Pet owners choose the salon that responds first"
+      ],
+      "features": [
+        "Appointment booking and rescheduling",
+        "Services, pricing, and breed FAQ",
+        "Cancellation and waitlist handling",
+        "After-hours booking"
+      ],
+      "featured": false
+    },
+    {
       "id": "law-firm",
       "name": "Law Firm",
       "category": "professional",
@@ -409,7 +453,7 @@
       "name": "Real Estate",
       "category": "professional",
       "slug": "real-estate",
-      "thumbnail": "/industries/real-estate.jpg",
+      "thumbnail": "/industries/real-estate.webp",
       "painHook": "Property inquiries answered while you're at a showing",
       "headline": "Close More Deals by Never Missing an Inquiry",
       "subheadline": "When you're at a showing, you can't answer every call. Front Desk captures every property inquiry, schedules showings, and collects buyer details — so you never lose a lead while working with another client.",
@@ -453,7 +497,7 @@
       "name": "Accounting / CPA",
       "category": "professional",
       "slug": "accounting",
-      "thumbnail": "/industries/accounting.jpg",
+      "thumbnail": "/industries/accounting.jpeg",
       "painHook": "Tax season calls handled — all day, every day",
       "headline": "Your Accounting Practice, Always Reachable During Busy Season",
       "subheadline": "Tax season means non-stop calls. Front Desk handles client inquiries, appointment scheduling, and document submission questions — so your team can focus on returns, not the phone.",
@@ -475,7 +519,7 @@
       "name": "Property Management",
       "category": "professional",
       "slug": "property-management",
-      "thumbnail": "/industries/property-management.jpg",
+      "thumbnail": "/industries/property-management.webp",
       "painHook": "Tenant maintenance calls routed and logged automatically",
       "headline": "Property Management Calls Handled Without the Headache",
       "subheadline": "Tenant maintenance requests, lease inquiries, and prospective renter questions never stop coming. Front Desk handles them all — logging requests, routing urgent issues, and keeping tenants informed.",
@@ -519,7 +563,7 @@
       "name": "Car Dealership",
       "category": "automotive",
       "slug": "car-dealership",
-      "thumbnail": "/industries/car-dealership.jpg",
+      "thumbnail": "/industries/car-dealership.webp",
       "painHook": "Test drive requests captured after showroom hours",
       "headline": "Every Car Buyer Inquiry Captured, Day and Night",
       "subheadline": "Serious car buyers research after hours. Front Desk captures every test drive request, inventory inquiry, and financing question — and schedules showroom appointments to your sales team's calendar.",
@@ -541,7 +585,7 @@
       "name": "Towing",
       "category": "automotive",
       "slug": "towing",
-      "thumbnail": "/industries/towing.jpg",
+      "thumbnail": "/industries/towing.webp",
       "painHook": "Roadside emergencies answered in under a second",
       "headline": "The Towing Answering Service Built for Emergencies",
       "subheadline": "A stranded driver calls whoever picks up first. Front Desk answers every call instantly, collects location and vehicle details, and dispatches your team — so you never lose a tow to a competitor.",
@@ -555,6 +599,28 @@
         "Location and vehicle detail collection",
         "Dispatch notification and routing",
         "24/7 availability"
+      ],
+      "featured": false
+    },
+    {
+      "id": "restaurant",
+      "name": "Restaurant",
+      "category": "food-hospitality",
+      "slug": "restaurant",
+      "thumbnail": "/industries/restaurant.webp",
+      "painHook": "Reservations and takeout orders — never sent to voicemail",
+      "headline": "Every Reservation Taken, Every Guest Welcomed",
+      "subheadline": "During a dinner rush, your staff can't answer every call. Front Desk handles reservation requests, takeout order inquiries, hours and menu questions, and large party bookings — so your team can focus on the floor.",
+      "painPoints": [
+        "Missed calls during peak hours mean lost reservations",
+        "Staff are too busy to answer phones during a rush",
+        "Guests who can't get through choose another restaurant"
+      ],
+      "features": [
+        "Reservation and large party booking",
+        "Takeout and delivery inquiry handling",
+        "Hours, menu, and dietary FAQ",
+        "After-hours reservation capture"
       ],
       "featured": false
     }
