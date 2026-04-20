@@ -6,13 +6,13 @@ export const NAV_LINKS = [
 ]
 
 export const HERO = {
-  badge: "AI Infrastructure for Local Business",
-  headline: "Intelligent tools built\nfor the businesses\nthat keep communities running.",
+  badge: "AI Receptionist · From $49/mo",
+  headline: "Every call answered.\nEvery appointment booked.\nZero revenue left behind.",
   subheadline:
-    "Neuvetra builds AI-powered products that handle the operational work — so local service businesses can focus on what they do best.",
-  primaryCTA: "Explore our products",
+    "The average small business misses 1 in 5 inbound calls — each one a potential customer who hangs up and calls someone else. Front Desk answers instantly, books the appointment, and texts you a summary. 24/7, in any language, for a fraction of the cost of a receptionist.",
+  primaryCTA: "Get started free →",
   secondaryCTA: "See how it works",
-  trust: "Trusted by service businesses · No credit card required · Setup in minutes",
+  trust: "7-day free trial · No credit card · Live in 10 minutes",
 }
 
 export const PRODUCTS = [
@@ -170,23 +170,24 @@ export const COMPARISON = {
     "Monthly cost",
     "Setup time",
     "Knows your business",
+    "Appointment booking",
     "Call transcripts",
   ],
   columns: [
     {
       name: "Neuvetra Front Desk",
       highlight: true,
-      values: ["Always", "From $49/mo", "< 10 minutes", "Fully trained by you", "Every call"],
+      values: ["Always", "From $49/mo", "< 10 minutes", "Fully trained by you", "Direct calendar sync", "Every call"],
     },
     {
       name: "Hire a receptionist",
       highlight: false,
-      values: ["Business hours only", "$3,000+/mo", "Weeks to hire & train", "Takes time to learn", "None"],
+      values: ["Business hours only", "$3,000+/mo", "Weeks to hire & train", "Takes time to learn", "Manual only", "None"],
     },
     {
       name: "Answering service",
       highlight: false,
-      values: ["Partial coverage", "$300–$600/mo", "2–3 days", "Generic scripts only", "Rarely"],
+      values: ["Partial coverage", "$300–$600/mo", "2–3 days", "Generic scripts only", "None", "Rarely"],
     },
   ],
 }
@@ -216,9 +217,8 @@ export const TESTIMONIALS = [
 ]
 
 export const CTA_BANNER = {
-  headline: "Start with Neuvetra Front Desk today.",
-  subheadline:
-    "Your AI receptionist is ready in minutes. No contracts, no hardware, no hiring.",
+  headline: "Your first AI-answered call is 10 minutes away.",
+  subheadline: "No contracts. No hardware. No hiring. Just sign up and forward your calls.",
   primaryCTA: "Get started free",
   secondaryCTA: "Talk to us",
 }
@@ -228,12 +228,13 @@ export const PRICING_TIERS = [
     name: "Starter",
     description: "For solo operators just getting started.",
     monthlyPrice: 49,
-    minutes: 150,
-    overageRate: "0.25",
+    minutes: 200,
+    overageRate: "0.20",
     popular: false,
     features: [
-      "150 minutes/month (~75 calls)",
+      "200 minutes/month (~100 calls)",
       "1 local phone number",
+      "Appointment booking to your calendar",
       "Call transcripts & summaries",
       "SMS alerts for urgent calls",
       "Dashboard access",
@@ -244,17 +245,18 @@ export const PRICING_TIERS = [
     name: "Growth",
     description: "For active businesses with steady call volume.",
     monthlyPrice: 99,
-    minutes: 400,
-    overageRate: "0.20",
+    minutes: 500,
+    overageRate: "0.17",
     popular: true,
     features: [
-      "400 minutes/month (~200 calls)",
+      "500 minutes/month (~250 calls)",
       "1 local phone number",
+      "Appointment booking to your calendar",
       "Call transcripts & summaries",
       "SMS alerts for urgent calls",
       "Dashboard access",
-      "Priority email support",
       "Custom AI knowledge base",
+      "Priority email support",
     ],
   },
   {
@@ -262,19 +264,48 @@ export const PRICING_TIERS = [
     description: "For high-volume or multi-location businesses.",
     monthlyPrice: 199,
     minutes: 1000,
-    overageRate: "0.18",
+    overageRate: "0.16",
     popular: false,
     features: [
       "1,000 minutes/month (~500 calls)",
       "Up to 3 phone numbers / locations",
+      "Appointment booking to your calendar",
       "Call transcripts & summaries",
       "SMS alerts for urgent calls",
       "Dashboard access",
-      "Priority support",
       "Custom AI knowledge base",
       "Early access to Insights & Scheduler",
       "Dedicated onboarding call",
+      "Priority support",
     ],
+  },
+]
+
+export const FAQ_ITEMS = [
+  {
+    question: "Will my callers know they're talking to AI?",
+    answer:
+      "Front Desk sounds natural and professional. Most callers don't ask — and if they do, it's honest about being an AI assistant. You control the name and personality.",
+  },
+  {
+    question: "Do I need to change my phone number?",
+    answer:
+      "No. You keep your existing number. You simply set up call forwarding for missed or after-hours calls — takes about 2 minutes with your carrier.",
+  },
+  {
+    question: "What if it gets something wrong?",
+    answer:
+      "Every call is transcribed and summarized in your dashboard. You review everything. If the AI is ever unsure, it takes a message and you call back. It never guesses on pricing or commitments it isn't trained on.",
+  },
+  {
+    question: "What languages does it support?",
+    answer:
+      "Front Desk automatically detects the caller's language and responds in kind — no extra setup required. Particularly useful for businesses serving multilingual communities.",
+  },
+  {
+    question: "Can I customize what it says?",
+    answer:
+      "Yes — you train it on your business: services, pricing, hours, FAQs, and policies. The more you teach it, the better it performs. You can update it any time from your dashboard.",
   },
 ]
 
@@ -284,25 +315,24 @@ export const FOOTER = {
     {
       heading: "Products",
       links: [
-        { label: "Neuvetra Front Desk", href: "/signup" },
-        { label: "Neuvetra Scheduler", href: "#" },
-        { label: "Neuvetra Insights", href: "#" },
-        { label: "Neuvetra Engage", href: "#" },
+        { label: "Front Desk", href: "/signup", disabled: false },
+        { label: "Scheduler", href: null, disabled: true },
+        { label: "Insights", href: null, disabled: true },
+        { label: "Engage", href: null, disabled: true },
       ],
     },
     {
       heading: "Company",
       links: [
-        { label: "About Neuvetra", href: "#" },
-        { label: "Pricing", href: "#pricing" },
-        { label: "Contact", href: "#" },
+        { label: "Pricing", href: "#pricing", disabled: false },
+        { label: "Contact", href: "mailto:hello@neuvetra.com", disabled: false },
       ],
     },
     {
       heading: "Legal",
       links: [
-        { label: "Privacy Policy", href: "/privacy" },
-        { label: "Terms of Service", href: "/terms" },
+        { label: "Privacy Policy", href: "/privacy", disabled: false },
+        { label: "Terms of Service", href: "/terms", disabled: false },
       ],
     },
   ],
