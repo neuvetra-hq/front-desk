@@ -8,6 +8,7 @@ import { TermsPage } from "@/pages/TermsPage"
 import { PrivacyPage } from "@/pages/PrivacyPage"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 import { CalendarCallbackPage } from "@/pages/CalendarCallbackPage"
+import { IndustryPage } from "@/pages/IndustryPage"
 
 export function App() {
   return (
@@ -21,6 +22,7 @@ export function App() {
 
       {/* Signup wizard — public */}
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/industries/:slug" element={<IndustryPage />} />
 
       {/* Legacy redirect */}
       <Route path="/onboarding" element={<Navigate to="/signup" replace />} />
