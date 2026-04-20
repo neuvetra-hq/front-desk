@@ -9,6 +9,7 @@ import { WhyNeuvetra } from "@/components/landing/WhyNeuvetra"
 import { ComparisonTable } from "@/components/landing/ComparisonTable"
 import { Pricing } from "@/components/landing/Pricing"
 import { Testimonials } from "@/components/landing/Testimonials"
+import { FAQ } from "@/components/landing/FAQ"
 import { CTABanner } from "@/components/landing/CTABanner"
 import { Footer } from "@/components/landing/Footer"
 
@@ -27,6 +28,7 @@ export function LandingPage() {
         <ComparisonTable />
         <Pricing />
         <Testimonials />
+        <FAQ />
         <CTABanner />
       </main>
       <Footer />
