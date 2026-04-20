@@ -1,5 +1,6 @@
 import { buttonVariants } from "@/components/ui/button"
 import { Container } from "@/components/layout/Container"
+import { AuroraBackground } from "@/components/ui/aurora-background"
 import { HERO, STATS } from "@/constants/landing"
 
 function CallVisual() {
@@ -90,7 +91,7 @@ export function Hero() {
   const headlineLines = HERO.headline.split("\n")
 
   return (
-    <section className="relative overflow-hidden bg-background py-24 md:py-36">
+    <AuroraBackground className="py-24 md:py-36" showRadialGradient>
       {/* Subtle grid */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.03]"
@@ -100,9 +101,6 @@ export function Hero() {
           backgroundSize: "64px 64px",
         }}
       />
-      {/* Accent blobs */}
-      <div className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-primary/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl" />
 
       <Container className="relative">
         <div className="grid items-center gap-12 lg:grid-cols-2">
@@ -170,6 +168,6 @@ export function Hero() {
           ))}
         </div>
       </Container>
-    </section>
+    </AuroraBackground>
   )
 }
