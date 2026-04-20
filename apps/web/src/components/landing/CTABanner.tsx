@@ -28,7 +28,7 @@ export function CTABanner() {
           </Link>
         </div>
         <p className="mt-6 text-sm text-primary-foreground/60">
-          No credit card required · Cancel anytime · Setup in minutes
+          Your card won't be charged for 7 days · Cancel anytime · Setup in minutes
         </p>
       </Container>
     </section>

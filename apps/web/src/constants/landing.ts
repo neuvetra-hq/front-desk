@@ -11,7 +11,7 @@ export const HERO = {
     "The average small business misses 1 in 5 inbound calls — each one a potential customer who hangs up and calls someone else. Front Desk answers instantly, books the appointment, and texts you a summary. 24/7, in any language, for a fraction of the cost of a receptionist.",
   primaryCTA: "Get started free →",
   secondaryCTA: "See how it works",
-  trust: "7-day free trial · No credit card · Live in 10 minutes",
+  trust: "7-day free trial · Your card won't be charged until day 8 · Live in 10 minutes",
 }
 
 export const PRODUCTS = [

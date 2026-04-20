@@ -18,7 +18,7 @@ export function Pricing() {
             Simple, transparent pricing.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
-            Start free for 7 days. No credit card required. Cancel any time.
+            Start free for 7 days. Your card won't be charged until day 8. Cancel any time.
           </p>
 
           <div className="mt-8">
@@ -87,7 +87,7 @@ export function Pricing() {
                 </a>
 
                 <p className="mt-2 text-center text-xs text-muted-foreground">
-                  7-day free trial · No credit card
+                  7-day free trial · Not charged until day 8
                 </p>
 
                 <div className="my-6 border-t border-border" />
