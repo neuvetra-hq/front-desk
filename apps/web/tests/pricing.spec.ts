@@ -45,4 +45,16 @@ test.describe("Pricing section", () => {
   test("shows overage rate per minute", async ({ page }) => {
     await expect(page.locator("#pricing").getByText(/overage|per min/i).first()).toBeVisible()
   })
+
+  test("starter plan shows 200 minutes", async ({ page }) => {
+    await expect(page.locator("#pricing").getByText(/200 minutes/)).toBeVisible()
+  })
+
+  test("growth plan shows 500 minutes", async ({ page }) => {
+    await expect(page.locator("#pricing").getByText(/500 minutes/)).toBeVisible()
+  })
+
+  test("pro plan shows 1,000 minutes", async ({ page }) => {
+    await expect(page.locator("#pricing").getByText(/1,000 minutes/)).toBeVisible()
+  })
 })
