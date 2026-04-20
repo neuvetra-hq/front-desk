@@ -6,7 +6,7 @@ export function HowItWorks() {
     <section id="how-it-works" className="bg-foreground py-24 md:py-32">
       <Container>
         <div className="mb-16 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">Setup</p>
+          <p className="text-sm font-semibold uppercase tracking-widest text-background/50 mb-3">Setup</p>
           <h2 className="text-4xl font-semibold tracking-tight text-background md:text-5xl">
             Live in under 10 minutes.
           </h2>
@@ -21,7 +21,7 @@ export function HowItWorks() {
               key={item.step}
               className="relative rounded-2xl border border-background/20 bg-background/10 p-6"
             >
-              <p className="mb-3 text-3xl font-bold text-primary opacity-60">{item.step}</p>
+              <p className="mb-3 text-3xl font-bold text-background/30">{item.step}</p>
               <h3 className="text-sm font-bold text-background">{item.title}</h3>
               <p className="mt-2 text-xs leading-relaxed text-background/60">{item.description}</p>
             </div>
