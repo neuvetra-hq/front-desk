@@ -34,22 +34,30 @@ test.describe("Landing page", () => {
   })
 
   test("social proof strip is visible", async ({ page }) => {
-    await expect(page.getByText("Trusted by")).toBeVisible()
-    await expect(page.getByText("Dental", { exact: true }).first()).toBeVisible()
-    await expect(page.getByText("Legal", { exact: true }).first()).toBeVisible()
+    const strip = page.locator("section").filter({ hasText: "Trusted by" })
+    await expect(strip).toBeVisible()
+    await expect(strip.getByText("Dental")).toBeVisible()
+    await expect(strip.getByText("Legal")).toBeVisible()
   })
 
   test("FAQ section shows all questions", async ({ page }) => {
-    await expect(page.getByText("Will my callers know they're talking to AI?")).toBeVisible()
-    await expect(page.getByText("Do I need to change my phone number?")).toBeVisible()
-    await expect(page.getByText("What if it gets something wrong?")).toBeVisible()
-    await expect(page.getByText("What languages does it support?")).toBeVisible()
-    await expect(page.getByText("Can I customize what it says?")).toBeVisible()
+    const faq = page.locator("#faq")
+    await faq.scrollIntoViewIfNeeded()
+    await expect(faq.getByText("Will my callers know they're talking to AI?")).toBeVisible()
+    await expect(faq.getByText("Do I need to change my phone number?")).toBeVisible()
+    await expect(faq.getByText("What if it gets something wrong?")).toBeVisible()
+    await expect(faq.getByText("What languages does it support?")).toBeVisible()
+    await expect(faq.getByText("Can I customize what it says?")).toBeVisible()
   })
 
   test("FAQ accordion reveals answer on click", async ({ page }) => {
-    await page.getByText("Will my callers know they're talking to AI?").click()
-    await expect(page.getByText("sounds natural and professional")).toBeVisible()
+    const faq = page.locator("#faq")
+    await faq.scrollIntoViewIfNeeded()
+    const trigger = faq.getByText("Will my callers know they're talking to AI?")
+    const answer = page.getByText("sounds natural and professional")
+    await expect(answer).not.toBeVisible()
+    await trigger.click()
+    await expect(answer).toBeVisible()
   })
 
   test("CTA banner has updated headline", async ({ page }) => {
