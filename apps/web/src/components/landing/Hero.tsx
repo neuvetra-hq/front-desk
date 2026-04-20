@@ -108,7 +108,7 @@ export function Hero() {
               </span>
             </div>
 
-            <h1 className="text-5xl font-semibold tracking-tight text-foreground md:text-6xl leading-[1.05]">
+            <h1 className="text-4xl font-semibold tracking-tight text-foreground md:text-5xl leading-[1.1]">
               {headlineLines.map((line, i) => (
                 <span
                   key={i}
