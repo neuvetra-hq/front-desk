@@ -137,7 +137,7 @@ export function Hero() {
                 href="/signup"
                 className={
                   buttonVariants({ size: "lg" }) +
-                  " bg-foreground text-background hover:bg-foreground/80 px-8 rounded-xl"
+                  " bg-primary text-primary-foreground hover:bg-primary/90 px-8 rounded-full"
                 }
               >
                 {HERO.primaryCTA}
@@ -146,7 +146,7 @@ export function Hero() {
                 href="#how-it-works"
                 className={
                   buttonVariants({ size: "lg", variant: "outline" }) +
-                  " border-border text-foreground hover:bg-muted px-8 rounded-xl"
+                  " border-border text-foreground hover:bg-muted px-8 rounded-full"
                 }
               >
                 {HERO.secondaryCTA}

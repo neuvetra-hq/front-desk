@@ -22,7 +22,7 @@ export function CTABanner() {
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
             to="/signup"
-            className="inline-flex w-full items-center justify-center rounded-xl bg-background px-8 py-3.5 text-sm font-bold text-primary hover:bg-muted transition-colors sm:w-auto"
+            className="inline-flex w-full items-center justify-center rounded-full bg-background px-8 py-3.5 text-sm font-bold text-primary hover:bg-muted transition-colors sm:w-auto"
           >
             {CTA_BANNER.primaryCTA} →
           </Link>

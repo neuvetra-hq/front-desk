@@ -17,7 +17,7 @@ export function WhyNeuvetra() {
             </p>
             <a
               href="/signup"
-              className="mt-8 inline-flex items-center gap-2 rounded-xl bg-foreground px-6 py-3 text-sm font-semibold text-background hover:bg-foreground/80 transition-colors"
+              className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               Get started free →
             </a>

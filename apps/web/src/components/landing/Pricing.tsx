@@ -77,10 +77,10 @@ export function Pricing() {
 
                 <a
                   href="/signup"
-                  className={`mt-6 inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold transition-colors ${
+                  className={`mt-6 inline-flex w-full items-center justify-center rounded-full px-4 py-3 text-sm font-semibold transition-colors ${
                     tier.popular
                       ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "bg-foreground text-background hover:bg-foreground/80"
+                      : "border border-primary text-primary hover:bg-primary/5"
                   }`}
                 >
                   Start free trial →
