@@ -215,11 +215,12 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
         to_number: called,
         direction: "inbound",
         retell_llm_dynamic_variables: {
-          business_name:  (aiConfig.businessName as string | undefined) ?? business.name,
-          business_type:  business.businessType ?? "service",
-          agent_name:     (aiConfig.agentName as string | undefined) ?? "your virtual receptionist",
-          owner_phone:    (aiConfig.ownerPhone as string | undefined) ?? "+16507434932",
-          knowledge_base: knowledgeBaseText,
+          business_name:    (aiConfig.businessName as string | undefined) ?? business.name,
+          business_type:    business.businessType ?? "service",
+          agent_name:       (aiConfig.agentName as string | undefined) ?? "your virtual receptionist",
+          owner_phone:      (aiConfig.ownerPhone as string | undefined) ?? "+16507434932",
+          knowledge_base:   knowledgeBaseText,
+          collect_address:  (aiConfig.collectAddress as boolean | undefined) ? "true" : "false",
         },
       })
 
@@ -447,9 +448,10 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
             startTime:       startTimeUtc,
             durationMinutes: duration,
             customerName,
-            customerPhone:   funcArgs.customer_phone as string ?? fromNumber ?? "",
-            customerEmail:   funcArgs.customer_email as string | undefined,
-            reason:          funcArgs.reason as string,
+            customerPhone:    funcArgs.customer_phone as string ?? fromNumber ?? "",
+            customerEmail:    funcArgs.customer_email as string | undefined,
+            reason:           funcArgs.reason as string,
+            customerAddress:  funcArgs.customer_address as string | undefined,
           })
 
           const endTime = new Date(new Date(booking.startTime).getTime() + duration * 60 * 1000)

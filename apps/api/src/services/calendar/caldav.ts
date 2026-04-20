@@ -36,18 +36,19 @@ function formatICalDate(iso: string): string {
 }
 
 function buildICalEvent(params: {
-  uid:           string
-  summary:       string
-  description:   string
-  startTime:     string
-  endTime:       string
-  customerPhone: string
-  customerEmail: string
-  customerName:  string
-  reason:        string
+  uid:             string
+  summary:         string
+  description:     string
+  startTime:       string
+  endTime:         string
+  customerPhone:   string
+  customerEmail:   string
+  customerName:    string
+  reason:          string
+  customerAddress: string
 }): string {
   const now = formatICalDate(new Date().toISOString())
-  return [
+  const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     `PRODID:${PRODID}`,
@@ -64,9 +65,13 @@ function buildICalEvent(params: {
     `X-FRONTDESK-EMAIL:${params.customerEmail}`,
     `X-FRONTDESK-NAME:${params.customerName}`,
     `X-FRONTDESK-REASON:${params.reason}`,
-    "END:VEVENT",
-    "END:VCALENDAR",
-  ].join("\r\n")
+  ]
+  if (params.customerAddress) {
+    lines.push(`LOCATION:${params.customerAddress}`)
+    lines.push(`X-FRONTDESK-ADDRESS:${params.customerAddress}`)
+  }
+  lines.push("END:VEVENT", "END:VCALENDAR")
+  return lines.join("\r\n")
 }
 
 function parseICalProp(ical: string, prop: string): string {
@@ -90,24 +95,26 @@ function icalToRecord(icalStr: string, eventUrl: string): AppointmentRecord | nu
   const created = parseICalProp(icalStr, "X-FRONTDESK-CREATED")
   if (created !== "true") return null
 
-  const uid      = parseICalProp(icalStr, "UID") || eventUrl
-  const summary  = parseICalProp(icalStr, "SUMMARY")
-  const dtstart  = parseICalProp(icalStr, "DTSTART")
-  const dtend    = parseICalProp(icalStr, "DTEND")
-  const phone    = parseICalProp(icalStr, "X-FRONTDESK-PHONE")
-  const email    = parseICalProp(icalStr, "X-FRONTDESK-EMAIL")
-  const name     = parseICalProp(icalStr, "X-FRONTDESK-NAME")
-  const reason   = parseICalProp(icalStr, "X-FRONTDESK-REASON")
+  const uid     = parseICalProp(icalStr, "UID") || eventUrl
+  const summary = parseICalProp(icalStr, "SUMMARY")
+  const dtstart = parseICalProp(icalStr, "DTSTART")
+  const dtend   = parseICalProp(icalStr, "DTEND")
+  const phone   = parseICalProp(icalStr, "X-FRONTDESK-PHONE")
+  const email   = parseICalProp(icalStr, "X-FRONTDESK-EMAIL")
+  const name    = parseICalProp(icalStr, "X-FRONTDESK-NAME")
+  const reason  = parseICalProp(icalStr, "X-FRONTDESK-REASON")
+  const address = parseICalProp(icalStr, "X-FRONTDESK-ADDRESS")
 
   return {
-    eventId:       uid,
+    eventId:         uid,
     summary,
-    startTime:     parseICalDate(dtstart),
-    endTime:       parseICalDate(dtend),
-    customerPhone: phone,
-    customerEmail: email || undefined,
-    customerName:  name,
+    startTime:       parseICalDate(dtstart),
+    endTime:         parseICalDate(dtend),
+    customerPhone:   phone,
+    customerEmail:   email || undefined,
+    customerName:    name,
     reason,
+    customerAddress: address || undefined,
   }
 }
 
@@ -120,16 +127,18 @@ function icalToFullEvent(icalStr: string, eventUrl: string): AppointmentRecord {
   const email   = parseICalProp(icalStr, "X-FRONTDESK-EMAIL")
   const name    = parseICalProp(icalStr, "X-FRONTDESK-NAME")
   const reason  = parseICalProp(icalStr, "X-FRONTDESK-REASON")
+  const address = parseICalProp(icalStr, "X-FRONTDESK-ADDRESS")
 
   return {
-    eventId:       uid,
+    eventId:         uid,
     summary,
-    startTime:     parseICalDate(dtstart),
-    endTime:       parseICalDate(dtend),
-    customerPhone: phone,
-    customerEmail: email || undefined,
-    customerName:  name,
+    startTime:       parseICalDate(dtstart),
+    endTime:         parseICalDate(dtend),
+    customerPhone:   phone,
+    customerEmail:   email || undefined,
+    customerName:    name,
     reason,
+    customerAddress: address || undefined,
   }
 }
 
@@ -289,13 +298,14 @@ export const CaldavCalendarAdapter: CalendarAdapter = {
     const icalString = buildICalEvent({
       uid,
       summary,
-      description: `Booked by AI Front Desk\nPhone: ${params.customerPhone}\nReason: ${params.reason}`,
-      startTime:     startTime.toISOString(),
-      endTime:       endTime.toISOString(),
-      customerPhone: params.customerPhone,
-      customerEmail: params.customerEmail ?? "",
-      customerName:  params.customerName,
-      reason:        params.reason,
+      description: `Booked by AI Front Desk\nPhone: ${params.customerPhone}\nReason: ${params.reason}${params.customerAddress ? `\nAddress: ${params.customerAddress}` : ""}`,
+      startTime:       startTime.toISOString(),
+      endTime:         endTime.toISOString(),
+      customerPhone:   params.customerPhone,
+      customerEmail:   params.customerEmail ?? "",
+      customerName:    params.customerName,
+      reason:          params.reason,
+      customerAddress: params.customerAddress ?? "",
     })
 
     await client.createCalendarObject({

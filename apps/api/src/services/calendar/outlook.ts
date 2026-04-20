@@ -102,11 +102,12 @@ interface GraphEvent {
   end:   { dateTime: string; timeZone: string }
   extensions?: Array<{
     id: string
-    frontdesk_customer_phone?: string
-    frontdesk_customer_email?: string
-    frontdesk_customer_name?: string
-    frontdesk_reason?: string
-    frontdesk_created?: string
+    frontdesk_customer_phone?:   string
+    frontdesk_customer_email?:   string
+    frontdesk_customer_name?:    string
+    frontdesk_reason?:           string
+    frontdesk_created?:          string
+    frontdesk_customer_address?: string
   }>
 }
 
@@ -134,14 +135,15 @@ function graphEventToRecord(event: GraphEvent): AppointmentRecord | null {
   if (!ext?.frontdesk_created) return null
 
   return {
-    eventId:       event.id,
-    summary:       event.subject,
-    startTime:     toISO(event.start.dateTime, event.start.timeZone),
-    endTime:       toISO(event.end.dateTime, event.end.timeZone),
-    customerPhone: ext.frontdesk_customer_phone ?? "",
-    customerEmail: ext.frontdesk_customer_email || undefined,
-    customerName:  ext.frontdesk_customer_name  ?? "",
-    reason:        ext.frontdesk_reason         ?? "",
+    eventId:         event.id,
+    summary:         event.subject,
+    startTime:       toISO(event.start.dateTime, event.start.timeZone),
+    endTime:         toISO(event.end.dateTime, event.end.timeZone),
+    customerPhone:   ext.frontdesk_customer_phone   ?? "",
+    customerEmail:   ext.frontdesk_customer_email   || undefined,
+    customerName:    ext.frontdesk_customer_name    ?? "",
+    reason:          ext.frontdesk_reason           ?? "",
+    customerAddress: ext.frontdesk_customer_address || undefined,
   }
 }
 
@@ -223,12 +225,11 @@ export const OutlookCalendarAdapter: CalendarAdapter = {
         subject: `${params.reason} — ${params.customerName}`,
         body: {
           contentType: "text",
-          content: `Booked by AI Front Desk\nCustomer: ${params.customerName}\nPhone: ${params.customerPhone}\nReason: ${params.reason}`,
+          content: `Booked by AI Front Desk\nCustomer: ${params.customerName}\nPhone: ${params.customerPhone}\nReason: ${params.reason}${params.customerAddress ? `\nAddress: ${params.customerAddress}` : ""}`,
         },
+        ...(params.customerAddress ? { location: { displayName: params.customerAddress } } : {}),
         start: { dateTime: startTime.toISOString(), timeZone: "UTC" },
         end:   { dateTime: endTime.toISOString(),   timeZone: "UTC" },
-        // Open extension added via a follow-up PATCH after event creation
-        // (Graph requires the event to exist before adding extensions)
       }),
     })
 
@@ -247,13 +248,14 @@ export const OutlookCalendarAdapter: CalendarAdapter = {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        "@odata.type":              "microsoft.graph.openTypeExtension",
-        extensionName:              EXT_NAME,
-        frontdesk_created:          "true",
-        frontdesk_customer_phone:   params.customerPhone,
-        frontdesk_customer_email:   params.customerEmail ?? "",
-        frontdesk_customer_name:    params.customerName,
-        frontdesk_reason:           params.reason,
+        "@odata.type":                "microsoft.graph.openTypeExtension",
+        extensionName:                EXT_NAME,
+        frontdesk_created:            "true",
+        frontdesk_customer_phone:     params.customerPhone,
+        frontdesk_customer_email:     params.customerEmail ?? "",
+        frontdesk_customer_name:      params.customerName,
+        frontdesk_reason:             params.reason,
+        frontdesk_customer_address:   params.customerAddress ?? "",
       }),
     })
 
@@ -378,18 +380,18 @@ export const OutlookCalendarAdapter: CalendarAdapter = {
 
     const data = await res.json() as { value: GraphEvent[] }
 
-    // Return all events (not just FD-booked) — show full calendar like the Google adapter
     return (data.value ?? []).map((event) => {
       const ext = event.extensions?.find((e) => e.id.includes(EXT_NAME))
       return {
-        eventId:       event.id,
-        summary:       event.subject,
-        startTime:     toISO(event.start.dateTime, event.start.timeZone),
-        endTime:       toISO(event.end.dateTime,   event.end.timeZone),
-        customerPhone: ext?.frontdesk_customer_phone ?? "",
-        customerEmail: ext?.frontdesk_customer_email || undefined,
-        customerName:  ext?.frontdesk_customer_name  ?? "",
-        reason:        ext?.frontdesk_reason         ?? "",
+        eventId:         event.id,
+        summary:         event.subject,
+        startTime:       toISO(event.start.dateTime, event.start.timeZone),
+        endTime:         toISO(event.end.dateTime,   event.end.timeZone),
+        customerPhone:   ext?.frontdesk_customer_phone   ?? "",
+        customerEmail:   ext?.frontdesk_customer_email   || undefined,
+        customerName:    ext?.frontdesk_customer_name    ?? "",
+        reason:          ext?.frontdesk_reason           ?? "",
+        customerAddress: ext?.frontdesk_customer_address || undefined,
       }
     })
   },

@@ -143,6 +143,7 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
   const [agentName, setAgentName] = useState("")
   const [businessName, setBusinessName] = useState("")
   const [ownerPhone, setOwnerPhone] = useState("")
+  const [collectAddress, setCollectAddress] = useState(false)
   const [agentSaving, setAgentSaving] = useState(false)
   const [calendarConn, setCalendarConn] = useState<CalendarConnection | null>(null)
   const [calendarLoading, setCalendarLoading] = useState(false)
@@ -233,6 +234,7 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
     if (cfg.agentName) setAgentName(cfg.agentName as string)
     if (cfg.businessName) setBusinessName(cfg.businessName as string)
     if (cfg.ownerPhone) setOwnerPhone(cfg.ownerPhone as string)
+    setCollectAddress(!!(cfg.collectAddress as boolean | undefined))
     if (cfg.businessHours) setHours(cfg.businessHours as BusinessHours)
     if (cfg.timezone) setTimezone(cfg.timezone as string)
   }, [business?.id])
@@ -247,7 +249,7 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session?.access_token ?? ""}`,
         },
-        body: JSON.stringify({ aiConfig: { agentName, businessName, ownerPhone } }),
+        body: JSON.stringify({ aiConfig: { agentName, businessName, ownerPhone, collectAddress } }),
       })
       const data = await res.json() as { updated?: boolean; error?: string }
       if (data.error) throw new Error(data.error)
@@ -335,6 +337,20 @@ export function SettingsTab({ onCalendarChange }: SettingsTabProps = {}) {
             <p className="text-xs text-muted-foreground">
               If a caller reports an emergency, the AI will immediately transfer to this number.
             </p>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 py-1">
+            <div className="space-y-0.5">
+              <Label htmlFor="collect-address">Collect customer address</Label>
+              <p className="text-xs text-muted-foreground">
+                When enabled, the AI will ask for the customer's full address (with zip code) during booking and attach it to the calendar event.
+              </p>
+            </div>
+            <Switch
+              id="collect-address"
+              checked={collectAddress}
+              onCheckedChange={setCollectAddress}
+            />
           </div>
         </div>
 

@@ -162,4 +162,33 @@ test.describe("Upcoming Events tab", () => {
     await page.goto("/dashboard/upcoming")
     await expect(page.getByText(/3 event/i)).toBeVisible({ timeout: 10000 })
   })
+
+  test("shows customer address in event card when present", async ({ page }) => {
+    await mockSupabaseRoutes(page)
+    const eventWithAddress = {
+      ...TODAY_EVENT,
+      customerAddress: "123 Main St, San Francisco, CA 94102",
+    }
+    await page.route("**/businesses/*/upcoming-events*", (route) =>
+      route.fulfill({ json: { events: [eventWithAddress] } })
+    )
+
+    await page.goto("/dashboard/upcoming")
+
+    await expect(page.getByText("John Smith")).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText("123 Main St, San Francisco, CA 94102")).toBeVisible()
+  })
+
+  test("does not show address row when customerAddress is absent", async ({ page }) => {
+    await mockSupabaseRoutes(page)
+    await page.route("**/businesses/*/upcoming-events*", (route) =>
+      route.fulfill({ json: { events: [TODAY_EVENT] } })
+    )
+
+    await page.goto("/dashboard/upcoming")
+
+    await expect(page.getByText("John Smith")).toBeVisible({ timeout: 10000 })
+    // No address means no MapPin icon / address text rendered
+    await expect(page.locator("[data-testid='event-address']")).not.toBeVisible()
+  })
 })

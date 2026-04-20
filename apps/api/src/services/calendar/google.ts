@@ -96,6 +96,7 @@ const EXT = {
   email:    "frontdesk_customer_email",
   name:     "frontdesk_customer_name",
   reason:   "frontdesk_reason",
+  address:  "frontdesk_customer_address",
 } as const
 
 // ---------------------------------------------------------------------------
@@ -190,11 +191,10 @@ export const GoogleCalendarAdapter: CalendarAdapter = {
       },
       body: JSON.stringify({
         summary:     `${params.reason} — ${params.customerName}`,
-        description: `Booked by AI Front Desk\nCustomer: ${params.customerName}\nPhone: ${params.customerPhone}\nReason: ${params.reason}`,
+        description: `Booked by AI Front Desk\nCustomer: ${params.customerName}\nPhone: ${params.customerPhone}\nReason: ${params.reason}${params.customerAddress ? `\nAddress: ${params.customerAddress}` : ""}`,
+        ...(params.customerAddress ? { location: params.customerAddress } : {}),
         start: { dateTime: startTime.toISOString() },
         end:   { dateTime: endTime.toISOString() },
-        // Provider-native ownership metadata.
-        // Used by findByCustomerPhone to look up events without a DB table.
         extendedProperties: {
           private: {
             [EXT.created]: "true",
@@ -203,6 +203,7 @@ export const GoogleCalendarAdapter: CalendarAdapter = {
             [EXT.email]:   params.customerEmail ?? "",
             [EXT.name]:    params.customerName,
             [EXT.reason]:  params.reason,
+            [EXT.address]: params.customerAddress ?? "",
           },
         },
       }),
@@ -267,14 +268,15 @@ export const GoogleCalendarAdapter: CalendarAdapter = {
     return (data.items ?? []).map((item) => {
       const priv = item.extendedProperties?.private ?? {}
       return {
-        eventId:       item.id,
-        summary:       item.summary,
-        startTime:     item.start.dateTime,
-        endTime:       item.end.dateTime,
-        customerPhone: priv[EXT.phone] ?? phone,
-        customerEmail: priv[EXT.email] || undefined,
-        customerName:  priv[EXT.name]  ?? "",
-        reason:        priv[EXT.reason] ?? "",
+        eventId:         item.id,
+        summary:         item.summary,
+        startTime:       item.start.dateTime,
+        endTime:         item.end.dateTime,
+        customerPhone:   priv[EXT.phone]   ?? phone,
+        customerEmail:   priv[EXT.email]   || undefined,
+        customerName:    priv[EXT.name]    ?? "",
+        reason:          priv[EXT.reason]  ?? "",
+        customerAddress: priv[EXT.address] || undefined,
       }
     })
   },
@@ -336,14 +338,15 @@ export const GoogleCalendarAdapter: CalendarAdapter = {
     return (data.items ?? []).map((item) => {
       const priv = item.extendedProperties?.private ?? {}
       return {
-        eventId:       item.id,
-        summary:       item.summary,
-        startTime:     item.start.dateTime,
-        endTime:       item.end.dateTime,
-        customerPhone: priv[EXT.phone] ?? "",
-        customerEmail: priv[EXT.email] || undefined,
-        customerName:  priv[EXT.name]  ?? "",
-        reason:        priv[EXT.reason] ?? "",
+        eventId:         item.id,
+        summary:         item.summary,
+        startTime:       item.start.dateTime,
+        endTime:         item.end.dateTime,
+        customerPhone:   priv[EXT.phone]   ?? "",
+        customerEmail:   priv[EXT.email]   || undefined,
+        customerName:    priv[EXT.name]    ?? "",
+        reason:          priv[EXT.reason]  ?? "",
+        customerAddress: priv[EXT.address] || undefined,
       }
     })
   },

@@ -32,6 +32,7 @@ export interface AppointmentRecord {
   customerEmail?: string
   customerName: string
   reason: string
+  customerAddress?: string
 }
 
 export interface CheckAvailabilityParams {
@@ -54,6 +55,7 @@ export interface BookAppointmentParams {
   customerPhone: string
   customerEmail?: string
   reason: string
+  customerAddress?: string
 }
 
 export interface UpdateEventParams {

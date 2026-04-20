@@ -98,4 +98,26 @@ test.describe("Settings — AI Agent section (mocked auth)", () => {
 
     await expect(page.getByText(/agent settings saved/i)).toBeVisible({ timeout: 5000 })
   })
+
+  test("shows collect customer address toggle", async ({ page }) => {
+    await mockSupabaseRoutes(page)
+    await page.goto("/dashboard/settings")
+    await expect(page.getByRole("switch", { name: /collect customer address/i })).toBeVisible({ timeout: 10000 })
+  })
+
+  test("collect address toggle defaults to off when aiConfig has no collectAddress", async ({ page }) => {
+    await mockSupabaseRoutes(page)
+    await page.goto("/dashboard/settings")
+    const toggle = page.getByRole("switch", { name: /collect customer address/i })
+    await toggle.waitFor({ timeout: 10000 })
+    await expect(toggle).toHaveAttribute("aria-checked", "false")
+  })
+
+  test("collect address toggle pre-fills from aiConfig.collectAddress true", async ({ page }) => {
+    await mockSupabaseRoutes(page, { collectAddress: true })
+    await page.goto("/dashboard/settings")
+    const toggle = page.getByRole("switch", { name: /collect customer address/i })
+    await toggle.waitFor({ timeout: 10000 })
+    await expect(toggle).toHaveAttribute("aria-checked", "true")
+  })
 })

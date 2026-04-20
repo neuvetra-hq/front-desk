@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
-import { CalendarDays, Clock, Phone, User } from "lucide-react"
+import { CalendarDays, Clock, MapPin, Phone, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -15,6 +15,7 @@ interface UpcomingEvent {
   customerName: string
   customerPhone: string
   reason: string
+  customerAddress?: string
 }
 
 interface DayGroup {
@@ -219,6 +220,15 @@ function EventCard({ event, tz }: { event: UpcomingEvent; tz?: string }) {
             {duration}
           </span>
         </div>
+        {event.customerAddress && (
+          <div
+            className="flex items-center gap-1 text-xs text-muted-foreground"
+            data-testid="event-address"
+          >
+            <MapPin size={11} />
+            {event.customerAddress}
+          </div>
+        )}
       </div>
     </div>
   )
