@@ -1,7 +1,6 @@
 import { Navbar } from "@/components/landing/Navbar"
 import { Hero } from "@/components/landing/Hero"
 import { SocialProof } from "@/components/landing/SocialProof"
-import { Products } from "@/components/landing/Products"
 import { Features } from "@/components/landing/Features"
 import { HowItWorks } from "@/components/landing/HowItWorks"
 import { Industries } from "@/components/landing/Industries"
@@ -20,7 +19,6 @@ export function LandingPage() {
       <main>
         <Hero />
         <SocialProof />
-        <Products />
         <Features />
         <HowItWorks />
         <Industries />

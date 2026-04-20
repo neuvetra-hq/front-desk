@@ -51,24 +51,11 @@ test.describe("shadcn component standardisation — dashboard", () => {
 })
 
 test.describe("shadcn component standardisation — landing", () => {
-  test("products section: disabled CTA buttons are not clickable", async ({ page }) => {
+  test("products section is not on page", async ({ page }) => {
+    // Products section was removed; confirm it's not in the DOM
     await page.goto("/")
-    // Find disabled buttons (coming soon products)
-    const disabledBtns = page.locator("button[disabled]")
-    const count = await disabledBtns.count()
-    // Should have at least 1 disabled product button
-    expect(count).toBeGreaterThanOrEqual(1)
-    // Disabled buttons should not navigate anywhere when clicked
-    for (let i = 0; i < count; i++) {
-      await expect(disabledBtns.nth(i)).toBeDisabled()
-    }
-  })
-
-  test("products section: available CTA is an anchor link, not a button", async ({ page }) => {
-    await page.goto("/")
-    // The active product (Front Desk) uses an <a> tag
-    const ctaLink = page.locator("#products a[href]").first()
-    await expect(ctaLink).toBeVisible()
+    const productsSection = page.locator("#products")
+    await expect(productsSection).not.toBeVisible()
   })
 })
 
