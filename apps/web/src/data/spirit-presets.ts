@@ -16,17 +16,17 @@ export interface SpiritPreset {
 }
 
 const defaultPreset: SpiritPreset = {
-  speed: 1.0,
-  dieSpeed: 0.015,
+  speed: 0.35,
+  dieSpeed: 0.004,
   radius: 0.6,
-  curlSize: 0.02,
-  attraction: 1.0,
-  followSpeed: 1.0,
-  color1: '#ffffff',
-  color2: '#3d5257',
+  curlSize: 0.007,
+  attraction: 0.7,
+  followSpeed: 0.22,
+  color1: '#5b9fd4',   // bright blue — alive particles
+  color2: '#0d2540',   // deep navy — dying particles
   bgColor: '#0b0c0d',
-  bloomStrength: 0.5,
-  bloomRadius: 0.3,
+  bloomStrength: 0.7,
+  bloomRadius: 0.5,
   bloomThreshold: 0.0,
   useTriangles: true,
 }
@@ -74,9 +74,7 @@ export const PRESETS: Record<string, SpiritPreset> = {
 export const TRANSITION_DURATION_MS = 3000
 
 export const AUTO_CYCLE: { preset: string; holdMs: number }[] = [
-  { preset: 'default', holdMs: 10000 },
-  { preset: 'storm',   holdMs: 8000  },
-  { preset: 'drift',   holdMs: 9000  },
+  { preset: 'default', holdMs: 9999999 },
 ]
 
 export const AUDIO = {
