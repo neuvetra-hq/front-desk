@@ -16,14 +16,14 @@ export interface SpiritPreset {
 }
 
 const defaultPreset: SpiritPreset = {
-  speed: 0.35,
-  dieSpeed: 0.004,
-  radius: 0.6,
-  curlSize: 0.007,
-  attraction: 0.7,
-  followSpeed: 0.22,
-  color1: '#001020',   // dark core — alive/intense particles
-  color2: '#00446d',   // lighter blue — fading/edge particles
+  speed: 0.28,        // overall velocity — lower = more dreamlike
+  dieSpeed: 0.003,    // how fast particles die/respawn — lower = smoother, fewer sudden bursts
+  radius: 1.0,        // spawn spread — wider = particles appear over a larger area, less clustered
+  curlSize: 0.014,    // curl noise scale — higher = tighter more organic waves, lower = big slow rolls
+  attraction: 0.15,   // pull toward follow point — very low so curl noise dominates, no surging
+  followSpeed: 0.12,  // how fast the invisible follow point drifts — very slow = barely perceptible direction
+  color1: '#001020',
+  color2: '#00446d',
   bgColor: '#0b0c0d',
   bloomStrength: 0.7,
   bloomRadius: 0.5,
