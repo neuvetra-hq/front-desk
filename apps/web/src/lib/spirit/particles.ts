@@ -34,10 +34,12 @@ export class SpiritParticles {
     scene: THREE.Scene,
     camera: THREE.PerspectiveCamera,
     simulator: SpiritSimulator,
+    initialColor1 = '#001020',
+    initialColor2 = '#00446d',
   ) {
     this.container = new THREE.Object3D()
-    this.color1 = new THREE.Color('#ffffff')
-    this.color2 = new THREE.Color('#9b8cff')
+    this.color1 = new THREE.Color(initialColor1)
+    this.color2 = new THREE.Color(initialColor2)
     this.tmpColor = new THREE.Color()
 
     const W = simulator.textureWidth

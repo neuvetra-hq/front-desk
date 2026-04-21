@@ -144,7 +144,7 @@ export class SpiritEngine {
 
     // Default texture size = 256×256 = 65,536 particles
     this.simulator = new SpiritSimulator(this.renderer, 256, 256)
-    this.particles = new SpiritParticles(this.renderer, this.scene, this.camera, this.simulator)
+    this.particles = new SpiritParticles(this.renderer, this.scene, this.camera, this.simulator, preset.color1, preset.color2)
     this.scene.add(this.particles.container)
 
     this.audio = new AudioEngine()
