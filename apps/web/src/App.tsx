@@ -14,6 +14,8 @@ import { MarketingLayout } from "@/components/layout/MarketingLayout"
 import { VoiceCallProvider } from "@/contexts/VoiceCallContext"
 import { CallFAB } from "@/components/landing/CallFAB"
 import { ScrollToTop } from "@/components/layout/ScrollToTop"
+import { GpuRoute } from "@/components/auth/GpuRoute"
+import { AppPage } from "@/pages/AppPage"
 
 export function App() {
   return (
@@ -26,6 +28,9 @@ export function App() {
         <Route path="/industries/:slug" element={<IndustryPage />} />
         <Route path="/contact" element={<ContactPage />} />
       </Route>
+
+      {/* GPU-gated — publicly accessible, requires WebGPU */}
+      <Route path="/app" element={<GpuRoute><AppPage /></GpuRoute>} />
 
       {/* Auth + legal */}
       <Route path="/login" element={<LoginPage />} />

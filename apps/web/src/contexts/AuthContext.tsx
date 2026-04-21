@@ -26,6 +26,7 @@ interface AuthContextValue {
   loading: boolean
   profile: UserProfile | null
   business: Business | null
+  isAuthenticated: boolean
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
   refreshBusiness: () => Promise<void>
@@ -132,6 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loading,
       profile,
       business,
+      isAuthenticated: !!session,
       signOut,
       refreshProfile,
       refreshBusiness,
