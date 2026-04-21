@@ -18,6 +18,7 @@ class AudioEngine {
   private ambientSource: AudioBufferSourceNode | null = null
   private sfxBuffers = new Map<string, AudioBuffer>()
   private unlocked = false
+  private _unlockFn: (() => void) | null = null
 
   async init(): Promise<void> {
     this.ctx = new AudioContext()
@@ -61,10 +62,10 @@ class AudioEngine {
       }),
     )
 
-    const unlock = () => this.unlock()
-    document.addEventListener('click', unlock, { once: true })
-    document.addEventListener('keydown', unlock, { once: true })
-    document.addEventListener('touchstart', unlock, { once: true })
+    this._unlockFn = () => this.unlock()
+    document.addEventListener('click', this._unlockFn, { once: true })
+    document.addEventListener('keydown', this._unlockFn, { once: true })
+    document.addEventListener('touchstart', this._unlockFn, { once: true })
   }
 
   dispose(): void {
@@ -72,6 +73,12 @@ class AudioEngine {
     this.ctx?.close()
     this.ctx = null
     this.sfxBuffers.clear()
+    if (this._unlockFn) {
+      document.removeEventListener('click', this._unlockFn)
+      document.removeEventListener('keydown', this._unlockFn)
+      document.removeEventListener('touchstart', this._unlockFn)
+      this._unlockFn = null
+    }
   }
 
   playSFX(path: string): void {
