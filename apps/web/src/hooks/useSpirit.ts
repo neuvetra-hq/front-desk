@@ -3,6 +3,7 @@ import { SpiritEngine } from '@/lib/spirit/engine'
 
 export function useSpirit(containerRef: RefObject<HTMLDivElement | null>): {
   transition: (presetName: string) => void
+  toggleMute: () => boolean
 } {
   const engineRef = useRef<SpiritEngine | null>(null)
 
@@ -24,5 +25,9 @@ export function useSpirit(containerRef: RefObject<HTMLDivElement | null>): {
     engineRef.current?.transition(presetName)
   }, [])
 
-  return { transition }
+  const toggleMute = useCallback((): boolean => {
+    return engineRef.current?.toggleMute() ?? false
+  }, [])
+
+  return { transition, toggleMute }
 }

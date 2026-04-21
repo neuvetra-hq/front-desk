@@ -19,6 +19,7 @@ class AudioEngine {
   private sfxBuffers = new Map<string, AudioBuffer>()
   private unlocked = false
   private _unlockFn: (() => void) | null = null
+  private muted = false
 
   async init(): Promise<void> {
     this.ctx = new AudioContext()
@@ -79,6 +80,12 @@ class AudioEngine {
       document.removeEventListener('touchstart', this._unlockFn)
       this._unlockFn = null
     }
+  }
+
+  toggleMute(): boolean {
+    this.muted = !this.muted
+    if (this.ambientGain) this.ambientGain.gain.value = this.muted ? 0 : AUDIO.ambientVolume
+    return this.muted
   }
 
   playSFX(path: string): void {
@@ -181,6 +188,10 @@ export class SpiritEngine {
     this.simulator = null
     this.particles = null
     this.audio = null
+  }
+
+  toggleMute(): boolean {
+    return this.audio?.toggleMute() ?? false
   }
 
   transition(presetName: string): void {
