@@ -19,7 +19,7 @@ export function FAQ() {
         </div>
 
         <div className="mx-auto max-w-2xl">
-          <Accordion openMultiple={false}>
+          <Accordion multiple={false}>
             {FAQ_ITEMS.map((item, i) => (
               <AccordionItem key={i} value={`faq-${i}`}>
                 <AccordionTrigger className="text-left text-base font-semibold text-foreground py-4">

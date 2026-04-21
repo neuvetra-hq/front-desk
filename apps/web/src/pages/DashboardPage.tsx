@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useParams, useNavigate, Navigate, useSearchParams } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
-import { Phone, AlertTriangle, Sun, Moon, Search, CheckCircle2 } from "lucide-react"
+import { Phone, AlertTriangle, Sun, Moon, Search } from "lucide-react"
 import { useTheme } from "@/contexts/ThemeContext"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"

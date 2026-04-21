@@ -9,6 +9,7 @@ import { ComparisonTable } from "@/components/landing/ComparisonTable"
 import { Pricing } from "@/components/landing/Pricing"
 import { Testimonials } from "@/components/landing/Testimonials"
 import { FAQ } from "@/components/landing/FAQ"
+import { TryItLive } from "@/components/landing/TryItLive"
 import { CTABanner } from "@/components/landing/CTABanner"
 import { Footer } from "@/components/landing/Footer"
 
@@ -21,6 +22,7 @@ export function LandingPage() {
         <SocialProof />
         <Features />
         <HowItWorks />
+        <TryItLive />
         <Industries />
         <WhyNeuvetra />
         <ComparisonTable />

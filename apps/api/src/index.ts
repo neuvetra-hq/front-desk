@@ -4,6 +4,7 @@ import { webhooks } from "./routes/webhooks"
 import { businessesRoutes } from "./routes/businesses"
 import { billingRoutes } from "./routes/billing"
 import { calendarRoutes } from "./routes/calendar"
+import { voiceRoutes } from "./routes/voice"
 import { searchAvailableNumbers } from "./services/twilio"
 
 const app = new Elysia()
@@ -29,6 +30,7 @@ const app = new Elysia()
   .use(businessesRoutes)
   .use(billingRoutes)
   .use(calendarRoutes)
+  .use(voiceRoutes)
   .listen(Bun.env.PORT ?? 3000)
 
 export type App = typeof app
