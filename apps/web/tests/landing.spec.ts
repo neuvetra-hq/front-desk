@@ -8,8 +8,9 @@ test.describe("Landing page", () => {
   test("nav links are present", async ({ page }) => {
     const nav = page.locator("nav").first()
     await expect(nav.getByRole("link", { name: "How It Works", exact: true })).toBeVisible()
-    await expect(nav.getByRole("link", { name: "Industries", exact: true })).toBeVisible()
     await expect(nav.getByRole("link", { name: "Pricing", exact: true })).toBeVisible()
+    // Industries is a dropdown trigger (button), not a direct link
+    await expect(nav.getByRole("button", { name: /industries/i })).toBeVisible()
   })
 
   test("hero CTA links to signup", async ({ page }) => {
@@ -64,9 +65,9 @@ test.describe("Landing page", () => {
     await expect(page.getByText("Your first AI-answered call is 10 minutes away.")).toBeVisible()
   })
 
-  test("footer contact link is a mailto", async ({ page }) => {
+  test("footer contact link goes to contact page", async ({ page }) => {
     const footer = page.locator("footer")
-    await expect(footer.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "mailto:hello@neuvetra.com")
+    await expect(footer.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/contact")
   })
 
   test("footer has no dead hash links", async ({ page }) => {
@@ -82,7 +83,20 @@ test.describe("Landing page", () => {
 
   test("Industries section is present", async ({ page }) => {
     const section = page.locator("#industries")
-    await expect(section.getByText("Home Services")).toBeVisible()
-    await expect(section.getByText("Dental", { exact: true })).toBeVisible()
+    await section.scrollIntoViewIfNeeded()
+    // "Home Services" is a category filter button
+    await expect(section.getByRole("button", { name: "Home Services" })).toBeVisible()
+    // "Dental" appears as an industry card
+    await expect(section.getByText("Dental", { exact: true }).first()).toBeVisible()
+  })
+
+  test("TryItLive section shows call button and phone number", async ({ page }) => {
+    await page.getByText("Hear it for yourself").scrollIntoViewIfNeeded()
+    await expect(page.getByRole("button", { name: "Start call" })).toBeVisible()
+    await expect(page.getByText("(650) 433-9442").first()).toBeVisible()
+  })
+
+  test("TryItLive tel fallback link dials the Neuvetra number", async ({ page }) => {
+    await expect(page.getByRole("link", { name: "(650) 433-9442" })).toHaveAttribute("href", "tel:+16504339442")
   })
 })
