@@ -22,8 +22,8 @@ const defaultPreset: SpiritPreset = {
   curlSize: 0.007,
   attraction: 0.7,
   followSpeed: 0.22,
-  color1: '#5b9fd4',   // bright blue — alive particles
-  color2: '#0d2540',   // deep navy — dying particles
+  color1: '#00446d',   // bright blue — alive particles
+  color2: '#001020',   // deep navy — dying particles
   bgColor: '#0b0c0d',
   bloomStrength: 0.7,
   bloomRadius: 0.5,
