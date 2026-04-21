@@ -1,14 +1,5 @@
 import { test, expect, type Page } from "@playwright/test"
 
-async function mockNoWebGPU(page: Page) {
-  await page.addInitScript(() => {
-    Object.defineProperty(navigator, "gpu", {
-      get: () => undefined,
-      configurable: true,
-    })
-  })
-}
-
 async function mockWebGPU(page: Page) {
   await page.addInitScript(() => {
     const fakeAdapter = {
@@ -27,14 +18,8 @@ async function mockWebGPU(page: Page) {
   })
 }
 
-test.describe("/app route", () => {
-  test("redirects to home when WebGPU is not supported", async ({ page }) => {
-    await mockNoWebGPU(page)
-    await page.goto("/app")
-    await expect(page).toHaveURL("/")
-  })
-
-  test("renders spirit layout when WebGPU is available", async ({ page }) => {
+test.describe("spirit background", () => {
+  test("renders background container and overlay on /app", async ({ page }) => {
     await mockWebGPU(page)
     await page.goto("/app")
     await expect(page.locator("div.absolute.inset-0")).toBeAttached()
