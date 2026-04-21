@@ -11,11 +11,16 @@ import { CalendarCallbackPage } from "@/pages/CalendarCallbackPage"
 import { IndustryPage } from "@/pages/IndustryPage"
 import { ContactPage } from "@/pages/ContactPage"
 import { MarketingLayout } from "@/components/layout/MarketingLayout"
+import { AppLayout } from "@/components/layout/AppLayout"
 import { VoiceCallProvider } from "@/contexts/VoiceCallContext"
 import { CallFAB } from "@/components/landing/CallFAB"
 import { ScrollToTop } from "@/components/layout/ScrollToTop"
 import { GpuRoute } from "@/components/auth/GpuRoute"
-import { AppPage } from "@/pages/AppPage"
+import { AppHomePage } from "@/pages/app/AppHomePage"
+import { AppHowItWorksPage } from "@/pages/app/AppHowItWorksPage"
+import { AppPricingPage } from "@/pages/app/AppPricingPage"
+import { AppSignInPage } from "@/pages/app/AppSignInPage"
+import { AppGetStartedPage } from "@/pages/app/AppGetStartedPage"
 
 export function App() {
   return (
@@ -29,8 +34,14 @@ export function App() {
         <Route path="/contact" element={<ContactPage />} />
       </Route>
 
-      {/* GPU-gated — publicly accessible, requires WebGPU */}
-      <Route path="/app" element={<GpuRoute><AppPage /></GpuRoute>} />
+      {/* GPU-gated — Spirit experience with persistent canvas + per-route presets */}
+      <Route path="/app" element={<GpuRoute><AppLayout /></GpuRoute>}>
+        <Route index element={<AppHomePage />} />
+        <Route path="how-it-works" element={<AppHowItWorksPage />} />
+        <Route path="pricing" element={<AppPricingPage />} />
+        <Route path="sign-in" element={<AppSignInPage />} />
+        <Route path="get-started" element={<AppGetStartedPage />} />
+      </Route>
 
       {/* Auth + legal */}
       <Route path="/login" element={<LoginPage />} />

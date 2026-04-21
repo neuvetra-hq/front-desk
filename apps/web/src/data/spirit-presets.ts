@@ -31,6 +31,70 @@ const defaultPreset: SpiritPreset = {
   useTriangles: true,
 }
 
+const howItWorksPreset: SpiritPreset = {
+  speed: 0.32,
+  dieSpeed: 0.004,
+  radius: 1.1,
+  curlSize: 0.016,
+  attraction: 0.18,
+  followSpeed: 0.18,
+  color1: '#001508',
+  color2: '#005228',
+  bgColor: '#030d05',
+  bloomStrength: 0.75,
+  bloomRadius: 0.5,
+  bloomThreshold: 0.0,
+  useTriangles: true,
+}
+
+const pricingPreset: SpiritPreset = {
+  speed: 0.28,
+  dieSpeed: 0.003,
+  radius: 0.9,
+  curlSize: 0.011,
+  attraction: 0.12,
+  followSpeed: 0.14,
+  color1: '#0a0015',
+  color2: '#340060',
+  bgColor: '#060009',
+  bloomStrength: 0.9,
+  bloomRadius: 0.5,
+  bloomThreshold: 0.0,
+  useTriangles: true,
+}
+
+const signInPreset: SpiritPreset = {
+  speed: 0.55,
+  dieSpeed: 0.005,
+  radius: 1.5,
+  curlSize: 0.022,
+  attraction: 1.0,
+  followSpeed: 1.4,
+  color1: '#001518',
+  color2: '#005568',
+  bgColor: '#020a0d',
+  bloomStrength: 0.95,
+  bloomRadius: 0.6,
+  bloomThreshold: 0.0,
+  useTriangles: false,
+}
+
+const getStartedPreset: SpiritPreset = {
+  speed: 0.38,
+  dieSpeed: 0.004,
+  radius: 1.2,
+  curlSize: 0.018,
+  attraction: 0.22,
+  followSpeed: 0.28,
+  color1: '#180a00',
+  color2: '#6b3200',
+  bgColor: '#0d0600',
+  bloomStrength: 0.85,
+  bloomRadius: 0.5,
+  bloomThreshold: 0.0,
+  useTriangles: true,
+}
+
 const stormPreset: SpiritPreset = {
   speed: 2.5,
   dieSpeed: 0.04,
@@ -67,6 +131,10 @@ const driftPreset: SpiritPreset = {
 
 export const PRESETS: Record<string, SpiritPreset> = {
   default: defaultPreset,
+  howItWorks: howItWorksPreset,
+  pricing: pricingPreset,
+  signIn: signInPreset,
+  getStarted: getStartedPreset,
   storm: stormPreset,
   drift: driftPreset,
 }
