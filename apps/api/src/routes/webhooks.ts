@@ -189,6 +189,18 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
         .where(eq(businesses.twilioNumber, called))
         .limit(1)
 
+      // Neuvetra's own demo number — use dedicated agent, no DB lookup needed
+      if (called === Bun.env.TWILIO_PHONE_NUMBER && Bun.env.NEUVETRA_AGENT_ID) {
+        console.log(`/voice: Neuvetra demo line, agentId=${Bun.env.NEUVETRA_AGENT_ID}`)
+        const phoneCall = await retell.call.registerPhoneCall({
+          agent_id:    Bun.env.NEUVETRA_AGENT_ID,
+          from_number: (body as Record<string, string>).From,
+          to_number:   called,
+          direction:   "inbound",
+        })
+        return twiml(`<Dial><Sip>sip:${phoneCall.call_id}@sip.retellai.com</Sip></Dial>`)
+      }
+
       if (!business) {
         console.error(`/voice: no business found for number ${called}`)
         return twiml("<Say>Sorry, this number is not configured. Goodbye.</Say><Hangup/>")
