@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import { useSpirit } from '@/hooks/useSpirit'
 
@@ -15,6 +15,19 @@ export function AppPage() {
   const containerRef = useRef<HTMLDivElement>(null)
   const { toggleMute } = useSpirit(containerRef)
   const [muted, setMuted] = useState(false)
+  const [audioStarted, setAudioStarted] = useState(false)
+
+  useEffect(() => {
+    const handler = () => setAudioStarted(true)
+    document.addEventListener('click', handler, { once: true })
+    document.addEventListener('keydown', handler, { once: true })
+    document.addEventListener('touchstart', handler, { once: true })
+    return () => {
+      document.removeEventListener('click', handler)
+      document.removeEventListener('keydown', handler)
+      document.removeEventListener('touchstart', handler)
+    }
+  }, [])
 
   function handleToggleMute() {
     setMuted(toggleMute())
@@ -43,7 +56,7 @@ export function AppPage() {
           <button
             onClick={handleToggleMute}
             aria-label={muted ? 'Unmute' : 'Mute'}
-            className="flex items-end gap-[3px] h-5 opacity-40 hover:opacity-90 transition-opacity duration-300 cursor-pointer"
+            className={`flex items-end gap-[3px] h-5 transition-opacity duration-500 cursor-pointer ${audioStarted ? 'opacity-40 hover:opacity-90' : 'opacity-0 pointer-events-none'}`}
           >
             {BAR_DELAYS.map((delay, i) => (
               <span
