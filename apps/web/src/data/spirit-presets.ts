@@ -78,7 +78,7 @@ export const AUTO_CYCLE: { preset: string; holdMs: number }[] = [
 ]
 
 export const AUDIO = {
-  ambientLoop: '/sounds/Knowing.mp3',
+  ambientLoop: '/audio/ambient.mp3',
   ambientVolume: 0.3,
   sfxVolume: 0.7,
 }
