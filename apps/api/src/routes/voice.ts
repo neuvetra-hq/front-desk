@@ -18,11 +18,10 @@ export const voiceRoutes = new Elysia()
     }))
     return { token: token.toJwt() }
   })
-  .post("/voice/outbound", () => {
+  .post("/voice/outbound", ({ set }) => {
     const response = new VoiceResponse()
     const dial = response.dial({ callerId: Bun.env.TWILIO_PHONE_NUMBER! })
     dial.number(Bun.env.TWILIO_PHONE_NUMBER!)
-    return new Response(response.toString(), {
-      headers: { "Content-Type": "text/xml" },
-    })
+    set.headers["content-type"] = "text/xml"
+    return response.toString()
   })
