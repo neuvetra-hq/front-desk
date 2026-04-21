@@ -29,8 +29,8 @@ export function AppPage() {
         {/* Center branding */}
         <div className="flex flex-col items-center text-center">
           <h1
-            className="font-bold uppercase text-white leading-none"
-            style={{ fontSize: 'clamp(3rem, 8vw, 9rem)', letterSpacing: '0.25em' }}
+            className="uppercase text-white leading-none"
+            style={{ fontSize: 'clamp(3rem, 8vw, 9rem)', letterSpacing: '0.25em', fontFamily: "'Jost', sans-serif", fontWeight: 200 }}
           >
             Front Desk
           </h1>
