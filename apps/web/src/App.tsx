@@ -9,6 +9,7 @@ import { PrivacyPage } from "@/pages/PrivacyPage"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 import { CalendarCallbackPage } from "@/pages/CalendarCallbackPage"
 import { IndustryPage } from "@/pages/IndustryPage"
+import { ContactPage } from "@/pages/ContactPage"
 
 export function App() {
   return (
@@ -19,6 +20,7 @@ export function App() {
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/contact" element={<ContactPage />} />
 
       {/* Signup wizard — public */}
       <Route path="/signup" element={<SignupPage />} />

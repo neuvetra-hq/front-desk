@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from "react"
-import { useParams, useNavigate, Navigate } from "react-router"
+import { useParams, useNavigate, Navigate, useSearchParams } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
-import { Phone, AlertTriangle, Sun, Moon, Search } from "lucide-react"
+import { Phone, AlertTriangle, Sun, Moon, Search, CheckCircle2 } from "lucide-react"
 import { useTheme } from "@/contexts/ThemeContext"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { toast } from "sonner"
 import {
   SidebarInset,
   SidebarProvider,
@@ -15,29 +16,13 @@ import {
 } from "@/components/ui/sidebar"
 import { AppSidebar, NAV_ITEMS, type Tab } from "@/components/dashboard/AppSidebar"
 import { CallLogsTab } from "@/components/dashboard/CallLogsTab"
-import { UsageTab } from "@/components/dashboard/UsageTab"
-import { KnowledgeBaseTab } from "@/components/dashboard/KnowledgeBaseTab"
+import { CalendarTab } from "@/components/dashboard/CalendarTab"
 import { SettingsTab } from "@/components/dashboard/SettingsTab"
 import { UpcomingEventsTab } from "@/components/dashboard/UpcomingEventsTab"
+import { BillingTab } from "@/components/dashboard/BillingTab"
+import { HelpTab } from "@/components/dashboard/HelpTab"
 
 const API_URL = import.meta.env.VITE_API_URL as string
-
-// Map Stripe flat price IDs → plan display info
-// Price IDs come from VITE_ vars — we derive plan from the business.stripePlanId
-const PLAN_MAP: Record<string, { name: string; minutes: number; color: string }> = {
-  starter: { name: "Starter", minutes: 150, color: "bg-muted text-muted-foreground" },
-  growth:  { name: "Growth",  minutes: 400, color: "bg-indigo-100 text-indigo-700" },
-  pro:     { name: "Pro",     minutes: 1000, color: "bg-violet-100 text-violet-700" },
-}
-
-// Derive plan key from Stripe price ID env vars
-function getPlanKey(stripePlanId: string | null): keyof typeof PLAN_MAP | null {
-  if (!stripePlanId) return null
-  if (stripePlanId === import.meta.env.VITE_STRIPE_PRICE_STARTER_FLAT) return "starter"
-  if (stripePlanId === import.meta.env.VITE_STRIPE_PRICE_GROWTH_FLAT)  return "growth"
-  if (stripePlanId === import.meta.env.VITE_STRIPE_PRICE_PRO_FLAT)     return "pro"
-  return null
-}
 
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
@@ -58,6 +43,7 @@ export function DashboardPage() {
   const { business, session } = useAuth()
   const { tab: rawTab } = useParams<{ tab: string }>()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const validTabs = NAV_ITEMS.map((t) => t.id)
   const tab: Tab = (validTabs.includes(rawTab as Tab) ? rawTab : "overview") as Tab
   const [calendarConnected, setCalendarConnected] = useState<boolean | null>(null)
@@ -73,6 +59,20 @@ export function DashboardPage() {
       })
       .catch(() => setCalendarConnected(false))
   }, [business?.id, session?.access_token])
+
+  // Handle OAuth calendar return regardless of which tab the backend redirected to
+  useEffect(() => {
+    const status = searchParams.get("calendar")
+    if (!status) return
+    if (status === "connected") {
+      setCalendarConnected(true)
+      toast.success("Calendar connected!")
+    } else if (status === "error") {
+      toast.error("Calendar connection failed. Please try again.")
+    }
+    setSearchParams({}, { replace: true })
+    navigate("/dashboard/calendar", { replace: true })
+  }, [searchParams])
 
   if (rawTab && !validTabs.includes(rawTab as Tab)) {
     return <Navigate to="/dashboard/overview" replace />
@@ -117,23 +117,41 @@ export function DashboardPage() {
 
         {/* Page content */}
         <main className="flex-1 p-6">
-          {tab === "overview"  && <OverviewTab />}
+          {tab === "overview"  && <OverviewTab calendarConnected={calendarConnected} />}
           {tab === "calls"     && <CallLogsTab />}
           {tab === "messages"  && <MessagesTab />}
           {tab === "upcoming"  && <UpcomingEventsTab />}
-          {tab === "usage"     && <UsageTab />}
-          {tab === "knowledge" && <KnowledgeBaseTab />}
-          {tab === "settings"  && <SettingsTab onCalendarChange={setCalendarConnected} />}
+          {tab === "calendar"  && <CalendarTab onConnectionChange={setCalendarConnected} />}
+          {tab === "billing"   && <BillingTab />}
+          {tab === "settings"  && <SettingsTab />}
+          {tab === "help"      && <HelpTab />}
         </main>
       </SidebarInset>
     </SidebarProvider>
   )
 }
 
-function OverviewTab() {
+function OverviewTab({ calendarConnected }: { calendarConnected: boolean | null }) {
   const { business, profile } = useAuth()
-  const planKey = getPlanKey(business?.stripePlanId ?? null)
-  const plan = planKey ? PLAN_MAP[planKey] : null
+  const navigate = useNavigate()
+  const [totalCalls, setTotalCalls] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!business?.id) return
+    fetch(`${API_URL}/businesses/${business.id}/usage`)
+      .then((r) => r.json())
+      .then((d: { totalCalls?: number }) => setTotalCalls(d.totalCalls ?? 0))
+      .catch(() => {})
+  }, [business?.id])
+
+  const calendarLabel =
+    calendarConnected === null  ? "Checking…" :
+    calendarConnected           ? "Connected" :
+                                  "Not connected"
+  const calendarClass =
+    calendarConnected === true  ? "text-green-600" :
+    calendarConnected === false ? "text-amber-600" :
+                                  "text-muted-foreground"
 
   return (
     <div className="space-y-6">
@@ -146,8 +164,8 @@ function OverviewTab() {
         </p>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Summary cards — 2×2 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <SummaryCard
           label="AI Phone Number"
           value={business?.twilioNumber ?? "—"}
@@ -161,26 +179,27 @@ function OverviewTab() {
           hint={business?.status === "active" ? "Your AI is answering calls" : "Complete setup to go live"}
         />
         <SummaryCard
-          label="Plan"
-          value={plan ? `${plan.name} — ${plan.minutes} min/mo` : "—"}
-          hint="Manage billing in the Usage tab"
+          label="Calls this period"
+          value={totalCalls === null ? "—" : totalCalls.toLocaleString()}
+          hint="Total calls handled by your AI in the current billing period"
+        />
+        <SummaryCard
+          label="Calendar"
+          value={calendarLabel}
+          valueClass={calendarClass}
+          hint={
+            calendarConnected
+              ? "Your AI can check availability and book appointments"
+              : "Connect your calendar so your AI can book appointments"
+          }
+          action={
+            calendarConnected === false
+              ? { label: "Connect →", onClick: () => navigate("/dashboard/calendar") }
+              : undefined
+          }
         />
       </div>
 
-      {/* Call forwarding instructions */}
-      {business?.twilioNumber && (
-        <div className="rounded-xl border border-indigo-100 dark:border-indigo-800/50 bg-indigo-50 dark:bg-indigo-950/40 p-6">
-          <h2 className="font-semibold text-indigo-900 dark:text-indigo-100 mb-1">How to activate call forwarding</h2>
-          <p className="text-sm text-indigo-700 dark:text-indigo-300 mb-4">
-            Forward missed calls from your existing business number to your AI Front Desk number.
-          </p>
-          <div className="space-y-2 text-sm text-indigo-800 dark:text-indigo-200">
-            <p>📱 <strong>iPhone:</strong> Settings → Phone → Call Forwarding → enter <span className="font-mono font-semibold">{business.twilioNumber}</span></p>
-            <p>📱 <strong>Android:</strong> Phone app → Settings → Supplementary services → Forward when unanswered → enter <span className="font-mono font-semibold">{business.twilioNumber}</span></p>
-            <p>☎️ <strong>VoIP / Office line:</strong> Contact your provider and ask them to forward unanswered calls to <span className="font-mono font-semibold">{business.twilioNumber}</span></p>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -395,13 +414,14 @@ function MessageCard({ message, onMarkHandled }: { message: CallbackRequest; onM
 }
 
 function SummaryCard({
-  label, value, mono, hint, valueClass,
+  label, value, mono, hint, valueClass, action,
 }: {
   label: string
   value: string
   mono?: boolean
   hint?: string
   valueClass?: string
+  action?: { label: string; onClick: () => void }
 }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5 space-y-1">
@@ -410,6 +430,14 @@ function SummaryCard({
         {value}
       </p>
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {action && (
+        <button
+          onClick={action.onClick}
+          className="text-xs font-medium text-primary hover:underline mt-0.5"
+        >
+          {action.label}
+        </button>
+      )}
     </div>
   )
 }

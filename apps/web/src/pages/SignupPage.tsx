@@ -62,6 +62,22 @@ export function SignupPage() {
     if (!identity) return
     setBusy(true)
     try {
+      // Check if this phone number already has an account
+      const { data: existingMembership } = await supabase
+        .from("business_members")
+        .select("business_id")
+        .eq("user_id", verifiedUserId)
+        .limit(1)
+        .maybeSingle()
+
+      if (existingMembership) {
+        await refreshProfile()
+        await refreshBusiness()
+        toast.info("You already have an account — signing you in.")
+        navigate("/dashboard", { replace: true })
+        return
+      }
+
       const { error } = await supabase.from("users").upsert({
         id: verifiedUserId,
         first_name: identity.firstName,

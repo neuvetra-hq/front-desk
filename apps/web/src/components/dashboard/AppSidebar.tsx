@@ -1,7 +1,7 @@
 import { type ReactNode } from "react"
 import { useParams, useNavigate } from "react-router"
 import {
-  BarChart2, PhoneCall, MessageSquare, BookOpen, Settings, LogOut, TrendingUp, CalendarDays,
+  BarChart2, PhoneCall, MessageSquare, Settings, LogOut, CalendarDays, Calendar, CreditCard, HelpCircle,
 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import {
@@ -17,16 +17,17 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 
-type Tab = "overview" | "calls" | "messages" | "upcoming" | "usage" | "knowledge" | "settings"
+type Tab = "overview" | "calls" | "messages" | "upcoming" | "calendar" | "billing" | "settings" | "help"
 
 const NAV_ITEMS: { id: Tab; label: string; icon: ReactNode }[] = [
-  { id: "overview",  label: "Overview",         icon: <BarChart2     size={16} /> },
-  { id: "calls",     label: "Call Logs",         icon: <PhoneCall     size={16} /> },
-  { id: "messages",  label: "Messages",          icon: <MessageSquare size={16} /> },
-  { id: "upcoming",  label: "Upcoming Events",   icon: <CalendarDays  size={16} /> },
-  { id: "usage",     label: "Usage",             icon: <TrendingUp    size={16} /> },
-  { id: "knowledge", label: "Knowledge Base",    icon: <BookOpen      size={16} /> },
-  { id: "settings",  label: "Settings",          icon: <Settings      size={16} /> },
+  { id: "overview",  label: "Overview",        icon: <BarChart2     size={16} /> },
+  { id: "calls",     label: "Call Logs",        icon: <PhoneCall     size={16} /> },
+  { id: "messages",  label: "Messages",         icon: <MessageSquare size={16} /> },
+  { id: "upcoming",  label: "Upcoming Events",  icon: <CalendarDays  size={16} /> },
+  { id: "calendar",  label: "Calendar",         icon: <Calendar      size={16} /> },
+  { id: "billing",   label: "Billing",          icon: <CreditCard    size={16} /> },
+  { id: "settings",  label: "Settings",         icon: <Settings      size={16} /> },
+  { id: "help",      label: "Help",             icon: <HelpCircle    size={16} /> },
 ]
 
 export { NAV_ITEMS }

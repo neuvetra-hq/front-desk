@@ -1,3 +1,4 @@
+import { Link } from "react-router"
 import { Container } from "@/components/layout/Container"
 import { FOOTER } from "@/constants/landing"
 
@@ -29,6 +30,13 @@ export function Footer() {
                   <li key={link.label}>
                     {link.disabled || !link.href ? (
                       <span className="text-sm text-muted-foreground/50">{link.label}</span>
+                    ) : link.href.startsWith("/") ? (
+                      <Link
+                        to={link.href}
+                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        {link.label}
+                      </Link>
                     ) : (
                       <a
                         href={link.href}

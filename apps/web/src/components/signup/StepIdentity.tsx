@@ -62,7 +62,7 @@ export function StepIdentity({ onNext, busy }: Props) {
         </Button>
       </FieldGroup>
 
-      <p className="text-xs text-muted-foreground text-center leading-relaxed mt-4">
+      <p className="text-xs text-muted-foreground leading-relaxed mt-4">
         By clicking "Send verification code," you agree to receive SMS messages from Front Desk by Neuvetra, including a one-time verification code and transactional notifications such as appointment bookings, cancellations, rescheduling, callback requests, and emergency alerts related to your account. Message frequency varies based on usage. Message and data rates may apply. Reply STOP to opt out or HELP for help. For support, contact <a href="mailto:support@neuvetra.com" className="underline hover:text-foreground">support@neuvetra.com</a>. See our{" "}
         <a href="/terms" className="underline hover:text-foreground">Terms of Service</a> and{" "}
         <a href="/privacy" className="underline hover:text-foreground">Privacy Policy</a>.

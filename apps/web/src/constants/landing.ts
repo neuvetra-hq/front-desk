@@ -324,7 +324,7 @@ export const FOOTER = {
       heading: "Company",
       links: [
         { label: "Pricing", href: "#pricing", disabled: false },
-        { label: "Contact", href: "mailto:hello@neuvetra.com", disabled: false },
+        { label: "Contact", href: "/contact", disabled: false },
       ],
     },
     {

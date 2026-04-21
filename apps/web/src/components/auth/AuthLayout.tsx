@@ -11,10 +11,10 @@ export function AuthLayout({ title, description, children }: AuthLayoutProps) {
     <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="mb-8 flex items-center justify-center gap-2">
+        <a href="/" className="mb-8 flex items-center justify-center gap-2">
           <img src="/logo-v2.png" alt="Front Desk" className="h-9 w-9 object-contain" />
           <span className="text-lg font-semibold text-foreground">Front Desk</span>
-        </div>
+        </a>
 
         <Card className="border-neutral-200 shadow-sm">
           <CardHeader className="pb-4 text-center">

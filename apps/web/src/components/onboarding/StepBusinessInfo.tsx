@@ -11,12 +11,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import industriesData from "@/data/industries.json"
+
+const INDUSTRY_OPTIONS = [
+  ...industriesData.industries.map((i) => ({ value: i.id, label: i.name })),
+  { value: "other", label: "Other" },
+]
 
 const schema = z.object({
   businessName: z.string().min(2, "Enter your business name"),
-  businessType: z.enum(["medical", "dental", "spa", "salon", "plumbing", "legal", "real_estate", "other"] as const, {
-    error: "Select a business type",
-  }),
+  businessType: z.string().min(1, "Select a business type"),
   businessPhone: z
     .string()
     .min(7, "Enter your business phone number")
@@ -27,17 +31,6 @@ type FormValues = z.infer<typeof schema>
 
 // What gets passed to the next step — includes derived areaCode
 export type BusinessInfoData = FormValues & { areaCode: string }
-
-const BUSINESS_TYPE_LABELS: Record<FormValues["businessType"], string> = {
-  medical: "Medical / Healthcare",
-  dental: "Dental",
-  spa: "MedSpa / Wellness",
-  salon: "Salon / Beauty",
-  plumbing: "Plumbing / Trades",
-  legal: "Legal",
-  real_estate: "Real Estate",
-  other: "Other",
-}
 
 function extractAreaCode(phone: string): string {
   const digits = phone.replace(/\D/g, "")
@@ -95,13 +88,11 @@ export function StepBusinessInfo({ defaultValues, onNext }: Props) {
                   <SelectValue placeholder="Select a type…" />
                 </SelectTrigger>
                 <SelectContent>
-                  {(Object.entries(BUSINESS_TYPE_LABELS) as [FormValues["businessType"], string][]).map(
-                    ([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    )
-                  )}
+                  {INDUSTRY_OPTIONS.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             )}
