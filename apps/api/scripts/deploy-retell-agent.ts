@@ -486,12 +486,27 @@ Do not transition until you have their name, a phone number, and what they need.
   // -------------------------------------------------------------------------
   {
     id: IDS.wrapUp,
-    type: "conversation",
+    type: "subagent",
     name: "Wrap Up",
     instruction: {
       type: "prompt",
-      text: `You just completed a task for the caller. Ask: "Is there anything else I can help you with today?" If not, thank them by name if you have it, say goodbye on behalf of {{business_name}}, and end with "Have a great day!" Keep it to 1-2 sentences.`,
+      text: `You just completed a task for the caller. Ask: "Is there anything else I can help you with today?"
+
+If they have another request, route them to the appropriate flow via the edges below.
+
+If they say no, say thanks, say bye, or indicate they are done:
+1. Say a brief warm farewell — thank them by name if you have it, say goodbye on behalf of {{business_name}}, end with "Have a great day!"
+2. IMMEDIATELY call end_call to hang up.
+
+CRITICAL: You MUST call end_call when the caller is done. Do not wait for them to hang up.`,
     },
+    tools: [
+      {
+        type: "end_call",
+        name: "end_call",
+        description: "Terminate the call. Use this immediately after saying goodbye when the caller indicates they are done.",
+      },
+    ],
     edges: [
       {
         id: "edge-wrapup-book",
@@ -518,14 +533,9 @@ Do not transition until you have their name, a phone number, and what they need.
         destination_node_id: IDS.takeMessageConv,
         transition_condition: { type: "prompt", prompt: "Caller wants to leave a message" },
       },
-      {
-        id: "edge-wrapup-goodbye",
-        destination_node_id: IDS.goodbye,
-        transition_condition: { type: "prompt", prompt: "Caller has no more requests and is ready to hang up" },
-      },
     ],
     display_position: { x: 2900, y: 294 },
-  } as ConversationFlowCreateParams.ConversationNode,
+  } as ConversationFlowCreateParams.SubagentNode,
 
   // =========================================================================
   // CANCEL FLOW

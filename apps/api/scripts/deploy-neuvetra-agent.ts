@@ -214,18 +214,29 @@ CRITICAL:
 
   {
     id: IDS.wrapUp,
-    type: "conversation",
+    type: "subagent",
     name: "Wrap Up",
     instruction: {
       type: "prompt",
-      text: "Wrap up warmly. Thank them, remind them they can sign up at neuvetra.com anytime, and wish them a great day. 1-2 sentences max.",
+      text: `Wrap up the call warmly.
+
+If the caller has another question, route them via the edge below.
+
+Otherwise:
+1. Thank them and remind them they can sign up at neuvetra.com anytime
+2. Wish them a great day and say goodbye — keep it to 1-2 sentences
+3. IMMEDIATELY call end_call to hang up
+
+CRITICAL: You MUST call end_call when the caller is done. Do not wait for them to hang up.`,
     },
-    edges: [
+    tools: [
       {
-        id: "edge-wrapup-end",
-        destination_node_id: IDS.end,
-        transition_condition: { type: "prompt", prompt: "Caller is ready to hang up" },
+        type: "end_call",
+        name: "end_call",
+        description: "Terminate the call. Use this immediately after saying goodbye.",
       },
+    ],
+    edges: [
       {
         id: "edge-wrapup-product",
         destination_node_id: IDS.productInfo,
@@ -233,15 +244,7 @@ CRITICAL:
       },
     ],
     display_position: { x: 1200, y: 0 },
-  } as ConversationFlowCreateParams.ConversationNode,
-
-  {
-    id: IDS.end,
-    type: "end",
-    name: "End Call",
-    instruction: { type: "prompt", text: "End the call politely" },
-    display_position: { x: 1800, y: 0 },
-  } as ConversationFlowCreateParams.EndNode,
+  } as ConversationFlowCreateParams.SubagentNode,
 ]
 
 console.log("Creating Neuvetra conversation flow...")
