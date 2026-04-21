@@ -23,11 +23,13 @@ export const voiceRoutes = new Elysia()
   // Bypasses dialing the phone number, so Retell's disconnect propagates
   // cleanly back to the browser without a double-hop.
   .post("/voice/outbound", async ({ body, set }) => {
-    const from = (body as Record<string, string>).From ?? "browser"
+    const raw = (body as Record<string, string>).From ?? ""
+    // Browser callers send "client:browser-caller" — use our number as fallback
+    const from = raw.startsWith("+") ? raw : Bun.env.TWILIO_PHONE_NUMBER!
     const agentId = Bun.env.NEUVETRA_AGENT_ID ?? ""
 
     const phoneCall = await retell.call.registerPhoneCall({
-      agent_id:   agentId,
+      agent_id:    agentId,
       from_number: from,
       to_number:   Bun.env.TWILIO_PHONE_NUMBER!,
       direction:   "inbound",
