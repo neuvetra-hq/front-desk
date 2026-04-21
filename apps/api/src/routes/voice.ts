@@ -1,5 +1,6 @@
 import { Elysia } from "elysia"
 import twilio from "twilio"
+import { retell } from "../services/retell"
 
 const AccessToken = twilio.jwt.AccessToken
 const VoiceGrant = AccessToken.VoiceGrant
@@ -18,10 +19,22 @@ export const voiceRoutes = new Elysia()
     }))
     return { token: token.toJwt() }
   })
-  .post("/voice/outbound", ({ set }) => {
+  // Browser click-to-call: register directly with Retell and return SIP TwiML.
+  // Bypasses dialing the phone number, so Retell's disconnect propagates
+  // cleanly back to the browser without a double-hop.
+  .post("/voice/outbound", async ({ body, set }) => {
+    const from = (body as Record<string, string>).From ?? "browser"
+    const agentId = Bun.env.NEUVETRA_AGENT_ID ?? ""
+
+    const phoneCall = await retell.call.registerPhoneCall({
+      agent_id:   agentId,
+      from_number: from,
+      to_number:   Bun.env.TWILIO_PHONE_NUMBER!,
+      direction:   "inbound",
+    })
+
     const response = new VoiceResponse()
-    const dial = response.dial({ callerId: Bun.env.TWILIO_PHONE_NUMBER! })
-    dial.number(Bun.env.TWILIO_PHONE_NUMBER!)
+    response.dial().sip(`sip:${phoneCall.call_id}@sip.retellai.com`)
     set.headers["content-type"] = "text/xml"
     return response.toString()
   })
