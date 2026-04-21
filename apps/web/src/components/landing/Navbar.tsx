@@ -9,8 +9,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import industriesData from "@/data/industries.json"
 
 const SIMPLE_NAV = [
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "How It Works", href: "/#how-it-works" },
+  { label: "Pricing", href: "/#pricing" },
 ]
 
 const INDUSTRY_CATEGORIES = industriesData.categories.filter((c) => c.id !== "all")
@@ -23,10 +23,10 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/90 backdrop-blur-md">
       <Container className="flex h-16 items-center justify-between">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2.5">
+        <Link to="/" className="flex items-center gap-2.5">
           <img src="/logo-v2.png" alt="Front Desk" className="h-9 w-9 object-contain" />
           <span className="text-lg font-bold text-foreground tracking-tight">Front Desk</span>
-        </a>
+        </Link>
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-8 md:flex">

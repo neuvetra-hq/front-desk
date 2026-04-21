@@ -90,13 +90,12 @@ test.describe("Landing page", () => {
     await expect(section.getByText("Dental", { exact: true }).first()).toBeVisible()
   })
 
-  test("TryItLive section shows call button and phone number", async ({ page }) => {
-    await page.getByText("Hear it for yourself").scrollIntoViewIfNeeded()
-    await expect(page.getByRole("button", { name: "Start call" })).toBeVisible()
-    await expect(page.getByText("(650) 830-8181").first()).toBeVisible()
+  test("CallFAB is visible on the landing page", async ({ page }) => {
+    await expect(page.getByRole("button", { name: "Call our AI receptionist" })).toBeVisible()
   })
 
-  test("TryItLive tel fallback link dials the Neuvetra number", async ({ page }) => {
-    await expect(page.getByRole("link", { name: "(650) 830-8181" })).toHaveAttribute("href", "tel:+16508308181")
+  test("CallFAB tooltip shows demo number on hover", async ({ page }) => {
+    await page.getByRole("button", { name: "Call our AI receptionist" }).hover()
+    await expect(page.getByText("+1 (650) 433-9442")).toBeVisible()
   })
 })

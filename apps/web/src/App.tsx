@@ -10,21 +10,31 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 import { CalendarCallbackPage } from "@/pages/CalendarCallbackPage"
 import { IndustryPage } from "@/pages/IndustryPage"
 import { ContactPage } from "@/pages/ContactPage"
+import { MarketingLayout } from "@/components/layout/MarketingLayout"
+import { VoiceCallProvider } from "@/contexts/VoiceCallContext"
+import { CallFAB } from "@/components/landing/CallFAB"
+import { ScrollToTop } from "@/components/layout/ScrollToTop"
 
 export function App() {
   return (
-    <Routes>
-      {/* Public */}
-      <Route path="/" element={<LandingPage />} />
+    <VoiceCallProvider>
+      <ScrollToTop />
+      <Routes>
+      {/* Marketing routes — share a persistent layout so the call FAB survives navigation */}
+      <Route element={<MarketingLayout />}>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/industries/:slug" element={<IndustryPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+      </Route>
+
+      {/* Auth + legal */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
-      <Route path="/contact" element={<ContactPage />} />
 
       {/* Signup wizard — public */}
       <Route path="/signup" element={<SignupPage />} />
-      <Route path="/industries/:slug" element={<IndustryPage />} />
 
       {/* Legacy redirect */}
       <Route path="/onboarding" element={<Navigate to="/signup" replace />} />
@@ -37,6 +47,8 @@ export function App() {
       {/* Protected — /dashboard redirects to /dashboard/overview */}
       <Route path="/dashboard" element={<ProtectedRoute><Navigate to="/dashboard/overview" replace /></ProtectedRoute>} />
       <Route path="/dashboard/:tab" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-    </Routes>
+      </Routes>
+      <CallFAB />
+    </VoiceCallProvider>
   )
 }
