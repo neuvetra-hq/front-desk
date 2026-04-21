@@ -93,10 +93,10 @@ test.describe("Landing page", () => {
   test("TryItLive section shows call button and phone number", async ({ page }) => {
     await page.getByText("Hear it for yourself").scrollIntoViewIfNeeded()
     await expect(page.getByRole("button", { name: "Start call" })).toBeVisible()
-    await expect(page.getByText("(650) 433-9442").first()).toBeVisible()
+    await expect(page.getByText("(650) 830-8181").first()).toBeVisible()
   })
 
   test("TryItLive tel fallback link dials the Neuvetra number", async ({ page }) => {
-    await expect(page.getByRole("link", { name: "(650) 433-9442" })).toHaveAttribute("href", "tel:+16504339442")
+    await expect(page.getByRole("link", { name: "(650) 830-8181" })).toHaveAttribute("href", "tel:+16508308181")
   })
 })

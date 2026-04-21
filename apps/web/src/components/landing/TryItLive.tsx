@@ -2,7 +2,7 @@ import { Phone, PhoneOff, Mic, MicOff, Loader2 } from "lucide-react"
 import { Container } from "@/components/layout/Container"
 import { useVoiceCall } from "@/hooks/useVoiceCall"
 
-const DISPLAY_NUMBER = "(650) 433-9442"
+const DISPLAY_NUMBER = "(650) 830-8181"
 
 export function TryItLive() {
   const { status, isMuted, duration, errorMessage, start, hangUp, toggleMute } = useVoiceCall()
@@ -53,7 +53,7 @@ export function TryItLive() {
           <p className="mt-8 text-sm text-muted-foreground">
             Or call directly:{" "}
             <a
-              href={`tel:+16504339442`}
+              href={`tel:+16508308181`}
               className="font-medium text-foreground underline-offset-4 hover:underline"
             >
               {DISPLAY_NUMBER}
