@@ -50,7 +50,15 @@ export function useVoiceCall() {
         setTimeout(() => setStatus("idle"), 3000)
       })
 
-      call.on("error", () => {
+      call.on("error", (err: unknown) => {
+        // 31005 = server-side hangup notification — treat as normal call end
+        const code = (err as { code?: number })?.code
+        if (code === 31005) {
+          cleanup()
+          setStatus("ended")
+          setTimeout(() => setStatus("idle"), 3000)
+          return
+        }
         cleanup()
         setErrorMessage("Call failed. Please try again.")
         setStatus("error")
