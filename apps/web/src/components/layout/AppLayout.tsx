@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { Outlet, useLocation } from 'react-router'
+import { useLocation, useOutlet } from 'react-router'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSpirit } from '@/hooks/useSpirit'
 import { SpiritContext } from '@/contexts/SpiritContext'
@@ -13,12 +13,38 @@ const SLIDE = {
   transition: { duration: 0.55, ease: [0.76, 0, 0.24, 1] as const },
 }
 
+// Snapshots the outlet element on mount so the exiting page keeps its
+// original content during the slide-out animation (Outlet always reflects
+// the current route, which would otherwise swap content immediately).
+function FrozenRoute({ children }: { children: React.ReactNode }) {
+  const frozen = useRef(children)
+  return <>{frozen.current}</>
+}
+
+function AnimatedOutlet() {
+  const location = useLocation()
+  const outlet = useOutlet()
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={SLIDE.initial}
+        animate={SLIDE.animate}
+        exit={SLIDE.exit}
+        transition={SLIDE.transition}
+        className="absolute inset-0 z-10"
+      >
+        <FrozenRoute>{outlet}</FrozenRoute>
+      </motion.div>
+    </AnimatePresence>
+  )
+}
+
 export function AppLayout() {
   const containerRef = useRef<HTMLDivElement>(null)
   const { transition, toggleMute } = useSpirit(containerRef)
   const [muted, setMuted] = useState(false)
   const [audioStarted, setAudioStarted] = useState(false)
-  const location = useLocation()
 
   useEffect(() => {
     const handler = () => setAudioStarted(true)
@@ -76,18 +102,7 @@ export function AppLayout() {
         </div>
 
         {/* Page content — slides in/out per route */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={SLIDE.initial}
-            animate={SLIDE.animate}
-            exit={SLIDE.exit}
-            transition={SLIDE.transition}
-            className="absolute inset-0 z-10"
-          >
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
+        <AnimatedOutlet />
       </div>
     </SpiritContext.Provider>
   )
