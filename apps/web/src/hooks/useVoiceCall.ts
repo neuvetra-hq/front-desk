@@ -51,9 +51,11 @@ export function useVoiceCall() {
       })
 
       call.on("error", (err: unknown) => {
-        // 31005 = server-side hangup notification — treat as normal call end
         const code = (err as { code?: number })?.code
-        if (code === 31005) {
+        // 31005 during an established call = server-side hangup, treat as normal end.
+        // 31005 during connecting = real handshake failure, show error.
+        const isEstablished = callRef.current?.status() === "open"
+        if (code === 31005 && isEstablished) {
           cleanup()
           setStatus("ended")
           setTimeout(() => setStatus("idle"), 3000)
