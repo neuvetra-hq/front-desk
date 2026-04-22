@@ -21,7 +21,16 @@ export function useSpirit(
     ])
       .then(() => onReadyRef.current?.())
       .catch(err => console.error("[useSpirit] engine init failed", err))
+
+    // Unlock AudioContext synchronously within the user gesture, bypassing XState.
+    // iOS Safari closes the gesture window before async event delivery completes.
+    const unlock = () => engineRef.current?.unlockAudio()
+    document.addEventListener("touchstart", unlock, { once: true, passive: true })
+    document.addEventListener("click",      unlock, { once: true })
+
     return () => {
+      document.removeEventListener("touchstart", unlock)
+      document.removeEventListener("click",      unlock)
       engine.dispose()
       engineRef.current = null
     }
