@@ -25,9 +25,9 @@ const defaultPreset: SpiritPreset = {
   color1: '#001020',
   color2: '#00446d',
   bgColor: '#0b0c0d',
-  bloomStrength: 0.7,
-  bloomRadius: 0.5,
-  bloomThreshold: 0.0,
+  bloomStrength: 0.55,
+  bloomRadius: 0.4,
+  bloomThreshold: 0.15,
   useTriangles: true,
 }
 
@@ -41,9 +41,9 @@ const howItWorksPreset: SpiritPreset = {
   color1: '#001508',
   color2: '#005228',
   bgColor: '#0b0c0d',
-  bloomStrength: 0.75,
-  bloomRadius: 0.5,
-  bloomThreshold: 0.0,
+  bloomStrength: 0.55,
+  bloomRadius: 0.4,
+  bloomThreshold: 0.15,
   useTriangles: true,
 }
 
@@ -57,9 +57,9 @@ const pricingPreset: SpiritPreset = {
   color1: '#0a0015',
   color2: '#340060',
   bgColor: '#0b0c0d',
-  bloomStrength: 0.9,
-  bloomRadius: 0.5,
-  bloomThreshold: 0.0,
+  bloomStrength: 0.7,
+  bloomRadius: 0.4,
+  bloomThreshold: 0.15,
   useTriangles: true,
 }
 
@@ -73,9 +73,9 @@ const signInPreset: SpiritPreset = {
   color1: '#001518',
   color2: '#005568',
   bgColor: '#0b0c0d',
-  bloomStrength: 0.95,
-  bloomRadius: 0.6,
-  bloomThreshold: 0.0,
+  bloomStrength: 0.7,
+  bloomRadius: 0.5,
+  bloomThreshold: 0.15,
   useTriangles: false,
 }
 
@@ -89,9 +89,9 @@ const getStartedPreset: SpiritPreset = {
   color1: '#180a00',
   color2: '#6b3200',
   bgColor: '#0b0c0d',
-  bloomStrength: 0.85,
-  bloomRadius: 0.5,
-  bloomThreshold: 0.0,
+  bloomStrength: 0.65,
+  bloomRadius: 0.4,
+  bloomThreshold: 0.15,
   useTriangles: true,
 }
 

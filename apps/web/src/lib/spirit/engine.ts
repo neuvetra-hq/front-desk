@@ -134,16 +134,16 @@ export class SpiritEngine {
   private bgColor = new THREE.Color()
 
   async init(container: HTMLElement): Promise<void> {
-    this.renderer = new THREE.WebGLRenderer({ antialias: true })
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     this.renderer.setSize(container.clientWidth, container.clientHeight)
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.shadowMap.enabled = false
+    this.renderer.setClearColor(0x000000, 0)
     container.appendChild(this.renderer.domElement)
 
     this.scene = new THREE.Scene()
     const preset = this.currentPreset
     this.bgColor.setStyle(preset.bgColor)
-    this.renderer.setClearColor(this.bgColor)
     this.scene.fog = new THREE.FogExp2(this.bgColor.getHex(), 0.001)
 
     this.camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 10, 3000)
@@ -293,9 +293,8 @@ export class SpiritEngine {
       this.followPoint.y += burstFactor * 100
     }
 
-    // Update background color + fog
+    // Update fog color
     this.bgColor.setStyle(current.bgColor)
-    this.renderer.setClearColor(this.bgColor)
     if (this.scene.fog instanceof THREE.FogExp2) {
       this.scene.fog.color.copy(this.bgColor)
     }
