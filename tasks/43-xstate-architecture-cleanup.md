@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 ---
 
 # PRD: XState Architecture Cleanup (Task 43)

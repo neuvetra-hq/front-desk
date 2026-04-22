@@ -132,7 +132,7 @@ export function createSpiritMachine(engineRef: RefObject<SpiritEngine | null>) {
       unlockAudio: () => { eng()?.unlockAudio() },
       playSFX:     ({ event }) => {
         const e = event as Extract<SpiritEvent, { type: "PLAY_SFX" }>
-        eng()?.playSFX(e.name)
+        eng()?.playSFX(e.name, e.rate)
       },
       setMuted: (_, params: { muted: boolean }) => { eng()?.setMuted(params.muted) },
     },

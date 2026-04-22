@@ -7,6 +7,8 @@ import {
   supabaseAuthListener,
 } from "./appMachine.actors"
 import type { AppContext, AppEvent, AppUserProfile, AppBusiness } from "./appMachine.types"
+import { ROUTE_BY_PATH } from "@/pages/app/routes"
+import { AUDIO } from "@/data/spirit-presets"
 
 export const appMachine = setup({
   types: {} as {
@@ -31,6 +33,17 @@ export const appMachine = setup({
     setRoute: assign(({ event }) => ({
       currentRoute: (event as Extract<AppEvent, { type: "ROUTE_CHANGED" }>).pathname,
     })),
+    registerSpirit: assign(({ event }) => ({
+      spiritActorRef: (event as Extract<AppEvent, { type: "REGISTER_SPIRIT" }>).actorRef,
+    })),
+    forwardPreset: ({ context, event }) => {
+      const e = event as Extract<AppEvent, { type: "ROUTE_CHANGED" }>
+      const preset = ROUTE_BY_PATH[e.pathname]?.preset ?? "default"
+      context.spiritActorRef?.send({ type: "SET_PRESET", name: preset })
+    },
+    playNavSfx: ({ context }) => {
+      context.spiritActorRef?.send({ type: "PLAY_SFX", name: AUDIO.nav })
+    },
   },
 }).createMachine({
   id: "neuvetraAI",
@@ -44,6 +57,7 @@ export const appMachine = setup({
     profile: null,
     business: null,
     currentRoute: "/app",
+    spiritActorRef: null,
   },
   states: {
     // ── WebGL gate ──────────────────────────────────────────────
@@ -148,22 +162,27 @@ export const appMachine = setup({
 
     // ── View ─────────────────────────────────────────────────────
     // Starts in 'loading' — blocks the overlay until SPIRIT_READY fires.
-    // ROUTE_CHANGED stores the pathname in context; React Router owns which
-    // page is displayed. Once the engine is ready, transitions to 'active'.
+    // ROUTE_CHANGED in loading: record route + forward preset (no SFX yet).
+    // ROUTE_CHANGED in active: record route + forward preset + play nav SFX.
     view: {
       initial: "loading",
-      on: {
-        ROUTE_CHANGED: { actions: "setRoute" },
-      },
       states: {
         loading: {
           on: {
-            SPIRIT_READY: { target: "active" },
+            SPIRIT_READY:  { target: "active" },
+            ROUTE_CHANGED: { actions: ["setRoute", "forwardPreset"] },
           },
         },
-        active: {},
+        active: {
+          on: {
+            ROUTE_CHANGED: { actions: ["setRoute", "forwardPreset", "playNavSfx"] },
+          },
+        },
       },
     },
+  },
+  on: {
+    REGISTER_SPIRIT: { actions: "registerSpirit" },
   },
 })
 

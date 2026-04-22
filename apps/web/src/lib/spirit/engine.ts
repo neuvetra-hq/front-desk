@@ -9,22 +9,59 @@ import {
 
 // ─── AudioEngine ──────────────────────────────────────────────────────────────
 
+// iOS Safari uses webkitAudioContext on older versions.
+const AC: typeof AudioContext =
+  (window as any).AudioContext ?? (window as any).webkitAudioContext
+
 class AudioEngine {
   private ctx: AudioContext | null = null
   private ambientGain: GainNode | null = null
   private sfxGain: GainNode | null = null
   private ambientSource: AudioBufferSourceNode | null = null
   private sfxBuffers = new Map<string, AudioBuffer>()
-  private _started = false
+  private _unlocked = false
   private _disposed = false
 
-  // Called lazily by unlock() on first user gesture — no AudioContext before that.
-  private async _start(): Promise<void> {
-    if (this._disposed) return
+  dispose(): void {
+    this._disposed = true
+    this.ambientSource?.stop()
+    this.ctx?.close()
+    this.ctx = null
+    this.sfxBuffers.clear()
+  }
 
-    this.ctx = new AudioContext()
-    await this.ctx.resume()
-    if (this._disposed) { this.ctx.close(); this.ctx = null; return }
+  // Called synchronously from within a user gesture handler (via XState action).
+  // AudioContext creation and resume() MUST stay synchronous on the call stack
+  // for iOS Safari to allow audio playback.
+  unlock(): void {
+    if (this._unlocked || this._disposed || !AC) return
+    this._unlocked = true
+
+    this.ctx = new AC()
+
+    // resume() is called synchronously here, still within the gesture call stack.
+    this.ctx.resume()
+      .then(() => {
+        // Prime iOS AudioContext: play a silent 1-sample buffer so subsequent
+        // sources aren't silently blocked by the OS.
+        this._prime()
+        return this._loadBuffers()
+      })
+      .catch(err => console.warn('[AudioEngine] unlock failed', err))
+  }
+
+  // Plays a silent 1-sample buffer — required to prime iOS AudioContext.
+  private _prime(): void {
+    if (!this.ctx) return
+    const buf = this.ctx.createBuffer(1, 1, this.ctx.sampleRate)
+    const src = this.ctx.createBufferSource()
+    src.buffer = buf
+    src.connect(this.ctx.destination)
+    src.start(0)
+  }
+
+  private async _loadBuffers(): Promise<void> {
+    if (this._disposed || !this.ctx) return
 
     this.ambientGain = this.ctx.createGain()
     this.ambientGain.gain.value = AUDIO.ambientVolume
@@ -47,10 +84,12 @@ class AudioEngine {
       this.ambientSource.connect(this.ambientGain)
       this.ambientSource.start()
     } catch (e) {
-      console.warn('[AudioEngine] ambient WAV failed to load', e)
+      console.warn('[AudioEngine] ambient failed to load', e)
     }
 
     const sfxPaths = new Set<string>()
+    sfxPaths.add(AUDIO.hover)
+    sfxPaths.add(AUDIO.nav)
     for (const preset of Object.values(PRESETS)) {
       if (preset.soundEffect) sfxPaths.add(preset.soundEffect)
     }
@@ -70,32 +109,17 @@ class AudioEngine {
     )
   }
 
-  dispose(): void {
-    this._disposed = true
-    this.ambientSource?.stop()
-    this.ctx?.close()
-    this.ctx = null
-    this.sfxBuffers.clear()
-  }
-
-  // spiritMachine sends USER_INTERACTED → engine.unlockAudio() → this method.
-  // First call creates the AudioContext and loads all buffers.
-  unlock(): void {
-    if (this._started || this._disposed) return
-    this._started = true
-    this._start().catch(err => console.warn('[AudioEngine] start failed', err))
-  }
-
   setMuted(muted: boolean): void {
     if (this.ambientGain) this.ambientGain.gain.value = muted ? 0 : AUDIO.ambientVolume
   }
 
-  playSFX(path: string): void {
+  playSFX(path: string, rate = 1): void {
     if (!this.ctx || !this.sfxGain) return
     const buf = this.sfxBuffers.get(path)
     if (!buf) { console.warn(`[AudioEngine] SFX not preloaded: ${path}`); return }
     const src = this.ctx.createBufferSource()
     src.buffer = buf
+    src.playbackRate.value = rate
     src.connect(this.sfxGain)
     src.start()
   }
@@ -217,8 +241,8 @@ export class SpiritEngine {
     this.audio?.setMuted(muted)
   }
 
-  playSFX(name: string): void {
-    this.audio?.playSFX(name)
+  playSFX(name: string, rate?: number): void {
+    this.audio?.playSFX(name, rate)
   }
 
   private _lerp(from: SpiritPreset, to: SpiritPreset, t: number): SpiritPreset {

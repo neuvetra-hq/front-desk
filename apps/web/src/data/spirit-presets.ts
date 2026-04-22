@@ -146,9 +146,13 @@ export const AUTO_CYCLE: { preset: string; holdMs: number }[] = [
 ]
 
 export const AUDIO = {
-  ambientLoop: '/audio/ambient.wav',
+  ambientLoop:   '/audio/ambient.wav',
   ambientVolume: 0.3,
-  sfxVolume: 0.7,
+  sfxVolume:     0.7,
+  hover:         '/audio/air-whoosh.mp3',
+  hoverInRate:   0.8,
+  hoverOutRate:  1.2,
+  nav:           '/audio/woosh-game-glitch.mp3',
 }
 
 export const SFX: Record<string, string> = {

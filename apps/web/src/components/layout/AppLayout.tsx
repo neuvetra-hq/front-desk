@@ -1,10 +1,13 @@
 import { useEffect, useState, useRef } from "react"
 import { NavLink, useLocation, useOutlet } from "react-router"
 import { AnimatePresence, motion } from "framer-motion"
+import { Menu, X } from "lucide-react"
 import { useAppMachine, useAppSend } from "@/pages/app/hooks/useAppMachine"
 import { useSpiritMachine, useSpiritSend } from "@/hooks/useSpiritMachine"
-import { APP_ROUTES, ROUTE_BY_PATH } from "@/pages/app/routes"
+import { APP_ROUTES } from "@/pages/app/routes"
+import { AUDIO } from "@/data/spirit-presets"
 import { AppSpiritProvider } from "./AppSpiritProvider"
+import { AppMobileMenu } from "./AppMobileMenu"
 
 const BAR_DELAYS = ["0s", "0.2s", "0.4s", "0.2s"]
 
@@ -41,12 +44,13 @@ function AnimatedOutlet() {
 
 function NavItem({ label, href, end }: { label: string; href: string; end?: boolean }) {
   const [hovered, setHovered] = useState(false)
+  const sendSpirit = useSpiritSend()
   return (
     <NavLink
       to={href}
       end={end}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => { setHovered(true);  sendSpirit({ type: "PLAY_SFX", name: AUDIO.hover, rate: AUDIO.hoverInRate }) }}
+      onMouseLeave={() => { setHovered(false) }}
       className="text-[0.65rem] uppercase tracking-[0.25em]"
       style={({ isActive }) => ({
         color: isActive
@@ -92,22 +96,47 @@ function AppLoaderOverlay() {
   )
 }
 
+function MuteButton() {
+  const sendSpirit  = useSpiritSend()
+  const audioUnlocked = useSpiritMachine((s) => !s.matches({ audio: "locked" }))
+  const isMuted       = useSpiritMachine((s) => s.matches({ audio: { unlocked: "muted" } }))
+  return (
+    <button
+      onClick={() => sendSpirit({ type: "TOGGLE_MUTE" })}
+      aria-label={isMuted ? "Unmute" : "Mute"}
+      aria-hidden={!audioUnlocked || undefined}
+      tabIndex={audioUnlocked ? 0 : -1}
+      className={`flex items-end gap-[3px] h-5 transition-opacity duration-500 cursor-pointer ${
+        audioUnlocked ? "opacity-40 hover:opacity-90" : "opacity-0 pointer-events-none"
+      }`}
+    >
+      {BAR_DELAYS.map((delay, i) => (
+        <span
+          key={i}
+          className="w-[3px] rounded-full bg-white"
+          style={{
+            height: isMuted ? "3px" : "4px",
+            animation: isMuted ? "none" : "soundbar 0.8s ease-in-out infinite",
+            animationDelay: delay,
+          }}
+        />
+      ))}
+    </button>
+  )
+}
+
 function AppLayoutInner() {
   const location = useLocation()
   const sendApp  = useAppSend()
-  const sendSpirit = useSpiritSend()
-
-  const audioUnlocked = useSpiritMachine((s) => !s.matches({ audio: "locked" }))
-  const isMuted       = useSpiritMachine((s) => s.matches({ audio: { unlocked: "muted" } }))
-
-  useEffect(() => {
-    const preset = ROUTE_BY_PATH[location.pathname]?.preset
-    if (preset) sendSpirit({ type: "SET_PRESET", name: preset })
-  }, [location.pathname, sendSpirit])
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   useEffect(() => {
     sendApp({ type: "ROUTE_CHANGED", pathname: location.pathname })
   }, [location.pathname, sendApp])
+
+  useEffect(() => {
+    setIsMenuOpen(false)
+  }, [location.pathname])
 
   return (
     <>
@@ -118,35 +147,42 @@ function AppLayoutInner() {
         }
       `}</style>
 
-      <div className="absolute top-9 right-10 z-50">
+      {/* Desktop: mute button top-right */}
+      <div className="absolute top-9 right-10 z-[160] hidden md:block">
+        <MuteButton />
+      </div>
+
+      {/* Mobile: mute + hamburger together, top-right */}
+      <div
+        className="absolute right-8 z-[160] flex items-center gap-5 md:hidden"
+        style={{ top: "max(2rem, env(safe-area-inset-top, 2rem))" }}
+      >
+        <MuteButton />
         <button
-          onClick={() => sendSpirit({ type: "TOGGLE_MUTE" })}
-          aria-label={isMuted ? "Unmute" : "Mute"}
-          aria-hidden={!audioUnlocked || undefined}
-          tabIndex={audioUnlocked ? 0 : -1}
-          className={`flex items-end gap-[3px] h-5 transition-opacity duration-500 cursor-pointer ${
-            audioUnlocked ? "opacity-40 hover:opacity-90" : "opacity-0 pointer-events-none"
-          }`}
+          data-testid="hamburger-button"
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          onClick={() => setIsMenuOpen((v) => !v)}
+          className="flex items-center justify-center size-11 -mr-1"
+          style={{ color: "rgba(255,255,255,0.6)" }}
         >
-          {BAR_DELAYS.map((delay, i) => (
-            <span
-              key={i}
-              className="w-[3px] rounded-full bg-white"
-              style={{
-                height: isMuted ? "3px" : "4px",
-                animation: isMuted ? "none" : "soundbar 0.8s ease-in-out infinite",
-                animationDelay: delay,
-              }}
-            />
-          ))}
+          {isMenuOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
       </div>
 
-      <nav className="absolute bottom-10 left-0 right-0 z-50 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 select-none">
+      {/* Desktop bottom nav */}
+      <nav
+        className="absolute left-0 right-0 z-50 hidden md:flex flex-wrap items-center justify-center gap-x-10 gap-y-3 select-none"
+        style={{ bottom: "max(2.5rem, env(safe-area-inset-bottom, 2.5rem))" }}
+      >
         {APP_ROUTES.map((route) => (
           <NavItem key={route.path} label={route.label} href={route.path} end={route.end} />
         ))}
       </nav>
+
+      {/* Mobile menu overlay */}
+      <AnimatePresence>
+        {isMenuOpen && <AppMobileMenu onClose={() => setIsMenuOpen(false)} />}
+      </AnimatePresence>
 
       <AnimatedOutlet />
     </>
@@ -158,7 +194,7 @@ export function AppLayout() {
   return (
     <AppSpiritProvider containerRef={containerRef}>
       <div
-        className="relative w-screen h-screen overflow-hidden"
+        className="relative w-screen h-[100dvh] overflow-hidden"
         style={{ background: "radial-gradient(circle at 3% 5%, #253239 0%, #0b0c0d 50%)" }}
       >
         <div ref={containerRef} className="absolute inset-0" />

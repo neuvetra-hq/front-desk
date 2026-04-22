@@ -1,4 +1,5 @@
 import type { Session } from "@supabase/supabase-js"
+import type { AnyActorRef } from "xstate"
 
 export interface AppUserProfile {
   id: string
@@ -23,6 +24,7 @@ export interface AppContext {
   profile: AppUserProfile | null
   business: AppBusiness | null
   currentRoute: string
+  spiritActorRef: AnyActorRef | null
 }
 
 export type AppEvent =
@@ -30,3 +32,4 @@ export type AppEvent =
   | { type: "SIGN_OUT" }
   | { type: "ROUTE_CHANGED"; pathname: string }
   | { type: "SPIRIT_READY" }
+  | { type: "REGISTER_SPIRIT"; actorRef: AnyActorRef }

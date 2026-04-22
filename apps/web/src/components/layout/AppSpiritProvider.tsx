@@ -1,4 +1,4 @@
-import { useRef, type RefObject } from "react"
+import { useRef, useEffect, type RefObject } from "react"
 import { useActorRef } from "@xstate/react"
 import { useSpirit } from "@/hooks/useSpirit"
 import { useAppSend } from "@/pages/app/hooks/useAppMachine"
@@ -21,6 +21,10 @@ export function AppSpiritProvider({ containerRef, children }: Props) {
   // useActorRef handles React Strict Mode correctly (start/stop/rehydrate lifecycle).
   const machineRef = useRef(createSpiritMachine(engineRef))
   const actor = useActorRef(machineRef.current)
+
+  useEffect(() => {
+    sendApp({ type: "REGISTER_SPIRIT", actorRef: actor })
+  }, [actor, sendApp])
 
   return (
     <SpiritActorContext.Provider value={actor}>
