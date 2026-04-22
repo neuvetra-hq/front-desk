@@ -1,4 +1,4 @@
-import { setup, assign } from "xstate"
+import { setup, assign, fromCallback } from "xstate"
 import type { RefObject } from "react"
 import { PRESETS } from "@/data/spirit-presets"
 import { resolveTarget } from "./spiritMachine.anchors"
@@ -13,6 +13,19 @@ export function createSpiritMachine(engineRef: RefObject<SpiritEngine | null>) {
     types: {} as {
       context: SpiritMachineContext
       events: SpiritEvent
+    },
+    actors: {
+      listenForUserInteraction: fromCallback<SpiritEvent>(({ sendBack }) => {
+        const handle = () => sendBack({ type: "USER_INTERACTED" })
+        document.addEventListener("click",      handle, { once: true })
+        document.addEventListener("keydown",    handle, { once: true })
+        document.addEventListener("touchstart", handle, { once: true })
+        return () => {
+          document.removeEventListener("click",      handle)
+          document.removeEventListener("keydown",    handle)
+          document.removeEventListener("touchstart", handle)
+        }
+      }),
     },
     guards: {
       isKnownPreset: ({ event }) =>
@@ -242,6 +255,7 @@ export function createSpiritMachine(engineRef: RefObject<SpiritEngine | null>) {
         initial: "locked",
         states: {
           locked: {
+            invoke: { src: "listenForUserInteraction" },
             on: {
               USER_INTERACTED: { target: "unlocked", actions: "unlockAudio" },
             },

@@ -1,29 +1,12 @@
-import { useRef, useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { NavLink, useLocation, useOutlet } from "react-router"
 import { AnimatePresence, motion } from "framer-motion"
-import { createActor } from "xstate"
-import { useSpirit } from "@/hooks/useSpirit"
 import { useAppMachine, useAppSend } from "@/pages/app/hooks/useAppMachine"
-import { SpiritActorContext, useSpiritMachine, useSpiritSend } from "@/hooks/useSpiritMachine"
-import { createSpiritMachine } from "@/lib/spirit/spiritMachine"
+import { useSpiritMachine, useSpiritSend } from "@/hooks/useSpiritMachine"
+import { APP_ROUTES, ROUTE_BY_PATH } from "@/pages/app/routes"
+import { AppSpiritProvider } from "./AppSpiritProvider"
 
 const BAR_DELAYS = ["0s", "0.2s", "0.4s", "0.2s"]
-
-const NAV_LINKS = [
-  { label: "Home",         href: "/app",               end: true },
-  { label: "How It Works", href: "/app/how-it-works" },
-  { label: "Pricing",      href: "/app/pricing" },
-  { label: "Sign In",      href: "/app/sign-in" },
-  { label: "Get Started",  href: "/app/get-started" },
-]
-
-const ROUTE_PRESET: Record<string, string> = {
-  "/app":               "default",
-  "/app/how-it-works":  "howItWorks",
-  "/app/pricing":       "pricing",
-  "/app/sign-in":       "signIn",
-  "/app/get-started":   "getStarted",
-}
 
 const SLIDE = {
   initial: { y: "100vh" },
@@ -118,25 +101,13 @@ function AppLayoutInner() {
   const isMuted       = useSpiritMachine((s) => s.matches({ audio: { unlocked: "muted" } }))
 
   useEffect(() => {
-    const preset = ROUTE_PRESET[location.pathname]
+    const preset = ROUTE_BY_PATH[location.pathname]?.preset
     if (preset) sendSpirit({ type: "SET_PRESET", name: preset })
   }, [location.pathname, sendSpirit])
 
   useEffect(() => {
     sendApp({ type: "ROUTE_CHANGED", pathname: location.pathname })
   }, [location.pathname, sendApp])
-
-  useEffect(() => {
-    const handler = () => sendSpirit({ type: "USER_INTERACTED" })
-    document.addEventListener("click",      handler, { once: true })
-    document.addEventListener("keydown",    handler, { once: true })
-    document.addEventListener("touchstart", handler, { once: true })
-    return () => {
-      document.removeEventListener("click",      handler)
-      document.removeEventListener("keydown",    handler)
-      document.removeEventListener("touchstart", handler)
-    }
-  }, [sendSpirit])
 
   return (
     <>
@@ -172,8 +143,8 @@ function AppLayoutInner() {
       </div>
 
       <nav className="absolute bottom-10 left-0 right-0 z-50 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 select-none">
-        {NAV_LINKS.map((link) => (
-          <NavItem key={link.href} label={link.label} href={link.href} end={link.end} />
+        {APP_ROUTES.map((route) => (
+          <NavItem key={route.path} label={route.label} href={route.path} end={route.end} />
         ))}
       </nav>
 
@@ -184,21 +155,8 @@ function AppLayoutInner() {
 
 export function AppLayout() {
   const containerRef = useRef<HTMLDivElement>(null)
-  const sendApp = useAppSend()
-
-  const { engineRef } = useSpirit(containerRef, () => {
-    sendApp({ type: "SPIRIT_READY" })
-  })
-
-  const [actor] = useState(() => createActor(createSpiritMachine(engineRef)))
-
-  useEffect(() => {
-    actor.start()
-    return () => { actor.stop() }
-  }, [actor])
-
   return (
-    <SpiritActorContext.Provider value={actor}>
+    <AppSpiritProvider containerRef={containerRef}>
       <div
         className="relative w-screen h-screen overflow-hidden"
         style={{ background: "radial-gradient(circle at 3% 5%, #253239 0%, #0b0c0d 50%)" }}
@@ -207,6 +165,6 @@ export function AppLayout() {
         <AppLayoutInner />
         <AppLoaderOverlay />
       </div>
-    </SpiritActorContext.Provider>
+    </AppSpiritProvider>
   )
 }

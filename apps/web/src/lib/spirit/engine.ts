@@ -15,11 +15,16 @@ class AudioEngine {
   private sfxGain: GainNode | null = null
   private ambientSource: AudioBufferSourceNode | null = null
   private sfxBuffers = new Map<string, AudioBuffer>()
-  private unlocked = false
-  private _unlockFn: (() => void) | null = null
+  private _started = false
+  private _disposed = false
 
-  async init(): Promise<void> {
+  // Called lazily by unlock() on first user gesture — no AudioContext before that.
+  private async _start(): Promise<void> {
+    if (this._disposed) return
+
     this.ctx = new AudioContext()
+    await this.ctx.resume()
+    if (this._disposed) { this.ctx.close(); this.ctx = null; return }
 
     this.ambientGain = this.ctx.createGain()
     this.ambientGain.gain.value = AUDIO.ambientVolume
@@ -31,15 +36,18 @@ class AudioEngine {
 
     try {
       const res = await fetch(AUDIO.ambientLoop)
+      if (!res.ok || this._disposed || !this.ctx) return
       const buf = await res.arrayBuffer()
+      if (this._disposed || !this.ctx) return
       const decoded = await this.ctx.decodeAudioData(buf)
+      if (this._disposed || !this.ctx) return
       this.ambientSource = this.ctx.createBufferSource()
       this.ambientSource.buffer = decoded
       this.ambientSource.loop = true
       this.ambientSource.connect(this.ambientGain)
       this.ambientSource.start()
     } catch (e) {
-      console.warn('[AudioEngine] ambient MP3 failed to load', e)
+      console.warn('[AudioEngine] ambient WAV failed to load', e)
     }
 
     const sfxPaths = new Set<string>()
@@ -50,33 +58,32 @@ class AudioEngine {
       [...sfxPaths].map(async (path) => {
         try {
           const res = await fetch(path)
+          if (!res.ok || this._disposed || !this.ctx) return
           const buf = await res.arrayBuffer()
-          const ctx = this.ctx!
-          const decoded = await ctx.decodeAudioData(buf)
+          if (this._disposed || !this.ctx) return
+          const decoded = await this.ctx.decodeAudioData(buf)
           this.sfxBuffers.set(path, decoded)
         } catch (e) {
           console.warn(`[AudioEngine] SFX ${path} failed to load`, e)
         }
       }),
     )
-
-    this._unlockFn = () => this.unlock()
-    document.addEventListener('click', this._unlockFn, { once: true })
-    document.addEventListener('keydown', this._unlockFn, { once: true })
-    document.addEventListener('touchstart', this._unlockFn, { once: true })
   }
 
   dispose(): void {
+    this._disposed = true
     this.ambientSource?.stop()
     this.ctx?.close()
     this.ctx = null
     this.sfxBuffers.clear()
-    if (this._unlockFn) {
-      document.removeEventListener('click', this._unlockFn)
-      document.removeEventListener('keydown', this._unlockFn)
-      document.removeEventListener('touchstart', this._unlockFn)
-      this._unlockFn = null
-    }
+  }
+
+  // spiritMachine sends USER_INTERACTED → engine.unlockAudio() → this method.
+  // First call creates the AudioContext and loads all buffers.
+  unlock(): void {
+    if (this._started || this._disposed) return
+    this._started = true
+    this._start().catch(err => console.warn('[AudioEngine] start failed', err))
   }
 
   setMuted(muted: boolean): void {
@@ -91,12 +98,6 @@ class AudioEngine {
     src.buffer = buf
     src.connect(this.sfxGain)
     src.start()
-  }
-
-  unlock(): void {
-    if (this.unlocked || !this.ctx) return
-    this.ctx.resume()
-    this.unlocked = true
   }
 }
 
@@ -151,7 +152,7 @@ export class SpiritEngine {
     this.scene.add(this.particles.container)
 
     this.audio = new AudioEngine()
-    this.audio.init().catch(err => console.warn('[SpiritEngine] audio init failed', err))
+    // No eager init — audio starts lazily when unlockAudio() is called after first user gesture.
 
     this.resizeObserver = new ResizeObserver(() => {
       if (!this.renderer || !this.camera) return
