@@ -28,9 +28,9 @@ test.describe("/app route", () => {
   })
 
   test("shows loader on arrival then hides it after engine init", async ({ page }) => {
-    await page.goto("/app")
+    await page.goto("/app", { waitUntil: "domcontentloaded" })
     const loader = page.getByTestId("app-loader")
-    await expect(loader).toBeAttached()
+    await expect(loader).toBeAttached({ timeout: 10000 })
     await expect(loader).not.toBeAttached({ timeout: 10000 })
     await expect(page.locator("nav")).toBeVisible()
   })
@@ -44,8 +44,10 @@ test.describe("/app route", () => {
 
   test("mute button appears after first interaction and toggles label", async ({ page }) => {
     await page.goto("/app")
-    // Trigger USER_INTERACTED via click
-    await page.locator("body").click()
+    // Wait for AppLayoutInner to mount and register document listeners
+    await expect(page.locator("nav")).toBeVisible()
+    // Trigger USER_INTERACTED via a real user gesture click
+    await page.locator("h1").click()
     const muteBtn = page.getByRole("button", { name: /mute|unmute/i })
     await expect(muteBtn).toBeVisible({ timeout: 3000 })
     // Default state is unmuted — button says "Mute"
