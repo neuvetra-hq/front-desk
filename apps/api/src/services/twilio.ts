@@ -42,3 +42,17 @@ export async function releaseNumber(sid: string) {
 export async function sendSms(to: string, from: string, body: string) {
   await client.messages.create({ to, from, body })
 }
+
+export async function sendOptinConfirmation(phone: string): Promise<void> {
+  const from = Bun.env.TWILIO_PHONE_NUMBER
+  if (!from) {
+    console.warn("[sendOptinConfirmation] TWILIO_PHONE_NUMBER not set — skipping")
+    return
+  }
+  const body =
+    "You're subscribed to Front Desk by Neuvetra transactional alerts " +
+    "(appointment bookings, cancellations, callbacks). " +
+    "Msg freq varies. Reply STOP to opt out, HELP for help. " +
+    "Msg & Data Rates May Apply."
+  await client.messages.create({ to: phone, from, body })
+}

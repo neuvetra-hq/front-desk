@@ -87,6 +87,18 @@ export function SignupPage() {
       if (error) throw error
       setUserId(verifiedUserId)
       await refreshProfile()
+
+      // Fire opt-in confirmation SMS (A2P compliance) — fire-and-forget
+      supabase.auth.getSession().then(({ data }) => {
+        const token = data.session?.access_token
+        if (token) {
+          fetch(`${import.meta.env.VITE_API_URL}/auth/optin-confirm`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+          }).catch(() => {/* non-blocking */})
+        }
+      })
+
       setStep(2)
     } catch (err) {
       toast.error((err as Error).message ?? "Failed to save your profile")

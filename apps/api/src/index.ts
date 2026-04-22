@@ -6,6 +6,7 @@ import { billingRoutes } from "./routes/billing"
 import { calendarRoutes } from "./routes/calendar"
 import { voiceRoutes } from "./routes/voice"
 import { neuvetraRoutes } from "./routes/neuvetra"
+import { authRoutes } from "./routes/auth"
 import { searchAvailableNumbers } from "./services/twilio"
 
 const app = new Elysia()
@@ -33,6 +34,7 @@ const app = new Elysia()
   .use(calendarRoutes)
   .use(voiceRoutes)
   .use(neuvetraRoutes)
+  .use(authRoutes)
   .listen(Bun.env.PORT ?? 3000)
 
 export type App = typeof app
