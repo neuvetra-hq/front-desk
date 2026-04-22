@@ -1,15 +1,13 @@
 # Handoff
 
 ## State
-Built out the `/app` Spirit experience: persistent canvas + sound button in `AppLayout`, per-route presets (green/purple/teal/amber), Framer Motion slide transitions with `FrozenRoute` to freeze outlet content during exit. Surge/meteor kick fires on URL change (not page mount) so it syncs with slide-down. `TRANSITION_DURATION_MS=1400ms`, `TRANSITION_BURST=0.55`, kick=420 XZ / 100 Y. All committed on master (latest: `af4c6a9`).
+XState v5 machine for `/app` (neuvetra.ai) is fully implemented and merged to master. All 11 tasks done across commits `2845a0f`–`eb0aa03`. Build passes zero TS errors. Both `/app` Playwright tests pass. Task file `tasks/40-xstate-app-machine.md` created.
 
 ## Next
-1. Build out actual content for stub pages: `/app/how-it-works`, `/app/pricing`, `/app/sign-in`, `/app/get-started` (all show "Coming soon")
-2. Wire `/app/sign-in` → real login flow and `/app/get-started` → real signup flow
-3. Consider adding a logo/wordmark to `/app` home instead of just text
+No active task — Task 40 is done. Next task number is **41**.
+Pick up new feature work from scratch; the XState machine is the foundation for all future `/app` state (3D onboarding, AI chat, sign-in flow).
 
 ## Context
-- `AppLayout` owns all Spirit preset transitions via `ROUTE_PRESET` map — sub-pages have no Spirit code
-- `FrozenRoute` pattern is critical: without it, `<Outlet>` swaps content before exit animation plays
-- Particle count is 100×80=8000 (was 65k); color lerp rate is 0.12/frame
-- `apps/web/src/pages/AppPage.tsx` still exists but is unused — safe to delete
+- Spirit uses `THREE.WebGLRenderer` (WebGL2), NOT WebGPU — the gate checks `canvas.getContext('webgl2')`
+- 13 pre-existing test failures in `calendar.spec.ts` + `call-logs.spec.ts` (Usage tab) — unrelated to this work, not regressions
+- `docs/superpowers/` is gitignored — specs/plans go in `docs/specs/` and `docs/plans/` instead
