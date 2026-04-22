@@ -1,13 +1,6 @@
-import { useEffect } from 'react'
-import { useSpiritContext } from '@/contexts/SpiritContext'
-
 export function AppGetStartedPage() {
-  const { transition } = useSpiritContext()
-  useEffect(() => { transition('getStarted') }, [])
-
   return (
-    <div className="relative flex h-full flex-col items-center justify-between px-8 py-10 select-none">
-      <div />
+    <div className="relative flex h-full flex-col items-center justify-center px-8 select-none">
       <div className="flex flex-col items-center text-center">
         <h1
           className="uppercase leading-none"
@@ -19,7 +12,6 @@ export function AppGetStartedPage() {
           Coming soon
         </p>
       </div>
-      <div />
     </div>
   )
 }

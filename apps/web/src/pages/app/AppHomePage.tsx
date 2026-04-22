@@ -1,10 +1,4 @@
-import { useEffect } from 'react'
-import { useSpiritContext } from '@/contexts/SpiritContext'
-
 export function AppHomePage() {
-  const { transition } = useSpiritContext()
-  useEffect(() => { transition('default') }, [])
-
   return (
     <div className="relative flex h-full flex-col items-center justify-center px-8 select-none">
       <div className="flex flex-col items-center text-center">

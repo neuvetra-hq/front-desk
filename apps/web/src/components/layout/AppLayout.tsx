@@ -14,6 +14,14 @@ const NAV_LINKS = [
   { label: 'Get Started',  href: '/app/get-started' },
 ]
 
+const ROUTE_PRESET: Record<string, string> = {
+  '/app':               'default',
+  '/app/how-it-works':  'howItWorks',
+  '/app/pricing':       'pricing',
+  '/app/sign-in':       'signIn',
+  '/app/get-started':   'getStarted',
+}
+
 const SLIDE = {
   initial: { y: '100vh' },
   animate: { y: 0 },
@@ -78,6 +86,14 @@ export function AppLayout() {
   const { transition, toggleMute } = useSpirit(containerRef)
   const [muted, setMuted] = useState(false)
   const [audioStarted, setAudioStarted] = useState(false)
+  const location = useLocation()
+
+  // Fire preset transition the moment the URL changes — before the exit
+  // animation starts — so the burst syncs with the slide-down, not the slide-up
+  useEffect(() => {
+    const preset = ROUTE_PRESET[location.pathname]
+    if (preset) transition(preset)
+  }, [location.pathname])
 
   useEffect(() => {
     const handler = () => setAudioStarted(true)

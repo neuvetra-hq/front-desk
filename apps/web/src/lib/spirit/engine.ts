@@ -130,7 +130,7 @@ export class SpiritEngine {
   private initDone = false
 
   private currentPreset: SpiritPreset = PRESETS.default
-  private lerpState: { from: SpiritPreset; to: SpiritPreset; elapsed: number; active: boolean } | null = null
+  private lerpState: { from: SpiritPreset; to: SpiritPreset; elapsed: number; active: boolean; kickAngle: number } | null = null
   private bgColor = new THREE.Color()
 
   async init(container: HTMLElement): Promise<void> {
@@ -200,7 +200,7 @@ export class SpiritEngine {
     if (!preset) { console.warn(`[SpiritEngine] unknown preset: ${presetName}`); return }
     if (preset.soundEffect) this.audio?.playSFX(preset.soundEffect)
     const from = this.lerpState?.active ? this._snapshot() : { ...this.currentPreset }
-    this.lerpState = { from, to: preset, elapsed: 0, active: true }
+    this.lerpState = { from, to: preset, elapsed: 0, active: true, kickAngle: Math.random() * Math.PI * 2 }
     if (this.cycleTimer !== null) clearTimeout(this.cycleTimer)
     const idx = AUTO_CYCLE.findIndex((c) => c.preset === presetName)
     if (idx !== -1) this.cycleIndex = idx
@@ -217,7 +217,7 @@ export class SpiritEngine {
       if (!next) return
       if (next.soundEffect) this.audio?.playSFX(next.soundEffect)
       const from = this.lerpState?.active ? this._snapshot() : { ...this.currentPreset }
-      this.lerpState = { from, to: next, elapsed: 0, active: true }
+      this.lerpState = { from, to: next, elapsed: 0, active: true, kickAngle: Math.random() * Math.PI * 2 }
       this._scheduleCycle()
     }, current.holdMs)
   }
@@ -263,26 +263,35 @@ export class SpiritEngine {
 
     // Advance transition
     let current = this.currentPreset
+    let burstFactor = 0
     if (this.lerpState?.active) {
       this.lerpState.elapsed += dt
       const t = Math.min(this.lerpState.elapsed / TRANSITION_DURATION_MS, 1)
       const eased = t * t * (3 - 2 * t)
       current = this._lerp(this.lerpState.from, this.lerpState.to, eased)
-      // Speed burst: sin curve peaks at t=0.5, returns to 0 at t=1
-      current = { ...current, speed: current.speed + Math.sin(Math.PI * t) * TRANSITION_BURST }
+      burstFactor = Math.sin(Math.PI * t)
+      current = { ...current, speed: current.speed + burstFactor * TRANSITION_BURST }
       if (t >= 1) {
         this.currentPreset = this.lerpState.to
         this.lerpState.active = false
       }
     }
 
-    // Animate follow point (figure-8 Lissajous path)
-    this.followTime += dt * 0.001 * current.followSpeed
+    // Animate follow point — during transition: speed surges and a random
+    // "meteor kick" throws the attractor off-axis then swings it back
+    const effectiveFollowSpeed = current.followSpeed * (1 + burstFactor * 7)
+    this.followTime += dt * 0.001 * effectiveFollowSpeed
     this.followPoint.set(
       Math.cos(this.followTime) * FOLLOW_R,
       Math.cos(this.followTime * 4) * FOLLOW_H,
       Math.sin(this.followTime * 2) * FOLLOW_R,
     )
+    if (burstFactor > 0 && this.lerpState) {
+      const kick = burstFactor * 420
+      this.followPoint.x += Math.cos(this.lerpState.kickAngle) * kick
+      this.followPoint.z += Math.sin(this.lerpState.kickAngle) * kick
+      this.followPoint.y += burstFactor * 100
+    }
 
     // Update background color + fog
     this.bgColor.setStyle(current.bgColor)
