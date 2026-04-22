@@ -29,12 +29,32 @@ test.describe("/app route", () => {
 
   test("shows loader on arrival then hides it after engine init", async ({ page }) => {
     await page.goto("/app")
-    // Loader must be present in the DOM on arrival (view.loading state)
     const loader = page.getByTestId("app-loader")
     await expect(loader).toBeAttached()
-    // Engine init completes (Three.js + audio buffers loaded) — loader fades out
     await expect(loader).not.toBeAttached({ timeout: 10000 })
-    // Nav is visible once loading is done
     await expect(page.locator("nav")).toBeVisible()
+  })
+
+  test("mute button is hidden before first user interaction", async ({ page }) => {
+    await page.goto("/app")
+    // Audio is locked until user gesture — mute button must not be visible
+    const muteBtn = page.getByRole("button", { name: /mute|unmute/i })
+    await expect(muteBtn).toBeHidden()
+  })
+
+  test("mute button appears after first interaction and toggles label", async ({ page }) => {
+    await page.goto("/app")
+    // Trigger USER_INTERACTED via click
+    await page.locator("body").click()
+    const muteBtn = page.getByRole("button", { name: /mute|unmute/i })
+    await expect(muteBtn).toBeVisible({ timeout: 3000 })
+    // Default state is unmuted — button says "Mute"
+    await expect(muteBtn).toHaveAttribute("aria-label", "Mute")
+    // Click to mute
+    await muteBtn.click()
+    await expect(muteBtn).toHaveAttribute("aria-label", "Unmute")
+    // Click to unmute
+    await muteBtn.click()
+    await expect(muteBtn).toHaveAttribute("aria-label", "Mute")
   })
 })
