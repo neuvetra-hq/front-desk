@@ -84,11 +84,16 @@ function NavItem({ label, href, end }: { label: string; href: string; end?: bool
 
 export function AppLayout() {
   const containerRef = useRef<HTMLDivElement>(null)
-  const { transition, toggleMute } = useSpirit(containerRef)
   const location = useLocation()
   const send = useAppSend()
+  const isLoading = useAppMachine((s) => s.matches({ view: "loading" }))
   const audioStarted = useAppMachine((s) => !s.matches({ audio: "dormant" }))
   const isMuted = useAppMachine((s) => s.matches({ audio: { active: "muted" } }))
+
+  const { transition, toggleMute } = useSpirit(
+    containerRef,
+    () => send({ type: "SPIRIT_READY" }),
+  )
 
   // Fire Spirit preset the moment the URL changes — syncs burst with slide-down
   useEffect(() => {
@@ -167,6 +172,27 @@ export function AppLayout() {
 
         {/* Page content — slides in/out per route */}
         <AnimatedOutlet />
+
+        {/* Loader overlay — visible while view is in 'loading' state */}
+        <AnimatePresence>
+          {isLoading && (
+            <motion.div
+              data-testid="app-loader"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="absolute inset-0 z-[200] flex items-center justify-center"
+              style={{ background: "#0b0c0d" }}
+            >
+              <span
+                className="text-[0.6rem] uppercase tracking-[0.3em]"
+                style={{ color: "rgba(255,255,255,0.2)" }}
+              >
+                Loading
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </SpiritContext.Provider>
   )
