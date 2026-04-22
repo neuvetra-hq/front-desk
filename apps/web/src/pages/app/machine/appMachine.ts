@@ -35,7 +35,6 @@ export const appMachine = setup({
 }).createMachine({
   id: "neuvetraAI",
   type: "parallel",
-  // Supabase auth listener runs for the lifetime of the machine
   invoke: {
     src: "supabaseAuthListener",
     id: "authListener",
@@ -82,7 +81,6 @@ export const appMachine = setup({
             ],
           },
           on: {
-            // Race condition safety: onAuthStateChange may fire before getSession resolves
             AUTH_STATE_CHANGED: {
               guard: ({ event }) => event.session !== null,
               target: "authenticated",
@@ -103,12 +101,10 @@ export const appMachine = setup({
           initial: "loadingProfile",
           on: {
             AUTH_STATE_CHANGED: [
-              // Token refresh — update session in place, no state change
               {
                 guard: ({ event }) => event.session !== null,
                 actions: "setSessionFromAuth",
               },
-              // Sign-out — clear everything
               {
                 target: "#neuvetraAI.auth.unauthenticated",
                 actions: "clearAuth",
@@ -167,9 +163,14 @@ export const appMachine = setup({
       },
     },
 
-    // ── View — mirrors React Router ───────────────────────────────
+    // ── View ─────────────────────────────────────────────────────
+    // Starts in 'loading' — stays there until SPIRIT_READY fires.
+    // ROUTE_CHANGED in 'loading' only stores the pathname; it does not
+    // transition view state. On SPIRIT_READY, jumps to the page that
+    // matches context.currentRoute. After that, ROUTE_CHANGED at the
+    // parent level handles all page-to-page navigation normally.
     view: {
-      initial: "home",
+      initial: "loading",
       on: {
         ROUTE_CHANGED: [
           {
@@ -200,6 +201,37 @@ export const appMachine = setup({
         ],
       },
       states: {
+        loading: {
+          on: {
+            // Shadow the parent ROUTE_CHANGED: store route only, no view transition
+            ROUTE_CHANGED: { actions: "setRoute" },
+            // On engine ready, jump to the page that matches the stored route
+            SPIRIT_READY: [
+              {
+                guard: ({ context }) => context.currentRoute === "/app",
+                target: "home",
+              },
+              {
+                guard: ({ context }) => context.currentRoute === "/app/how-it-works",
+                target: "howItWorks",
+              },
+              {
+                guard: ({ context }) => context.currentRoute === "/app/pricing",
+                target: "pricing",
+              },
+              {
+                guard: ({ context }) => context.currentRoute === "/app/sign-in",
+                target: "signIn",
+              },
+              {
+                guard: ({ context }) => context.currentRoute === "/app/get-started",
+                target: "getStarted",
+              },
+              // Fallback: any unknown /app/* path lands on home
+              { target: "home" },
+            ],
+          },
+        },
         home: {},
         howItWorks: {},
         pricing: {},
