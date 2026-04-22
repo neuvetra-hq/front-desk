@@ -97,26 +97,30 @@ function AppLoaderOverlay() {
 }
 
 function MuteButton() {
-  const sendSpirit  = useSpiritSend()
+  const sendSpirit    = useSpiritSend()
   const audioUnlocked = useSpiritMachine((s) => !s.matches({ audio: "locked" }))
   const isMuted       = useSpiritMachine((s) => s.matches({ audio: { unlocked: "muted" } }))
+  const barsActive    = audioUnlocked && !isMuted
+
+  // On mobile: always visible — tapping while locked unlocks + starts audio.
+  // On desktop: hidden until first interaction (opacity-0 pointer-events-none).
+  const className = audioUnlocked
+    ? "opacity-40 hover:opacity-90"
+    : "opacity-20 md:opacity-0 md:pointer-events-none"
+
   return (
     <button
-      onClick={() => sendSpirit({ type: "TOGGLE_MUTE" })}
-      aria-label={isMuted ? "Unmute" : "Mute"}
-      aria-hidden={!audioUnlocked || undefined}
-      tabIndex={audioUnlocked ? 0 : -1}
-      className={`flex items-end gap-[3px] h-5 transition-opacity duration-500 cursor-pointer ${
-        audioUnlocked ? "opacity-40 hover:opacity-90" : "opacity-0 pointer-events-none"
-      }`}
+      onClick={() => sendSpirit({ type: audioUnlocked ? "TOGGLE_MUTE" : "USER_INTERACTED" })}
+      aria-label={audioUnlocked ? (isMuted ? "Unmute" : "Mute") : "Enable sound"}
+      className={`flex items-end gap-[3px] h-5 transition-opacity duration-500 cursor-pointer ${className}`}
     >
       {BAR_DELAYS.map((delay, i) => (
         <span
           key={i}
           className="w-[3px] rounded-full bg-white"
           style={{
-            height: isMuted ? "3px" : "4px",
-            animation: isMuted ? "none" : "soundbar 0.8s ease-in-out infinite",
+            height: barsActive ? "4px" : "3px",
+            animation: barsActive ? "soundbar 0.8s ease-in-out infinite" : "none",
             animationDelay: delay,
           }}
         />
