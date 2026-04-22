@@ -146,23 +146,6 @@ export const appMachine = setup({
       },
     },
 
-    // ── Audio ─────────────────────────────────────────────────────
-    audio: {
-      initial: "dormant",
-      states: {
-        dormant: {
-          on: { USER_INTERACTED: "active" },
-        },
-        active: {
-          initial: "unmuted",
-          states: {
-            unmuted: { on: { TOGGLE_MUTE: "muted" } },
-            muted: { on: { TOGGLE_MUTE: "unmuted" } },
-          },
-        },
-      },
-    },
-
     // ── View ─────────────────────────────────────────────────────
     // Starts in 'loading' — stays there until SPIRIT_READY fires.
     // ROUTE_CHANGED in 'loading' only stores the pathname; it does not

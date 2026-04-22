@@ -29,6 +29,4 @@ export type AppEvent =
   | { type: "AUTH_STATE_CHANGED"; session: Session | null }
   | { type: "SIGN_OUT" }
   | { type: "ROUTE_CHANGED"; pathname: string }
-  | { type: "USER_INTERACTED" }
-  | { type: "TOGGLE_MUTE" }
   | { type: "SPIRIT_READY" }
