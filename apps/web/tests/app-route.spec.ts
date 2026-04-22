@@ -23,8 +23,18 @@ test.describe("/app route", () => {
 
   test("renders spirit layout when WebGL2 is available", async ({ page }) => {
     await page.goto("/app")
-    // Spirit canvas container is the first absolute-inset-0 div
     await expect(page.locator("div.absolute.inset-0").first()).toBeAttached()
+    await expect(page.locator("nav")).toBeVisible()
+  })
+
+  test("shows loader on arrival then hides it after engine init", async ({ page }) => {
+    await page.goto("/app")
+    // Loader must be present in the DOM on arrival (view.loading state)
+    const loader = page.getByTestId("app-loader")
+    await expect(loader).toBeAttached()
+    // Engine init completes (Three.js + audio buffers loaded) — loader fades out
+    await expect(loader).not.toBeAttached({ timeout: 10000 })
+    // Nav is visible once loading is done
     await expect(page.locator("nav")).toBeVisible()
   })
 })
