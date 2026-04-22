@@ -2,15 +2,14 @@ import { test, expect, type Page } from "@playwright/test"
 
 async function mockNoWebGL2(page: Page) {
   await page.addInitScript(() => {
-    const original = HTMLCanvasElement.prototype.getContext
+    const original = HTMLCanvasElement.prototype.getContext.bind(HTMLCanvasElement.prototype)
     HTMLCanvasElement.prototype.getContext = function (
       this: HTMLCanvasElement,
       type: string,
       ...args: unknown[]
     ) {
       if (type === "webgl2") return null
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (original as any).apply(this, [type, ...args])
+      return original.apply(this, [type, ...args] as Parameters<typeof original>)
     }
   })
 }
