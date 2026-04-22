@@ -150,3 +150,10 @@ export const AUDIO = {
   ambientVolume: 0.3,
   sfxVolume: 0.7,
 }
+
+export const SFX: Record<string, string> = {
+  whoosh: "/audio/sfx/whoosh.mp3",
+  click:  "/audio/sfx/click.mp3",
+  chime:  "/audio/sfx/chime.mp3",
+  surge:  "/audio/sfx/surge.mp3",
+}
