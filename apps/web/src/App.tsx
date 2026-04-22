@@ -12,10 +12,10 @@ import { IndustryPage } from "@/pages/IndustryPage"
 import { ContactPage } from "@/pages/ContactPage"
 import { MarketingLayout } from "@/components/layout/MarketingLayout"
 import { AppLayout } from "@/components/layout/AppLayout"
+import { AppMachineProvider } from "@/pages/app/AppMachineProvider"
 import { VoiceCallProvider } from "@/contexts/VoiceCallContext"
 import { CallFAB } from "@/components/landing/CallFAB"
 import { ScrollToTop } from "@/components/layout/ScrollToTop"
-import { GpuRoute } from "@/components/auth/GpuRoute"
 import { AppHomePage } from "@/pages/app/AppHomePage"
 import { AppHowItWorksPage } from "@/pages/app/AppHowItWorksPage"
 import { AppPricingPage } from "@/pages/app/AppPricingPage"
@@ -27,42 +27,49 @@ export function App() {
     <VoiceCallProvider>
       <ScrollToTop />
       <Routes>
-      {/* Marketing routes — share a persistent layout so the call FAB survives navigation */}
-      <Route element={<MarketingLayout />}>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/industries/:slug" element={<IndustryPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-      </Route>
+        {/* Marketing routes */}
+        <Route element={<MarketingLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/industries/:slug" element={<IndustryPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+        </Route>
 
-      {/* GPU-gated — Spirit experience with persistent canvas + per-route presets */}
-      <Route path="/app" element={<GpuRoute><AppLayout /></GpuRoute>}>
-        <Route index element={<AppHomePage />} />
-        <Route path="how-it-works" element={<AppHowItWorksPage />} />
-        <Route path="pricing" element={<AppPricingPage />} />
-        <Route path="sign-in" element={<AppSignInPage />} />
-        <Route path="get-started" element={<AppGetStartedPage />} />
-      </Route>
+        {/* /app — XState machine owns WebGL gate + all app state */}
+        <Route
+          path="/app"
+          element={
+            <AppMachineProvider>
+              <AppLayout />
+            </AppMachineProvider>
+          }
+        >
+          <Route index element={<AppHomePage />} />
+          <Route path="how-it-works" element={<AppHowItWorksPage />} />
+          <Route path="pricing" element={<AppPricingPage />} />
+          <Route path="sign-in" element={<AppSignInPage />} />
+          <Route path="get-started" element={<AppGetStartedPage />} />
+        </Route>
 
-      {/* Auth + legal */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/auth/callback" element={<AuthCallbackPage />} />
-      <Route path="/terms" element={<TermsPage />} />
-      <Route path="/privacy" element={<PrivacyPage />} />
+        {/* Auth + legal */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
 
-      {/* Signup wizard — public */}
-      <Route path="/signup" element={<SignupPage />} />
+        {/* Signup wizard */}
+        <Route path="/signup" element={<SignupPage />} />
 
-      {/* Legacy redirect */}
-      <Route path="/onboarding" element={<Navigate to="/signup" replace />} />
+        {/* Legacy redirect */}
+        <Route path="/onboarding" element={<Navigate to="/signup" replace />} />
 
-      {/* Calendar OAuth return — protected (Google + Microsoft + CalDAV) */}
-      <Route path="/calendar/callback" element={<ProtectedRoute><CalendarCallbackPage /></ProtectedRoute>} />
-      <Route path="/calendar/microsoft/callback" element={<ProtectedRoute><CalendarCallbackPage /></ProtectedRoute>} />
-      <Route path="/calendar/caldav/callback" element={<ProtectedRoute><CalendarCallbackPage /></ProtectedRoute>} />
+        {/* Calendar OAuth return */}
+        <Route path="/calendar/callback" element={<ProtectedRoute><CalendarCallbackPage /></ProtectedRoute>} />
+        <Route path="/calendar/microsoft/callback" element={<ProtectedRoute><CalendarCallbackPage /></ProtectedRoute>} />
+        <Route path="/calendar/caldav/callback" element={<ProtectedRoute><CalendarCallbackPage /></ProtectedRoute>} />
 
-      {/* Protected — /dashboard redirects to /dashboard/overview */}
-      <Route path="/dashboard" element={<ProtectedRoute><Navigate to="/dashboard/overview" replace /></ProtectedRoute>} />
-      <Route path="/dashboard/:tab" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        {/* Dashboard */}
+        <Route path="/dashboard" element={<ProtectedRoute><Navigate to="/dashboard/overview" replace /></ProtectedRoute>} />
+        <Route path="/dashboard/:tab" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       </Routes>
       <CallFAB />
     </VoiceCallProvider>
