@@ -139,7 +139,7 @@ export const PRESETS: Record<string, SpiritPreset> = {
   drift: driftPreset,
 }
 
-export const TRANSITION_DURATION_MS = 600
+export const TRANSITION_DURATION_MS = 1400
 
 export const AUTO_CYCLE: { preset: string; holdMs: number }[] = [
   { preset: 'default', holdMs: 9999999 },
