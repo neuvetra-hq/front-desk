@@ -3,8 +3,6 @@ import { SpiritSimulator } from './simulator'
 import { SpiritParticles } from './particles'
 import {
   PRESETS,
-  TRANSITION_DURATION_MS,
-  AUTO_CYCLE,
   AUDIO,
   type SpiritPreset,
 } from '../../data/spirit-presets'
@@ -19,7 +17,6 @@ class AudioEngine {
   private sfxBuffers = new Map<string, AudioBuffer>()
   private unlocked = false
   private _unlockFn: (() => void) | null = null
-  private muted = false
 
   async init(): Promise<void> {
     this.ctx = new AudioContext()
@@ -82,10 +79,8 @@ class AudioEngine {
     }
   }
 
-  toggleMute(): boolean {
-    this.muted = !this.muted
-    if (this.ambientGain) this.ambientGain.gain.value = this.muted ? 0 : AUDIO.ambientVolume
-    return this.muted
+  setMuted(muted: boolean): void {
+    if (this.ambientGain) this.ambientGain.gain.value = muted ? 0 : AUDIO.ambientVolume
   }
 
   playSFX(path: string): void {
@@ -109,7 +104,6 @@ class AudioEngine {
 
 const FOLLOW_R = 200
 const FOLLOW_H = 60
-const TRANSITION_BURST = 0.55  // speed added at peak of transition bell curve
 
 export class SpiritEngine {
   private renderer: THREE.WebGLRenderer | null = null
@@ -119,8 +113,6 @@ export class SpiritEngine {
   private particles: SpiritParticles | null = null
   private audio: AudioEngine | null = null
   private raf: number | null = null
-  private cycleTimer: ReturnType<typeof setTimeout> | null = null
-  private cycleIndex = 0
   private lastFrameTime = 0
   private resizeObserver: ResizeObserver | null = null
 
@@ -130,7 +122,10 @@ export class SpiritEngine {
   private initDone = false
 
   private currentPreset: SpiritPreset = PRESETS.default
-  private lerpState: { from: SpiritPreset; to: SpiritPreset; elapsed: number; active: boolean; kickAngle: number } | null = null
+  private visualLerp: { from: SpiritPreset; to: SpiritPreset; elapsed: number; durationMs: number; active: boolean } | null = null
+  private attractorTarget: { x: number; y: number; z: number } | null = null
+  private attractorKickAngle = 0
+  private surgeState: { elapsed: number; intensity: number; durationMs: number } | null = null
   private bgColor = new THREE.Color()
 
   async init(container: HTMLElement): Promise<void> {
@@ -170,12 +165,10 @@ export class SpiritEngine {
 
     this.lastFrameTime = performance.now()
     this._tick()
-    this._scheduleCycle()
   }
 
   dispose(): void {
     if (this.raf !== null) cancelAnimationFrame(this.raf)
-    if (this.cycleTimer !== null) clearTimeout(this.cycleTimer)
     this.resizeObserver?.disconnect()
     this.audio?.dispose()
     this.particles?.dispose()
@@ -191,42 +184,40 @@ export class SpiritEngine {
     this.audio = null
   }
 
+  /** @deprecated use spiritMachine events instead */
+  transition(_presetName: string): void {
+    throw new Error('use spiritMachine events instead')
+  }
+
+  /** @deprecated use spiritMachine events instead */
   toggleMute(): boolean {
-    return this.audio?.toggleMute() ?? false
+    throw new Error('use spiritMachine events instead')
   }
 
-  transition(presetName: string): void {
-    const preset = PRESETS[presetName]
-    if (!preset) { console.warn(`[SpiritEngine] unknown preset: ${presetName}`); return }
-    if (preset.soundEffect) this.audio?.playSFX(preset.soundEffect)
-    const from = this.lerpState?.active ? this._snapshot() : { ...this.currentPreset }
-    this.lerpState = { from, to: preset, elapsed: 0, active: true, kickAngle: Math.random() * Math.PI * 2 }
-    if (this.cycleTimer !== null) clearTimeout(this.cycleTimer)
-    const idx = AUTO_CYCLE.findIndex((c) => c.preset === presetName)
-    if (idx !== -1) this.cycleIndex = idx
-    this._scheduleCycle()
+  setVisualTarget(from: SpiritPreset, to: SpiritPreset, durationMs: number): void {
+    this.visualLerp = { from, to, elapsed: 0, durationMs, active: true }
   }
 
-  private _scheduleCycle(): void {
-    const current = AUTO_CYCLE[this.cycleIndex]
-    if (!current) return
-    this.cycleTimer = setTimeout(() => {
-      this.cycleIndex = (this.cycleIndex + 1) % AUTO_CYCLE.length
-      const name = AUTO_CYCLE[this.cycleIndex].preset
-      const next = PRESETS[name]
-      if (!next) return
-      if (next.soundEffect) this.audio?.playSFX(next.soundEffect)
-      const from = this.lerpState?.active ? this._snapshot() : { ...this.currentPreset }
-      this.lerpState = { from, to: next, elapsed: 0, active: true, kickAngle: Math.random() * Math.PI * 2 }
-      this._scheduleCycle()
-    }, current.holdMs)
+  setAttractorTarget(pos: { x: number; y: number; z: number } | null, kickAngle: number): void {
+    this.attractorTarget = pos
+    this.attractorKickAngle = kickAngle
   }
 
-  private _snapshot(): SpiritPreset {
-    if (!this.lerpState) return { ...this.currentPreset }
-    const { from, to, elapsed } = this.lerpState
-    const t = Math.min(elapsed / TRANSITION_DURATION_MS, 1)
-    return this._lerp(from, to, t * t * (3 - 2 * t))
+  setSurge(intensity: number, durationMs: number, kickAngle?: number): void {
+    this.surgeState = { elapsed: 0, intensity, durationMs }
+    if (kickAngle !== undefined) this.attractorKickAngle = kickAngle
+  }
+
+  unlockAudio(): void {
+    this.audio?.unlock()
+  }
+
+  setMuted(muted: boolean): void {
+    this.audio?.setMuted(muted)
+  }
+
+  playSFX(name: string): void {
+    this.audio?.playSFX(name)
   }
 
   private _lerp(from: SpiritPreset, to: SpiritPreset, t: number): SpiritPreset {
@@ -261,36 +252,53 @@ export class SpiritEngine {
       if (this.simulator.initAnimation >= 1) this.initDone = true
     }
 
-    // Advance transition
+    // ── Visual lerp ──────────────────────────────────────────────────────────────
     let current = this.currentPreset
-    let burstFactor = 0
-    if (this.lerpState?.active) {
-      this.lerpState.elapsed += dt
-      const t = Math.min(this.lerpState.elapsed / TRANSITION_DURATION_MS, 1)
+    if (this.visualLerp?.active) {
+      this.visualLerp.elapsed += dt
+      const t = Math.min(this.visualLerp.elapsed / this.visualLerp.durationMs, 1)
       const eased = t * t * (3 - 2 * t)
-      current = this._lerp(this.lerpState.from, this.lerpState.to, eased)
-      burstFactor = Math.sin(Math.PI * t)
-      current = { ...current, speed: current.speed + burstFactor * TRANSITION_BURST }
+      current = this._lerp(this.visualLerp.from, this.visualLerp.to, eased)
       if (t >= 1) {
-        this.currentPreset = this.lerpState.to
-        this.lerpState.active = false
+        this.currentPreset = this.visualLerp.to
+        this.visualLerp.active = false
       }
     }
 
-    // Animate follow point — during transition: speed surges and a random
-    // "meteor kick" throws the attractor off-axis then swings it back
-    const effectiveFollowSpeed = current.followSpeed * (1 + burstFactor * 7)
+    // ── Surge overlay ─────────────────────────────────────────────────────────────
+    let surgeFactor = 0
+    if (this.surgeState) {
+      this.surgeState.elapsed += dt
+      const t = Math.min(this.surgeState.elapsed / this.surgeState.durationMs, 1)
+      surgeFactor = Math.sin(Math.PI * t) * this.surgeState.intensity
+      if (t >= 1) this.surgeState = null
+    }
+    current = { ...current, speed: current.speed + surgeFactor }
+
+    // ── Follow point ──────────────────────────────────────────────────────────────
+    const effectiveFollowSpeed = current.followSpeed * (1 + surgeFactor * 7)
     this.followTime += dt * 0.001 * effectiveFollowSpeed
-    this.followPoint.set(
-      Math.cos(this.followTime) * FOLLOW_R,
-      Math.cos(this.followTime * 4) * FOLLOW_H,
-      Math.sin(this.followTime * 2) * FOLLOW_R,
-    )
-    if (burstFactor > 0 && this.lerpState) {
-      const kick = burstFactor * 420
-      this.followPoint.x += Math.cos(this.lerpState.kickAngle) * kick
-      this.followPoint.z += Math.sin(this.lerpState.kickAngle) * kick
-      this.followPoint.y += burstFactor * 100
+    const wanderX = Math.cos(this.followTime) * FOLLOW_R
+    const wanderY = Math.cos(this.followTime * 4) * FOLLOW_H
+    const wanderZ = Math.sin(this.followTime * 2) * FOLLOW_R
+
+    if (this.attractorTarget) {
+      // Lerp toward machine-specified target
+      this.followPoint.lerp(
+        new THREE.Vector3(this.attractorTarget.x, this.attractorTarget.y, this.attractorTarget.z),
+        0.04,
+      )
+    } else {
+      // Wander / returning — ease back to Lissajous orbit
+      this.followPoint.lerp(new THREE.Vector3(wanderX, wanderY, wanderZ), 0.04)
+    }
+
+    // Kick offset riding on surge
+    if (surgeFactor > 0) {
+      const kick = surgeFactor * 420
+      this.followPoint.x += Math.cos(this.attractorKickAngle) * kick
+      this.followPoint.z += Math.sin(this.attractorKickAngle) * kick
+      this.followPoint.y += surgeFactor * 100
     }
 
     // Update fog color
