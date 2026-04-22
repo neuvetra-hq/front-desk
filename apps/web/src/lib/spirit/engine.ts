@@ -156,7 +156,7 @@ export class SpiritEngine {
     this.scene.add(this.particles.container)
 
     this.audio = new AudioEngine()
-    await this.audio.init()
+    this.audio.init().catch(err => console.warn('[SpiritEngine] audio init failed', err))
 
     this.resizeObserver = new ResizeObserver(() => {
       if (!this.renderer || !this.camera) return

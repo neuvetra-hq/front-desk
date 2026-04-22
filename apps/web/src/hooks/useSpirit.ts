@@ -17,7 +17,11 @@ export function useSpirit(
     if (!container) return
     const engine = new SpiritEngine()
     engineRef.current = engine
-    engine.init(container)
+    const MIN_BOOT_MS = 1200
+    Promise.all([
+      engine.init(container),
+      new Promise<void>(r => setTimeout(r, MIN_BOOT_MS)),
+    ])
       .then(() => onReadyRef.current?.())
       .catch((err) => {
         console.error('[useSpirit] engine init failed', err)

@@ -29,6 +29,11 @@ function WebGLGate({ children }: { children: React.ReactNode }) {
 }
 
 export function AppMachineProvider({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    document.body.style.backgroundColor = '#0b0c0d'
+    return () => { document.body.style.backgroundColor = '' }
+  }, [])
+
   return (
     <AppMachineContext.Provider>
       <WebGLGate>{children}</WebGLGate>
