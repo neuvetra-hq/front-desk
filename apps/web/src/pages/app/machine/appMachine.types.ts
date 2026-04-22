@@ -31,3 +31,4 @@ export type AppEvent =
   | { type: "ROUTE_CHANGED"; pathname: string }
   | { type: "USER_INTERACTED" }
   | { type: "TOGGLE_MUTE" }
+  | { type: "SPIRIT_READY" }
