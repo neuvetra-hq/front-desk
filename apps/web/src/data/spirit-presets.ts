@@ -150,9 +150,10 @@ export const AUDIO = {
   ambientVolume: 0.3,
   sfxVolume:     0.7,
   hover:         '/audio/air-whoosh.mp3',
+  hoverVolume:   0.5,
   hoverInRate:   0.8,
   hoverOutRate:  1.2,
-  nav:           '/audio/woosh-game-glitch.mp3',
+  nav:           '/audio/wosoh-soft.mp3',
 }
 
 export const SFX: Record<string, string> = {

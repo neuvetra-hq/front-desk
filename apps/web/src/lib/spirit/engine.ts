@@ -113,14 +113,21 @@ class AudioEngine {
     if (this.ambientGain) this.ambientGain.gain.value = muted ? 0 : AUDIO.ambientVolume
   }
 
-  playSFX(path: string, rate = 1): void {
+  playSFX(path: string, rate = 1, volume = 1): void {
     if (!this.ctx || !this.sfxGain) return
     const buf = this.sfxBuffers.get(path)
     if (!buf) { console.warn(`[AudioEngine] SFX not preloaded: ${path}`); return }
     const src = this.ctx.createBufferSource()
     src.buffer = buf
     src.playbackRate.value = rate
-    src.connect(this.sfxGain)
+    if (volume !== 1) {
+      const gain = this.ctx.createGain()
+      gain.gain.value = volume
+      src.connect(gain)
+      gain.connect(this.sfxGain)
+    } else {
+      src.connect(this.sfxGain)
+    }
     src.start()
   }
 }
@@ -241,8 +248,8 @@ export class SpiritEngine {
     this.audio?.setMuted(muted)
   }
 
-  playSFX(name: string, rate?: number): void {
-    this.audio?.playSFX(name, rate)
+  playSFX(name: string, rate?: number, volume?: number): void {
+    this.audio?.playSFX(name, rate, volume)
   }
 
   private _lerp(from: SpiritPreset, to: SpiritPreset, t: number): SpiritPreset {

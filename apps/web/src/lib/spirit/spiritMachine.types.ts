@@ -33,7 +33,7 @@ export type SpiritEvent =
   | { type: "SURGE";         intensity?: number; durationMs?: number; kickAngle?: number }
   | { type: "SET_SPEED";     speed: number; followSpeed?: number }
   | { type: "SET_CURL";      curlSize: number; attraction?: number }
-  | { type: "PLAY_SFX";      name: string; rate?: number }
+  | { type: "PLAY_SFX";      name: string; rate?: number; volume?: number }
   | { type: "USER_INTERACTED" }
   | { type: "TOGGLE_MUTE" }
   | { type: "RESET" }

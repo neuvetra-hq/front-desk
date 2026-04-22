@@ -49,7 +49,7 @@ function NavItem({ label, href, end }: { label: string; href: string; end?: bool
     <NavLink
       to={href}
       end={end}
-      onMouseEnter={() => { setHovered(true);  sendSpirit({ type: "PLAY_SFX", name: AUDIO.hover, rate: AUDIO.hoverInRate }) }}
+      onMouseEnter={() => { setHovered(true);  sendSpirit({ type: "PLAY_SFX", name: AUDIO.hover, rate: AUDIO.hoverInRate, volume: AUDIO.hoverVolume }) }}
       onMouseLeave={() => { setHovered(false) }}
       className="text-[0.65rem] uppercase tracking-[0.25em]"
       style={({ isActive }) => ({
