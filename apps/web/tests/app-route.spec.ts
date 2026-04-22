@@ -23,7 +23,8 @@ test.describe("/app route", () => {
 
   test("renders spirit layout when WebGL2 is available", async ({ page }) => {
     await page.goto("/app")
-    await expect(page.locator("div.absolute.inset-0")).toBeAttached()
+    // Spirit canvas container is the first absolute-inset-0 div
+    await expect(page.locator("div.absolute.inset-0").first()).toBeAttached()
     await expect(page.locator("nav")).toBeVisible()
   })
 })
