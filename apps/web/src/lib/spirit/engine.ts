@@ -109,6 +109,7 @@ class AudioEngine {
 
 const FOLLOW_R = 200
 const FOLLOW_H = 60
+const TRANSITION_BURST = 0.55  // speed added at peak of transition bell curve
 
 export class SpiritEngine {
   private renderer: THREE.WebGLRenderer | null = null
@@ -150,7 +151,7 @@ export class SpiritEngine {
     this.camera.lookAt(0, 50, 0)
 
     // Default texture size = 256×256 = 65,536 particles
-    this.simulator = new SpiritSimulator(this.renderer, 256, 256)
+    this.simulator = new SpiritSimulator(this.renderer, 100, 80)
     this.particles = new SpiritParticles(this.renderer, this.scene, this.camera, this.simulator, preset.color1, preset.color2)
     this.scene.add(this.particles.container)
 
@@ -267,6 +268,8 @@ export class SpiritEngine {
       const t = Math.min(this.lerpState.elapsed / TRANSITION_DURATION_MS, 1)
       const eased = t * t * (3 - 2 * t)
       current = this._lerp(this.lerpState.from, this.lerpState.to, eased)
+      // Speed burst: sin curve peaks at t=0.5, returns to 0 at t=1
+      current = { ...current, speed: current.speed + Math.sin(Math.PI * t) * TRANSITION_BURST }
       if (t >= 1) {
         this.currentPreset = this.lerpState.to
         this.lerpState.active = false

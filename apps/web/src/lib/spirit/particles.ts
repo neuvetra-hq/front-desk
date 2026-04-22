@@ -145,11 +145,11 @@ export class SpiritParticles {
     this.triangleMesh.visible = settings.useTriangles
     this.pointMesh.visible = !settings.useTriangles
 
-    // Lerp colors
+    // Lerp colors — 0.12 per frame keeps up with the 600ms transition window
     this.tmpColor.setStyle(settings.color1)
-    this.color1.lerp(this.tmpColor, 0.05)
+    this.color1.lerp(this.tmpColor, 0.12)
     this.tmpColor.setStyle(settings.color2)
-    this.color2.lerp(this.tmpColor, 0.05)
+    this.color2.lerp(this.tmpColor, 0.12)
 
     // Flip triangles each frame
     this.flipRatio ^= 1
