@@ -1,5 +1,5 @@
 import { Container } from "@/components/layout/Container"
-import { HOW_IT_WORKS } from "@/constants/landing"
+import { HOW_IT_WORKS } from "@/contexts/constants/landing"
 
 export function HowItWorks() {
   return (

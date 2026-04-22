@@ -1,6 +1,6 @@
 import { Link } from "react-router"
 import { Container } from "@/components/layout/Container"
-import { CTA_BANNER } from "@/constants/landing"
+import { CTA_BANNER } from "@/contexts/constants/landing"
 
 export function CTABanner() {
   return (

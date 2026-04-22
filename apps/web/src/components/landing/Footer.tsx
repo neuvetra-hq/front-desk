@@ -1,6 +1,6 @@
 import { Link } from "react-router"
 import { Container } from "@/components/layout/Container"
-import { FOOTER } from "@/constants/landing"
+import { FOOTER } from "@/contexts/constants/landing"
 
 export function Footer() {
   return (

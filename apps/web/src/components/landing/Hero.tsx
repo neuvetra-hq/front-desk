@@ -1,6 +1,6 @@
 import { buttonVariants } from "@/components/ui/button"
 import { Container } from "@/components/layout/Container"
-import { HERO, STATS } from "@/constants/landing"
+import { HERO, STATS } from "@/contexts/constants/landing"
 
 function CallVisual() {
   return (

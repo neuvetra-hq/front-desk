@@ -1,6 +1,6 @@
 import { Check, X, Minus } from "lucide-react"
 import { Container } from "@/components/layout/Container"
-import { COMPARISON } from "@/constants/landing"
+import { COMPARISON } from "@/contexts/constants/landing"
 
 const iconFor = (value: string) => {
   if (
@@ -42,11 +42,10 @@ export function ComparisonTable() {
                 {COMPARISON.columns.map((col) => (
                   <th
                     key={col.name}
-                    className={`px-6 py-4 text-center font-semibold ${
-                      col.highlight
+                    className={`px-6 py-4 text-center font-semibold ${col.highlight
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted text-foreground"
-                    }`}
+                      }`}
                   >
                     {col.highlight && (
                       <span className="mb-1 block text-xs font-normal text-primary-foreground/70">
@@ -68,11 +67,10 @@ export function ComparisonTable() {
                     return (
                       <td
                         key={col.name}
-                        className={`px-6 py-4 text-center ${
-                          col.highlight
+                        className={`px-6 py-4 text-center ${col.highlight
                             ? "bg-primary/5 font-medium text-primary"
                             : "text-muted-foreground"
-                        }`}
+                          }`}
                       >
                         {icon ?? val}
                       </td>

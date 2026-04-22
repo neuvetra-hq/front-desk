@@ -1,7 +1,7 @@
 import { Phone, Brain, CalendarCheck, Globe, FileText, Bell } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Container } from "@/components/layout/Container"
-import { FRONT_DESK_FEATURES } from "@/constants/landing"
+import { FRONT_DESK_FEATURES } from "@/contexts/constants/landing"
 
 const FEATURE_ICONS: LucideIcon[] = [Phone, Brain, CalendarCheck, Globe, FileText, Bell]
 

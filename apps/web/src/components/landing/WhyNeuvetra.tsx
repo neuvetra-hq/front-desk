@@ -1,5 +1,5 @@
 import { Container } from "@/components/layout/Container"
-import { WHY_NEUVETRA } from "@/constants/landing"
+import { WHY_NEUVETRA } from "@/contexts/constants/landing"
 
 export function WhyNeuvetra() {
   return (

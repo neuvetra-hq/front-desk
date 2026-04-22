@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Container } from "@/components/layout/Container"
-import { PRICING_TIERS } from "@/constants/landing"
+import { PRICING_TIERS } from "@/contexts/constants/landing"
 import { Check } from "lucide-react"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
@@ -48,11 +48,10 @@ export function Pricing() {
             return (
               <div
                 key={tier.name}
-                className={`relative flex flex-col rounded-2xl border p-8 transition-all ${
-                  tier.popular
+                className={`relative flex flex-col rounded-2xl border p-8 transition-all ${tier.popular
                     ? "border-primary bg-background shadow-lg shadow-primary/10 ring-1 ring-primary"
                     : "border-border bg-background shadow-sm"
-                }`}
+                  }`}
               >
                 {tier.popular && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
@@ -77,11 +76,10 @@ export function Pricing() {
 
                 <a
                   href="/signup"
-                  className={`mt-6 inline-flex w-full items-center justify-center rounded-full px-4 py-3 text-sm font-semibold transition-colors ${
-                    tier.popular
+                  className={`mt-6 inline-flex w-full items-center justify-center rounded-full px-4 py-3 text-sm font-semibold transition-colors ${tier.popular
                       ? "bg-primary text-primary-foreground hover:bg-primary/90"
                       : "border border-primary text-primary hover:bg-primary/5"
-                  }`}
+                    }`}
                 >
                   Start free trial →
                 </a>

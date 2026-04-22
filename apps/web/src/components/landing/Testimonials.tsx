@@ -1,6 +1,6 @@
 import { Container } from "@/components/layout/Container"
 import { AnimatedTestimonials } from "@/components/ui/animated-testimonials"
-import { TESTIMONIALS } from "@/constants/landing"
+import { TESTIMONIALS } from "@/contexts/constants/landing"
 
 export function Testimonials() {
   return (

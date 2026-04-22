@@ -1,5 +1,5 @@
 import { Container } from "@/components/layout/Container"
-import { PRODUCTS } from "@/constants/landing"
+import { PRODUCTS } from "@/contexts/constants/landing"
 import { Button } from "@/components/ui/button"
 
 const colorMap: Record<string, { bg: string; text: string; badge: string }> = {
@@ -29,11 +29,10 @@ export function Products() {
             return (
               <div
                 key={product.name}
-                className={`relative flex flex-col rounded-2xl border p-6 transition-all ${
-                  product.available
+                className={`relative flex flex-col rounded-2xl border p-6 transition-all ${product.available
                     ? "border-neutral-200 bg-white shadow-sm hover:shadow-md hover:-translate-y-0.5"
                     : "border-neutral-100 bg-white/60 opacity-75"
-                }`}
+                  }`}
               >
                 {/* Icon */}
                 <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl text-2xl ${colors.bg}`}>

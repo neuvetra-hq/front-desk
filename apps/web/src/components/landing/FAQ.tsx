@@ -5,7 +5,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion"
-import { FAQ_ITEMS } from "@/constants/landing"
+import { FAQ_ITEMS } from "@/contexts/constants/landing"
 
 export function FAQ() {
   return (
