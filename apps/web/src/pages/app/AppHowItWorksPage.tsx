@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import { Link } from 'react-router'
 import { useSpiritContext } from '@/contexts/SpiritContext'
 
 export function AppHowItWorksPage() {
@@ -20,9 +19,7 @@ export function AppHowItWorksPage() {
           Coming soon
         </p>
       </div>
-      <Link to="/app" className="text-[0.65rem] uppercase tracking-[0.25em] text-white/35 transition-colors duration-300 hover:text-white">
-        ← Back
-      </Link>
+      <div />
     </div>
   )
 }
