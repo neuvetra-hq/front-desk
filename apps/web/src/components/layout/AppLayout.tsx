@@ -34,7 +34,7 @@ function AnimatedOutlet() {
         animate={SLIDE.animate}
         exit={SLIDE.exit}
         transition={SLIDE.transition}
-        className="absolute inset-0 z-10"
+        className="absolute inset-0 z-10 overflow-y-auto"
       >
         <FrozenRoute>{outlet}</FrozenRoute>
       </motion.div>
@@ -51,7 +51,7 @@ function NavItem({ label, href, end }: { label: string; href: string; end?: bool
       end={end}
       onMouseEnter={() => { setHovered(true);  sendSpirit({ type: "PLAY_SFX", name: AUDIO.hover, rate: AUDIO.hoverInRate, volume: AUDIO.hoverVolume }) }}
       onMouseLeave={() => { setHovered(false) }}
-      className="text-[0.65rem] uppercase tracking-[0.25em]"
+      className="text-[0.8rem] uppercase tracking-[0.2em]"
       style={({ isActive }) => ({
         color: isActive
           ? "rgba(255,255,255,0.95)"
@@ -175,7 +175,7 @@ function AppLayoutInner() {
 
       {/* Desktop bottom nav */}
       <nav
-        className="absolute left-0 right-0 z-50 hidden md:flex flex-wrap items-center justify-center gap-x-10 gap-y-3 select-none"
+        className="absolute left-0 right-0 z-50 hidden md:flex flex-wrap items-center justify-center gap-x-14 gap-y-3 select-none"
         style={{ bottom: "max(2.5rem, env(safe-area-inset-bottom, 2.5rem))" }}
       >
         {APP_ROUTES.map((route) => (
