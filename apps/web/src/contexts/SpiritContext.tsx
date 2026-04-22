@@ -1,13 +1,4 @@
-import { createContext, useContext } from 'react'
+import { createContext } from 'react'
 
-interface SpiritContextValue {
-  transition: (preset: string) => void
-  toggleMute: () => boolean
-}
-
-export const SpiritContext = createContext<SpiritContextValue>({
-  transition: () => {},
-  toggleMute: () => false,
-})
-
-export const useSpiritContext = () => useContext(SpiritContext)
+// Legacy context — superseded by SpiritActorContext in useSpiritMachine.ts
+export const SpiritContext = createContext<Record<string, never>>({})
