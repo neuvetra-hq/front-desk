@@ -7,6 +7,7 @@ import { SpiritContext } from '@/contexts/SpiritContext'
 const BAR_DELAYS = ['0s', '0.2s', '0.4s', '0.2s']
 
 const NAV_LINKS = [
+  { label: 'Home',         href: '/app',               end: true },
   { label: 'How It Works', href: '/app/how-it-works' },
   { label: 'Pricing',      href: '/app/pricing' },
   { label: 'Sign In',      href: '/app/sign-in' },
@@ -44,11 +45,12 @@ function AnimatedOutlet() {
   )
 }
 
-function NavItem({ label, href }: { label: string; href: string }) {
+function NavItem({ label, href, end }: { label: string; href: string; end?: boolean }) {
   const [hovered, setHovered] = useState(false)
   return (
     <NavLink
       to={href}
+      end={end}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className="text-[0.65rem] uppercase tracking-[0.25em]"
@@ -135,7 +137,7 @@ export function AppLayout() {
         {/* Persistent bottom nav — always above sliding content */}
         <nav className="absolute bottom-10 left-0 right-0 z-50 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 select-none">
           {NAV_LINKS.map((link) => (
-            <NavItem key={link.href} label={link.label} href={link.href} />
+            <NavItem key={link.href} label={link.label} href={link.href} end={link.end} />
           ))}
         </nav>
 
