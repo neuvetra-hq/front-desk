@@ -120,7 +120,10 @@ function MuteButton() {
           className="w-[3px] rounded-full bg-white"
           style={{
             height: barsActive ? "4px" : "3px",
-            animation: barsActive ? "soundbar 0.8s ease-in-out infinite" : "none",
+            animationName: barsActive ? "soundbar" : "none",
+            animationDuration: "0.8s",
+            animationTimingFunction: "ease-in-out",
+            animationIterationCount: "infinite",
             animationDelay: delay,
           }}
         />
