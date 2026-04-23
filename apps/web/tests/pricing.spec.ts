@@ -12,17 +12,17 @@ test.describe('Pricing section', () => {
 
   test('shows monthly prices by default', async ({ page }) => {
     const section = page.locator('#pricing')
-    await expect(section.getByText('49')).toBeVisible()
-    await expect(section.getByText('99')).toBeVisible()
-    await expect(section.getByText('199')).toBeVisible()
+    await expect(section.getByText('49', { exact: true })).toBeVisible()
+    await expect(section.getByText('99', { exact: true })).toBeVisible()
+    await expect(section.getByText('199', { exact: true })).toBeVisible()
   })
 
   test('switches to annual prices when Annual tab is clicked', async ({ page }) => {
     await page.locator('#pricing').getByText('Annual').click()
     const section = page.locator('#pricing')
-    await expect(section.getByText('39')).toBeVisible()
-    await expect(section.getByText('79')).toBeVisible()
-    await expect(section.getByText('159')).toBeVisible()
+    await expect(section.getByText('39', { exact: true })).toBeVisible()
+    await expect(section.getByText('79', { exact: true })).toBeVisible()
+    await expect(section.getByText('159', { exact: true })).toBeVisible()
   })
 
   test('shows enterprise bar', async ({ page }) => {
