@@ -247,7 +247,7 @@ export function AppGetStartedPage() {
           {currentConfig.title}
         </p>
         <div className="overflow-hidden">
-          <AnimatePresence custom={direction} mode="wait">
+          <AnimatePresence custom={direction} mode="wait" initial={false}>
             <motion.div
               key={step}
               custom={direction}

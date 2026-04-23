@@ -18,6 +18,17 @@ const SLIDE = {
   transition: { duration: 0.55, ease: [0.76, 0, 0.24, 1] as const },
 }
 
+// Form/wizard routes use a fade instead of the y-slide: the slide reveals
+// content bottom-first, which looks jarring on pages with sparse top-heavy content.
+const FADE = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit:    { opacity: 0 },
+  transition: { duration: 0.35, ease: "easeOut" as const },
+}
+
+const FADE_ROUTES = new Set(["/app/get-started", "/app/sign-in"])
+
 function FrozenRoute({ children }: { children: React.ReactNode }) {
   const frozen = useRef(children)
   return <>{frozen.current}</>
@@ -26,14 +37,28 @@ function FrozenRoute({ children }: { children: React.ReactNode }) {
 function AnimatedOutlet() {
   const location = useLocation()
   const outlet = useOutlet()
+
+  // prevPathnameRef holds the pathname from the previous render — it's
+  // updated in useEffect (after render), so during the render that fires on a
+  // navigation it still contains the OLD pathname. We use it to pick FADE
+  // when either the source or destination is a form route, ensuring both the
+  // outgoing exit and the incoming enter use the same fade variant.
+  const prevPathnameRef = useRef(location.pathname)
+  useEffect(() => { prevPathnameRef.current = location.pathname })
+
+  const anim =
+    FADE_ROUTES.has(location.pathname) || FADE_ROUTES.has(prevPathnameRef.current)
+      ? FADE
+      : SLIDE
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
         key={location.pathname}
-        initial={SLIDE.initial}
-        animate={SLIDE.animate}
-        exit={SLIDE.exit}
-        transition={SLIDE.transition}
+        initial={anim.initial}
+        animate={anim.animate}
+        exit={anim.exit}
+        transition={anim.transition}
         className="absolute inset-0 z-10 overflow-y-auto"
       >
         <FrozenRoute>{outlet}</FrozenRoute>
