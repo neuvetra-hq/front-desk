@@ -1,4 +1,5 @@
 import { useState, useRef, useLayoutEffect } from "react"
+import { Link } from "react-router"
 import { motion } from "framer-motion"
 import { AppPageShell } from "./AppPageShell"
 import { PRICING_TIERS } from "@/contexts/constants/landing"
@@ -182,12 +183,12 @@ export function AppPricingPage() {
         transition={{ delay: 0.7 }}
         className="mt-10 flex justify-center"
       >
-        <a
-          href="/signup"
+        <Link
+          to="/app/get-started"
           className="px-8 py-3.5 text-[11px] font-light tracking-[.18em] uppercase text-violet-200 bg-violet-500/15 border border-violet-500/35 hover:bg-violet-500/20 transition-colors"
         >
           Start free trial
-        </a>
+        </Link>
       </motion.div>
 
     </AppPageShell>
