@@ -140,7 +140,7 @@ export function AppPricingPage() {
         </div>
         <a
           href="mailto:hello@neuvetra.com"
-          className="shrink-0 text-[11px] font-light tracking-[.08em] uppercase text-violet-300/70 hover:text-violet-200 transition-colors"
+          className="shrink-0 px-5 py-2.5 text-[11px] font-light tracking-[.18em] uppercase text-violet-300/70 bg-white/[0.02] backdrop-blur-md border border-white/[0.06] hover:text-violet-200 hover:bg-white/[0.04] transition-colors"
         >
           Contact us
         </a>
