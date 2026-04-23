@@ -162,7 +162,7 @@ function PaymentForm({ payload, stripeCustomerId, onSuccess, onBack }: FormProps
       </p>
 
       <WizardButton type="submit" disabled={!stripe || busy}>
-        {busy ? "Activating…" : "Activate my Front Desk →"}
+        {busy ? "Activating…" : "Activate my Front Desk"}
       </WizardButton>
     </form>
   )
