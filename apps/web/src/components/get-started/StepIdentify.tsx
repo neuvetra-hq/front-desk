@@ -1,5 +1,6 @@
 // apps/web/src/components/get-started/StepIdentify.tsx
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
+import { useRouteTransition } from "@/contexts/RouteTransitionContext"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -31,9 +32,15 @@ interface Props {
 
 export function StepIdentify({ onNext }: Props) {
   const [busy, setBusy] = useState(false)
+  const firstNameRef = useRef<HTMLInputElement>(null)
+  const { transitionComplete } = useRouteTransition()
   const { register, handleSubmit, formState: { errors } } = useForm<IdentityData>({
     resolver: zodResolver(schema),
   })
+
+  useEffect(() => {
+    if (transitionComplete) firstNameRef.current?.focus()
+  }, [transitionComplete])
 
   const onSubmit = async (data: IdentityData) => {
     setBusy(true)
@@ -61,6 +68,10 @@ export function StepIdentify({ onNext }: Props) {
             autoComplete="given-name"
             hasError={!!errors.firstName}
             {...register("firstName")}
+            ref={(el) => {
+              firstNameRef.current = el
+              register("firstName").ref(el)
+            }}
           />
           {errors.firstName && (
             <p className="text-[10px] text-red-400/70">{errors.firstName.message}</p>
@@ -91,7 +102,6 @@ export function StepIdentify({ onNext }: Props) {
           type="tel"
           placeholder="+1 (415) 555-0100"
           autoComplete="tel"
-          autoFocus
           hasError={!!errors.phone}
           {...register("phone")}
         />

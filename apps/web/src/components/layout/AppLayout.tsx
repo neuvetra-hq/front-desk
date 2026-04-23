@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react"
 import { NavLink, useLocation, useOutlet } from "react-router"
-import { AnimatePresence, motion } from "framer-motion"
+import { AnimatePresence, motion, useIsPresent } from "framer-motion"
 import { Menu, X } from "lucide-react"
 import { useAppMachine, useAppSend } from "@/pages/app/hooks/useAppMachine"
 import { useSpiritMachine, useSpiritSend } from "@/hooks/useSpiritMachine"
@@ -8,54 +8,52 @@ import { APP_ROUTES } from "@/pages/app/routes"
 import { AUDIO } from "@/data/spirit-presets"
 import { AppSpiritProvider } from "./AppSpiritProvider"
 import { AppMobileMenu } from "./AppMobileMenu"
+import { RouteTransitionProvider, useRouteTransition } from "@/contexts/RouteTransitionContext"
 
 const BAR_DELAYS = ["0s", "0.2s", "0.4s", "0.2s"]
+
+export const ROUTE_TRANSITION_MS = 550
 
 const SLIDE = {
   initial:    { y: "100vh" },
   animate:    { y: 0 },
-  exit:       { opacity: 0 },   // fade out — sliding down made the nav appear to move with the page
-  transition: { duration: 0.45, ease: [0.76, 0, 0.24, 1] as const },
+  exit:       { y: "100vh" },
+  transition: { duration: ROUTE_TRANSITION_MS / 1000, ease: [0.76, 0, 0.24, 1] as const },
 }
-
-// Form/wizard routes use a fade instead of the y-slide: the slide reveals
-// content bottom-first, which looks jarring on pages with sparse top-heavy content.
-const FADE = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit:    { opacity: 0 },
-  transition: { duration: 0.35, ease: "easeOut" as const },
-}
-
-const FADE_ROUTES = new Set(["/app/get-started", "/app/sign-in"])
 
 function FrozenRoute({ children }: { children: React.ReactNode }) {
   const frozen = useRef(children)
   return <>{frozen.current}</>
 }
 
+function RouteSlide({ children }: { children: React.ReactNode }) {
+  const isPresent = useIsPresent()
+  const { notifyComplete, reset } = useRouteTransition()
+
+  return (
+    <motion.div
+      initial={SLIDE.initial}
+      animate={SLIDE.animate}
+      exit={SLIDE.exit}
+      transition={SLIDE.transition}
+      onAnimationStart={reset}
+      onAnimationComplete={() => { if (isPresent) notifyComplete() }}
+      className="absolute inset-0 z-10 overflow-y-auto"
+    >
+      {children}
+    </motion.div>
+  )
+}
+
 function AnimatedOutlet() {
   const location = useLocation()
   const outlet = useOutlet()
 
-  // Form/wizard routes (get-started, sign-in) fade in.
-  // All other routes slide up from below.
-  // Note: each motion.div's EXIT uses the `exit` prop from its OWN last render,
-  // so get-started will always fade out regardless of the destination route.
-  const anim = FADE_ROUTES.has(location.pathname) ? FADE : SLIDE
-
   return (
     <AnimatePresence mode="wait">
-      <motion.div
-        key={location.pathname}
-        initial={anim.initial}
-        animate={anim.animate}
-        exit={anim.exit}
-        transition={anim.transition}
-        className="absolute inset-0 z-10 overflow-y-auto"
-      >
+      <RouteSlide key={location.pathname}>
         <FrozenRoute>{outlet}</FrozenRoute>
-      </motion.div>
+      </RouteSlide>
     </AnimatePresence>
   )
 }
@@ -218,14 +216,16 @@ export function AppLayout() {
   const containerRef = useRef<HTMLDivElement>(null)
   return (
     <AppSpiritProvider containerRef={containerRef}>
-      <div
-        className="relative w-screen h-[100dvh] overflow-hidden"
-        style={{ background: "radial-gradient(circle at 3% 5%, #253239 0%, #0b0c0d 50%)" }}
-      >
-        <div ref={containerRef} className="absolute inset-0" />
-        <AppLayoutInner />
-        <AppLoaderOverlay />
-      </div>
+      <RouteTransitionProvider>
+        <div
+          className="relative w-screen h-[100dvh] overflow-hidden"
+          style={{ background: "radial-gradient(circle at 3% 5%, #253239 0%, #0b0c0d 50%)" }}
+        >
+          <div ref={containerRef} className="absolute inset-0" />
+          <AppLayoutInner />
+          <AppLoaderOverlay />
+        </div>
+      </RouteTransitionProvider>
     </AppSpiritProvider>
   )
 }
