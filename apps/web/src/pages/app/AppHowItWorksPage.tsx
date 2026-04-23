@@ -92,19 +92,25 @@ export function AppHowItWorksPage() {
               >
                 {step.description}
               </p>
-              <span
-                className="md:whitespace-nowrap"
+              <div
+                className="md:whitespace-nowrap flex items-center gap-2"
                 style={{
                   color: `rgba(${BRAND_GREEN_RGB},0.75)`,
                   fontSize: '0.65rem',
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase' as const,
                   marginTop: '10px',
-                  display: 'block',
                 }}
               >
-                ▪ {step.callout}
-              </span>
+                <span style={{
+                  display: 'inline-block',
+                  width: '7px',
+                  height: '7px',
+                  background: `rgba(${BRAND_GREEN_RGB},0.75)`,
+                  flexShrink: 0,
+                }} />
+                {step.callout}
+              </div>
             </div>
           </motion.li>
         ))}
