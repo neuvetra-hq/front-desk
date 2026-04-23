@@ -1,7 +1,9 @@
 // apps/web/src/components/get-started/StepPickNumber.tsx
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
-import { jost } from "./types"
+import { jost, alpha } from "./types"
+import { WizardButton } from "./WizardButton"
+import { useAppMachine } from "@/pages/app/hooks/useAppMachine"
 
 const API_URL = import.meta.env.VITE_API_URL as string
 
@@ -21,6 +23,7 @@ export function StepPickNumber({ areaCode, onNext }: Props) {
   const [numbers, setNumbers] = useState<AvailableNumber[]>([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<string | null>(null)
+  const light = useAppMachine((s) => s.context.currentTheme.light)
 
   useEffect(() => {
     const load = async () => {
@@ -63,12 +66,8 @@ export function StepPickNumber({ areaCode, onNext }: Props) {
               key={n.phoneNumber}
               type="button"
               onClick={() => setSelected(n.phoneNumber)}
-              className={[
-                "w-full text-left px-5 py-3.5 border transition-colors",
-                selected === n.phoneNumber
-                  ? "border-violet-500/50 bg-violet-500/[0.06]"
-                  : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]",
-              ].join(" ")}
+              className="w-full text-left px-5 py-3.5 border transition-colors border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
+              style={selected === n.phoneNumber ? { borderColor: alpha(light, 0.5), background: alpha(light, 0.06) } : {}}
             >
               <p className="font-mono text-sm text-white/80">{n.friendlyName}</p>
               <p className="text-[10px] text-white/30 mt-0.5" style={jost}>
@@ -79,15 +78,13 @@ export function StepPickNumber({ areaCode, onNext }: Props) {
         </div>
       )}
 
-      <button
+      <WizardButton
         type="button"
         disabled={!selected || loading}
         onClick={() => selected && onNext(selected)}
-        className="w-full py-3 text-[11px] font-light tracking-[.18em] uppercase text-violet-200 bg-violet-500/15 border border-violet-500/35 hover:bg-violet-500/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ fontFamily: "'Jost', sans-serif" }}
       >
         Continue →
-      </button>
+      </WizardButton>
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import { DarkInput } from "./DarkInput"
+import { WizardButton } from "./WizardButton"
 import { jostLabel } from "./types"
 
 interface Props {
@@ -89,15 +90,9 @@ export function StepVerify({ phone, onVerified }: Props) {
         />
       </div>
 
-      <button
-        type="button"
-        onClick={handleVerify}
-        disabled={code.length < 6 || busy}
-        className="w-full py-3 text-[11px] font-light tracking-[.18em] uppercase text-violet-200 bg-violet-500/15 border border-violet-500/35 hover:bg-violet-500/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ fontFamily: "'Jost', sans-serif" }}
-      >
+      <WizardButton type="button" onClick={handleVerify} disabled={code.length < 6 || busy}>
         {busy ? "Verifying…" : "Verify →"}
-      </button>
+      </WizardButton>
 
       <button
         type="button"

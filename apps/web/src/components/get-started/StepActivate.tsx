@@ -5,7 +5,9 @@ import {
   Elements, PaymentElement, useStripe, useElements,
 } from "@stripe/react-stripe-js"
 import { toast } from "sonner"
-import { jost } from "./types"
+import { jost, alpha } from "./types"
+import { WizardButton } from "./WizardButton"
+import { useAppMachine } from "@/pages/app/hooks/useAppMachine"
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string)
 const API_URL = import.meta.env.VITE_API_URL as string
@@ -39,12 +41,20 @@ interface FormProps {
   onBack: () => void
 }
 
+function SpinnerLoader() {
+  const light = useAppMachine((s) => s.context.currentTheme.light)
+  return (
+    <div className="size-5 animate-spin rounded-full border-2 border-white/10" style={{ borderTopColor: light }} />
+  )
+}
+
 function PaymentForm({ payload, stripeCustomerId, onSuccess, onBack }: FormProps) {
   const stripe = useStripe()
   const elements = useElements()
   const [busy, setBusy] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<PlanId>("growth")
   const [confirmedPmId, setConfirmedPmId] = useState<string | null>(null)
+  const light = useAppMachine((s) => s.context.currentTheme.light)
 
   const trialEnd = new Date()
   trialEnd.setDate(trialEnd.getDate() + 7)
@@ -107,19 +117,15 @@ function PaymentForm({ payload, stripeCustomerId, onSuccess, onBack }: FormProps
             key={plan.id}
             type="button"
             onClick={() => setSelectedPlan(plan.id)}
-            className={[
-              "w-full text-left px-5 py-4 border transition-colors",
-              selectedPlan === plan.id
-                ? "border-violet-500/50 bg-violet-500/[0.06]"
-                : "border-white/10 hover:border-white/20",
-            ].join(" ")}
+            className="w-full text-left px-5 py-4 border transition-colors border-white/10 hover:border-white/20"
+            style={selectedPlan === plan.id ? { borderColor: alpha(light, 0.5), background: alpha(light, 0.06) } : {}}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span
                   className="text-[11px] font-semibold tracking-[.1em] uppercase"
                   style={{
-                    color: selectedPlan === plan.id ? "rgba(167,139,250,0.9)" : "rgba(255,255,255,0.6)",
+                    color: selectedPlan === plan.id ? alpha(light, 0.9) : "rgba(255,255,255,0.6)",
                     fontFamily: "'Jost', sans-serif",
                   }}
                 >
@@ -127,8 +133,8 @@ function PaymentForm({ payload, stripeCustomerId, onSuccess, onBack }: FormProps
                 </span>
                 {"popular" in plan && plan.popular && (
                   <span
-                    className="text-[9px] tracking-[.08em] uppercase text-violet-400/60 border border-violet-500/25 px-1.5 py-0.5"
-                    style={{ fontFamily: "'Jost', sans-serif" }}
+                    className="text-[9px] tracking-[.08em] uppercase px-1.5 py-0.5"
+                    style={{ color: alpha(light, 0.6), border: `1px solid ${alpha(light, 0.25)}`, fontFamily: "'Jost', sans-serif" }}
                   >
                     Popular
                   </span>
@@ -155,14 +161,9 @@ function PaymentForm({ payload, stripeCustomerId, onSuccess, onBack }: FormProps
         7-day free trial · card charged {trialEndStr} if not cancelled
       </p>
 
-      <button
-        type="submit"
-        disabled={!stripe || busy}
-        className="w-full py-3 text-[11px] font-light tracking-[.18em] uppercase text-violet-200 bg-violet-500/15 border border-violet-500/35 hover:bg-violet-500/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ fontFamily: "'Jost', sans-serif" }}
-      >
+      <WizardButton type="submit" disabled={!stripe || busy}>
         {busy ? "Activating…" : "Activate my Front Desk →"}
-      </button>
+      </WizardButton>
     </form>
   )
 }
@@ -189,6 +190,7 @@ export function StepActivate({
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [stripeCustomerId, setStripeCustomerId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const light = useAppMachine((s) => s.context.currentTheme.light)
 
   useEffect(() => {
     const init = async () => {
@@ -213,7 +215,7 @@ export function StepActivate({
   if (loading || !clientSecret || !stripeCustomerId) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="size-5 animate-spin rounded-full border-2 border-white/10 border-t-violet-400" />
+        <SpinnerLoader />
       </div>
     )
   }
@@ -226,7 +228,7 @@ export function StepActivate({
         appearance: {
           theme: "night",
           variables: {
-            colorPrimary: "#8b5cf6",
+            colorPrimary: light,
             colorBackground: "rgba(255,255,255,0.02)",
             colorText: "rgba(255,255,255,0.85)",
             colorTextSecondary: "rgba(255,255,255,0.4)",
@@ -239,8 +241,8 @@ export function StepActivate({
               backgroundColor: "rgba(255,255,255,0.02)",
             },
             ".Input:focus": {
-              border: "1px solid rgba(139,92,246,0.5)",
-              boxShadow: "0 0 0 3px rgba(139,92,246,0.12)",
+              border: `1px solid ${alpha(light, 0.5)}`,
+              boxShadow: `0 0 0 3px ${alpha(light, 0.12)}`,
             },
           },
         },

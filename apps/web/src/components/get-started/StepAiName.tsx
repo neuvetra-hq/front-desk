@@ -1,6 +1,7 @@
 // apps/web/src/components/get-started/StepAiName.tsx
 import { useState } from "react"
 import { DarkInput } from "./DarkInput"
+import { WizardButton } from "./WizardButton"
 import { jostLabel } from "./types"
 
 interface Props {
@@ -36,14 +37,9 @@ export function StepAiName({ value, onNext }: Props) {
         </p>
       </div>
 
-      <button
-        type="submit"
-        disabled={!name.trim()}
-        className="w-full py-3 text-[11px] font-light tracking-[.18em] uppercase text-violet-200 bg-violet-500/15 border border-violet-500/35 hover:bg-violet-500/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ fontFamily: "'Jost', sans-serif" }}
-      >
+      <WizardButton type="submit" disabled={!name.trim()}>
         Continue →
-      </button>
+      </WizardButton>
     </form>
   )
 }

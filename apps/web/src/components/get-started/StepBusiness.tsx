@@ -3,6 +3,7 @@ import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { ChevronDown } from "lucide-react"
+import { WizardButton } from "./WizardButton"
 import { useState, useRef, useEffect } from "react"
 import { DarkInput } from "./DarkInput"
 import { jostLabel } from "./types"
@@ -118,13 +119,9 @@ export function StepBusiness({ onNext }: Props) {
         )}
       </div>
 
-      <button
-        type="submit"
-        className="w-full py-3 mt-1 text-[11px] font-light tracking-[.18em] uppercase text-violet-200 bg-violet-500/15 border border-violet-500/35 hover:bg-violet-500/20 transition-colors"
-        style={{ fontFamily: "'Jost', sans-serif" }}
-      >
+      <WizardButton type="submit" className="mt-1">
         Continue →
-      </button>
+      </WizardButton>
     </form>
   )
 }

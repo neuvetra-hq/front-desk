@@ -1,13 +1,15 @@
 // apps/web/src/components/get-started/StepIdentify.tsx
 import { useState, useEffect, useRef } from "react"
 import { useRouteTransition } from "@/contexts/RouteTransitionContext"
+import { useAppMachine } from "@/pages/app/hooks/useAppMachine"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import { DarkInput } from "./DarkInput"
-import { jostLabel } from "./types"
+import { WizardButton } from "./WizardButton"
+import { jostLabel, alpha } from "./types"
 import type { IdentityData } from "./types"
 
 const schema = z.object({
@@ -34,6 +36,7 @@ export function StepIdentify({ onNext }: Props) {
   const [busy, setBusy] = useState(false)
   const firstNameRef = useRef<HTMLInputElement>(null)
   const { transitionComplete } = useRouteTransition()
+  const light = useAppMachine((s) => s.context.currentTheme.light)
   const { register, handleSubmit, formState: { errors } } = useForm<IdentityData>({
     resolver: zodResolver(schema),
   })
@@ -116,19 +119,14 @@ export function StepIdentify({ onNext }: Props) {
       >
         By continuing you agree to receive SMS messages from Front Desk by Neuvetra, including
         verification codes and transactional notifications. Reply STOP to opt out. See our{" "}
-        <a href="/terms" className="text-violet-400/50 hover:text-violet-300 transition-colors underline">Terms</a>
+        <a href="/terms" style={{ color: alpha(light, 0.5) }} className="underline">Terms</a>
         {" "}and{" "}
-        <a href="/privacy" className="text-violet-400/50 hover:text-violet-300 transition-colors underline">Privacy Policy</a>.
+        <a href="/privacy" style={{ color: alpha(light, 0.5) }} className="underline">Privacy Policy</a>.
       </p>
 
-      <button
-        type="submit"
-        disabled={busy}
-        className="w-full py-3 mt-1 text-[11px] font-light tracking-[.18em] uppercase text-violet-200 bg-violet-500/15 border border-violet-500/35 hover:bg-violet-500/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{ fontFamily: "'Jost', sans-serif" }}
-      >
+      <WizardButton type="submit" disabled={busy} className="mt-1">
         {busy ? "Sending…" : "Send verification code →"}
-      </button>
+      </WizardButton>
     </form>
   )
 }

@@ -1,6 +1,7 @@
 // apps/web/src/components/get-started/StepPersonality.tsx
-import { jost } from "./types"
+import { jost, alpha } from "./types"
 import type { AiPersonality } from "./types"
+import { useAppMachine } from "@/pages/app/hooks/useAppMachine"
 
 const OPTIONS: { value: AiPersonality; label: string; description: string }[] = [
   { value: "professional", label: "Professional", description: "Precise and courteous — focused on efficiency" },
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function StepPersonality({ value, onNext }: Props) {
+  const light = useAppMachine((s) => s.context.currentTheme.light)
   return (
     <div className="space-y-2">
       {OPTIONS.map((opt) => (
@@ -22,16 +24,12 @@ export function StepPersonality({ value, onNext }: Props) {
           key={opt.value}
           type="button"
           onClick={() => onNext(opt.value)}
-          className={[
-            "w-full text-left px-5 py-4 border transition-colors",
-            value === opt.value
-              ? "border-violet-500/50 bg-violet-500/[0.06]"
-              : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]",
-          ].join(" ")}
+          className="w-full text-left px-5 py-4 border transition-colors border-white/10 hover:border-white/20 hover:bg-white/[0.02]"
+          style={value === opt.value ? { borderColor: alpha(light, 0.5), background: alpha(light, 0.06) } : {}}
         >
           <p
             className="text-[11px] font-semibold tracking-[.1em] uppercase mb-1"
-            style={{ color: value === opt.value ? "rgba(167,139,250,0.9)" : "rgba(255,255,255,0.6)", fontFamily: "'Jost', sans-serif" }}
+            style={{ color: value === opt.value ? alpha(light, 0.9) : "rgba(255,255,255,0.6)", fontFamily: "'Jost', sans-serif" }}
           >
             {opt.label}
           </p>

@@ -1,6 +1,7 @@
 // apps/web/src/components/get-started/StepKnowledge.tsx
 import { useState } from "react"
 import { DarkTextarea } from "./DarkTextarea"
+import { WizardButton } from "./WizardButton"
 import { jost, jostLabel } from "./types"
 
 interface Props {
@@ -29,14 +30,9 @@ export function StepKnowledge({ value, onNext }: Props) {
         </p>
       </div>
 
-      <button
-        type="button"
-        onClick={() => onNext(text)}
-        className="w-full py-3 text-[11px] font-light tracking-[.18em] uppercase text-violet-200 bg-violet-500/15 border border-violet-500/35 hover:bg-violet-500/20 transition-colors"
-        style={{ fontFamily: "'Jost', sans-serif" }}
-      >
+      <WizardButton type="button" onClick={() => onNext(text)}>
         Continue →
-      </button>
+      </WizardButton>
 
       <button
         type="button"

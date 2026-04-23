@@ -2,8 +2,10 @@
 import { useState } from "react"
 import { Check } from "lucide-react"
 import { toast } from "sonner"
-import { jost } from "./types"
+import { jost, alpha } from "./types"
+import { WizardButton } from "./WizardButton"
 import { CalDAVConnectDialog } from "@/components/dashboard/CalDAVConnectDialog"
+import { useAppMachine } from "@/pages/app/hooks/useAppMachine"
 
 const API_URL = import.meta.env.VITE_API_URL as string
 
@@ -23,6 +25,7 @@ export function StepCalendar({ businessId, accessToken, onDone }: Props) {
   const [loading, setLoading] = useState(false)
   const [caldavOpen, setCaldavOpen] = useState(false)
   const [connected, setConnected] = useState(false)
+  const light = useAppMachine((s) => s.context.currentTheme.light)
 
   const handleConnect = async (provider: "google" | "outlook") => {
     setLoading(true)
@@ -46,19 +49,15 @@ export function StepCalendar({ businessId, accessToken, onDone }: Props) {
     return (
       <div className="text-center space-y-6 py-4">
         <div className="flex justify-center">
-          <div className="size-14 flex items-center justify-center border border-violet-500/30 bg-violet-500/[0.06]">
-            <Check className="size-6 text-violet-400" strokeWidth={1.5} />
+          <div
+            className="size-14 flex items-center justify-center"
+            style={{ border: `1px solid ${alpha(light, 0.3)}`, background: alpha(light, 0.06) }}
+          >
+            <Check className="size-6" strokeWidth={1.5} style={{ color: light }} />
           </div>
         </div>
         <p className="text-sm text-white/50" style={jost}>Calendar connected.</p>
-        <button
-          type="button"
-          onClick={onDone}
-          className="w-full py-3 text-[11px] font-light tracking-[.18em] uppercase text-violet-200 bg-violet-500/15 border border-violet-500/35 hover:bg-violet-500/20 transition-colors"
-          style={{ fontFamily: "'Jost', sans-serif" }}
-        >
-          Finish →
-        </button>
+        <WizardButton type="button" onClick={onDone}>Finish →</WizardButton>
       </div>
     )
   }
@@ -82,7 +81,7 @@ export function StepCalendar({ businessId, accessToken, onDone }: Props) {
         <p className="text-sm text-white/70" style={jost}>{label}</p>
         <p className="text-[10px] text-white/30" style={jost}>{description}</p>
       </div>
-      <span className="text-[10px] text-violet-400/50 shrink-0" style={jost}>Connect →</span>
+      <span className="text-[10px] shrink-0" style={{ color: alpha(light, 0.5), ...jost }}>Connect →</span>
     </button>
   )
 
@@ -92,7 +91,7 @@ export function StepCalendar({ businessId, accessToken, onDone }: Props) {
       <div className="space-y-2">
         {BENEFITS.map((b) => (
           <div key={b} className="flex items-start gap-2.5">
-            <span className="text-[9px] text-violet-400/40 mt-1 shrink-0">—</span>
+            <span className="text-[9px] mt-1 shrink-0" style={{ color: alpha(light, 0.4) }}>—</span>
             <p className="text-xs text-white/40" style={jost}>{b}</p>
           </div>
         ))}
