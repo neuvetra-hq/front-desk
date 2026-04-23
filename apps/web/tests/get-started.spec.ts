@@ -28,6 +28,6 @@ test.describe("/app/get-started wizard", () => {
   test("shows sign-in link on step 0", async ({ page }) => {
     await page.goto("/app/get-started")
     await expect(page.getByText("Already have an account?")).toBeVisible()
-    await expect(page.getByRole("link", { name: /sign in/i })).toHaveAttribute("href", "/login")
+    await expect(page.getByRole("link", { name: "Sign in", exact: true })).toHaveAttribute("href", "/login")
   })
 })

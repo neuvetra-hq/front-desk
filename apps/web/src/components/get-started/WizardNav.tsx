@@ -1,6 +1,6 @@
 // apps/web/src/components/get-started/WizardNav.tsx
 import { ChevronLeft } from "lucide-react"
-import { STEP_CONFIG, jost } from "./types"
+import { STEP_CONFIG } from "./types"
 
 interface WizardNavProps {
   currentStep: number

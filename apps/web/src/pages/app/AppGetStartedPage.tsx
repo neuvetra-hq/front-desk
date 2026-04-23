@@ -237,8 +237,15 @@ export function AppGetStartedPage() {
   }
 
   return (
-    <AppPageShell title={currentConfig.title} descriptor={currentConfig.descriptor}>
+    <AppPageShell title="Get Started" descriptor={currentConfig.descriptor}>
       <div className="max-w-sm mx-auto w-full">
+        {/* Dynamic step label — shown above the form content */}
+        <p
+          className="text-center mb-4 text-[10px] uppercase tracking-[0.25em] text-white/30"
+          style={{ fontFamily: "'Jost', sans-serif" }}
+        >
+          {currentConfig.title}
+        </p>
         <div className="overflow-hidden">
           <AnimatePresence custom={direction} mode="wait">
             <motion.div
