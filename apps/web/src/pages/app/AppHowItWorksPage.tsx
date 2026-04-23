@@ -32,6 +32,8 @@ export function AppHowItWorksPage() {
           background: 'rgba(0,0,0,0.18)',
           backdropFilter: 'blur(14px)',
           WebkitBackdropFilter: 'blur(14px)',
+          maskImage: 'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)',
         }}
       >
       <motion.ol
@@ -95,7 +97,7 @@ export function AppHowItWorksPage() {
                   fontSize: '0.65rem',
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase' as const,
-                  marginTop: '2px',
+                  marginTop: '10px',
                   display: 'block',
                 }}
               >
