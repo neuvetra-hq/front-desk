@@ -1,5 +1,6 @@
 import type { Session } from "@supabase/supabase-js"
 import type { AnyActorRef } from "xstate"
+import type { SectionTheme } from "@/data/section-themes"
 
 export interface AppUserProfile {
   id: string
@@ -24,6 +25,7 @@ export interface AppContext {
   profile: AppUserProfile | null
   business: AppBusiness | null
   currentRoute: string
+  currentTheme: SectionTheme
   spiritActorRef: AnyActorRef | null
 }
 
