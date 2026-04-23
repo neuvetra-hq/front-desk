@@ -65,8 +65,8 @@ export function AppPricingPage() {
               key={tier.name}
               className={`plan-card relative flex flex-col p-7 ${
                 tier.popular
-                  ? "order-first md:order-none bg-violet-500/[0.06] backdrop-blur-md"
-                  : "bg-white/[0.02] backdrop-blur-md"
+                  ? "order-first md:order-none bg-violet-500/[0.06] backdrop-blur-xl"
+                  : "bg-white/[0.01] backdrop-blur-xl"
               }`}
             >
               <p className={`text-[11px] font-semibold tracking-[.14em] uppercase mb-5 ${
@@ -126,7 +126,7 @@ export function AppPricingPage() {
       </div>
 
       {/* Enterprise bar */}
-      <div className="mt-4 flex flex-col gap-4 border border-white/6 bg-white/[0.01] px-8 py-5 max-w-4xl mx-auto md:flex-row md:items-center md:justify-between">
+      <div className="mt-4 flex flex-col gap-4 bg-white/[0.01] px-8 py-5 max-w-4xl mx-auto md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-[10px] font-semibold tracking-[.14em] uppercase text-white/30 mb-1">
             Enterprise
