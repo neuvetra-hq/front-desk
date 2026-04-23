@@ -1,6 +1,22 @@
 import { useState, useRef, useLayoutEffect } from "react"
+import { motion } from "framer-motion"
 import { AppPageShell } from "./AppPageShell"
 import { PRICING_TIERS } from "@/contexts/constants/landing"
+
+const containerVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.15, delayChildren: 0.1 } },
+}
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 24 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" as const } },
+}
+
+const fadeVariants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" as const } },
+}
 
 export function AppPricingPage() {
   const [annual, setAnnual] = useState(false)
@@ -55,14 +71,20 @@ export function AppPricingPage() {
       </div>
 
       {/* Cards */}
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-3 items-stretch max-w-4xl mx-auto">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="grid gap-4 grid-cols-1 md:grid-cols-3 items-stretch max-w-4xl mx-auto"
+      >
         {PRICING_TIERS.map((tier) => {
           const price = annual ? tier.annualPrice : tier.monthlyPrice
           const overageCents = Math.round(parseFloat(tier.overageRate) * 100)
 
           return (
-            <div
+            <motion.div
               key={tier.name}
+              variants={cardVariants}
               className={`plan-card relative flex flex-col p-7 ${
                 tier.popular
                   ? "order-first md:order-none bg-violet-500/[0.06] backdrop-blur-xl"
@@ -120,13 +142,19 @@ export function AppPricingPage() {
                   {tier.goodFor}
                 </p>
               </div>
-            </div>
+            </motion.div>
           )
         })}
-      </div>
+      </motion.div>
 
       {/* Enterprise bar */}
-      <div className="mt-4 flex flex-col gap-4 bg-white/[0.01] px-8 py-5 max-w-4xl mx-auto md:flex-row md:items-center md:justify-between">
+      <motion.div
+        variants={fadeVariants}
+        initial="hidden"
+        animate="show"
+        transition={{ delay: 0.55 }}
+        className="mt-4 flex flex-col gap-4 bg-white/[0.01] px-8 py-5 max-w-4xl mx-auto md:flex-row md:items-center md:justify-between"
+      >
         <div>
           <p className="text-[10px] font-semibold tracking-[.14em] uppercase text-white/30 mb-1">
             Enterprise
@@ -144,17 +172,23 @@ export function AppPricingPage() {
         >
           Contact us
         </a>
-      </div>
+      </motion.div>
 
       {/* CTA */}
-      <div className="mt-10 flex justify-center">
+      <motion.div
+        variants={fadeVariants}
+        initial="hidden"
+        animate="show"
+        transition={{ delay: 0.7 }}
+        className="mt-10 flex justify-center"
+      >
         <a
           href="/signup"
           className="px-8 py-3.5 text-[11px] font-light tracking-[.18em] uppercase text-violet-200 bg-violet-500/15 border border-violet-500/35 hover:bg-violet-500/20 transition-colors"
         >
           Start free trial
         </a>
-      </div>
+      </motion.div>
 
     </AppPageShell>
   )
