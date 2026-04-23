@@ -279,7 +279,7 @@ export const PRICING_TIERS = [
     minutes: 1000,
     overageRate: "0.16",
     popular: false,
-    goodFor: "High-volume businesses that want personal AI setup, dedicated training, and priority support.",
+    goodFor: "High-volume businesses that want hands-on setup, training, and priority support.",
     features: [
       "1,000 minutes / month (~500 calls)",
       "1 local phone number",
