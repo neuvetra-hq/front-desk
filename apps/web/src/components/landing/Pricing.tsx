@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useLayoutEffect } from "react"
 import { Container } from "@/components/layout/Container"
 import { PRICING_TIERS } from "@/contexts/constants/landing"
 
@@ -10,7 +10,7 @@ export function Pricing() {
   const annualRef  = useRef<HTMLButtonElement>(null)
   const [indicator, setIndicator] = useState({ left: 0, width: 0 })
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const tab = annual ? annualRef.current : monthlyRef.current
     if (!tab) return
     setIndicator({ left: tab.offsetLeft, width: tab.offsetWidth })
@@ -36,6 +36,7 @@ export function Pricing() {
           <div className="mt-8 flex justify-center">
             <div className="relative inline-flex items-center">
               <button
+                type="button"
                 ref={monthlyRef}
                 onClick={() => setAnnual(false)}
                 className={`relative z-10 px-5 py-2.5 text-[11px] font-light tracking-[.18em] uppercase transition-colors cursor-pointer bg-transparent border-0 ${
@@ -45,6 +46,7 @@ export function Pricing() {
                 Monthly
               </button>
               <button
+                type="button"
                 ref={annualRef}
                 onClick={() => setAnnual(true)}
                 className={`relative z-10 px-5 py-2.5 text-[11px] font-light tracking-[.18em] uppercase transition-colors cursor-pointer bg-transparent border-0 ${
@@ -98,8 +100,7 @@ export function Pricing() {
                   }`}>
                     $
                   </span>
-                  <span className="text-[52px] font-light tracking-tight text-background leading-none"
-                    style={{ transition: "opacity 150ms" }}>
+                  <span className="text-[52px] font-light tracking-tight text-background leading-none">
                     {price}
                   </span>
                   <span className={`text-xs font-light self-end pb-1.5 ${
