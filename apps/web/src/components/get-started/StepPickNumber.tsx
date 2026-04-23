@@ -1,7 +1,7 @@
 // apps/web/src/components/get-started/StepPickNumber.tsx
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
-import { jost, jostLabel } from "./types"
+import { jost } from "./types"
 
 const API_URL = import.meta.env.VITE_API_URL as string
 
