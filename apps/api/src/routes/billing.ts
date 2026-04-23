@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia"
 import { createClient } from "@supabase/supabase-js"
-import { db, businesses, businessMembers, users, calls } from "@frontdesk/database"
+import { db, businesses, businessMembers, users, calls, knowledgeBase } from "@frontdesk/database"
 import { eq, and, gte, lte, sql } from "drizzle-orm"
 import { stripe, PLANS, type PlanId } from "../services/stripe"
 import { provisionNumber, releaseNumber } from "../services/twilio"
@@ -86,7 +86,11 @@ export const billingRoutes = new Elysia({ prefix: "/billing" })
    * money is charged / no number is purchased.
    */
   .post("/activate", async ({ body }) => {
-    const { userId, businessName, businessType, phoneNumber, planId, paymentMethodId, stripeCustomerId } = body
+    const {
+      userId, businessName, businessType, phoneNumber, planId,
+      paymentMethodId, stripeCustomerId,
+      aiName, aiPersonality, aiVoiceGender, aiKbSeed,
+    } = body
 
     const plan = PLANS[planId as PlanId]
     if (!plan) return { error: "Invalid plan" }
@@ -148,6 +152,10 @@ export const billingRoutes = new Elysia({ prefix: "/billing" })
       }
 
       // 5. Mark business as active with all IDs
+      const aiConfigData = (aiName || aiPersonality || aiVoiceGender)
+        ? { name: aiName ?? null, personality: aiPersonality ?? null, voiceGender: aiVoiceGender ?? null }
+        : null
+
       await db
         .update(businesses)
         .set({
@@ -156,9 +164,20 @@ export const billingRoutes = new Elysia({ prefix: "/billing" })
           twilioNumberSid: purchased.sid,
           stripeSubscriptionId: subscription.id,
           stripePlanId: plan.flatPriceId,
+          ...(aiConfigData ? { aiConfig: aiConfigData } : {}),
           updatedAt: new Date(),
         })
         .where(eq(businesses.id, business.id))
+
+      if (aiKbSeed?.trim()) {
+        await db.insert(knowledgeBase).values({
+          businessId: business.id,
+          question: "About my business",
+          answer: aiKbSeed.trim(),
+          category: "General",
+          sortOrder: 0,
+        })
+      }
 
       console.log(`✅ Activated business ${business.id} — Twilio: ${purchased.phoneNumber}, Stripe: ${subscription.id}`)
 
@@ -186,6 +205,10 @@ export const billingRoutes = new Elysia({ prefix: "/billing" })
       planId: t.Union([t.Literal("starter"), t.Literal("growth"), t.Literal("pro")]),
       paymentMethodId: t.String(),
       stripeCustomerId: t.String(),
+      aiName: t.Optional(t.String()),
+      aiPersonality: t.Optional(t.String()),
+      aiVoiceGender: t.Optional(t.String()),
+      aiKbSeed: t.Optional(t.String()),
     }),
   })
 
