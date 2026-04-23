@@ -2,6 +2,8 @@ import { motion } from "framer-motion"
 import { AppPageShell } from "./AppPageShell"
 import { HOW_IT_WORKS } from "@/contexts/constants/landing"
 
+const BRAND_GREEN_RGB = '61,158,96'
+
 const containerVariants = {
   hidden: {},
   show: {
@@ -43,7 +45,7 @@ export function AppHowItWorksPage() {
             <span
               className="shrink-0 w-14 text-right"
               style={{
-                color: `rgba(61,158,96,${0.22 - index * 0.04})`,
+                color: `rgba(${BRAND_GREEN_RGB},${0.22 - index * 0.04})`,
                 fontSize: '3rem',
                 fontFamily: "'Jost', sans-serif",
                 fontWeight: 200,
@@ -80,7 +82,7 @@ export function AppHowItWorksPage() {
               </p>
               <span
                 style={{
-                  color: 'rgba(61,158,96,0.75)',
+                  color: `rgba(${BRAND_GREEN_RGB},0.75)`,
                   fontSize: '0.65rem',
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase' as const,
