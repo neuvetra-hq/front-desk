@@ -12,10 +12,10 @@ import { AppMobileMenu } from "./AppMobileMenu"
 const BAR_DELAYS = ["0s", "0.2s", "0.4s", "0.2s"]
 
 const SLIDE = {
-  initial: { y: "100vh" },
-  animate: { y: 0 },
-  exit:    { y: "100vh" },
-  transition: { duration: 0.55, ease: [0.76, 0, 0.24, 1] as const },
+  initial:    { y: "100vh" },
+  animate:    { y: 0 },
+  exit:       { opacity: 0 },   // fade out — sliding down made the nav appear to move with the page
+  transition: { duration: 0.45, ease: [0.76, 0, 0.24, 1] as const },
 }
 
 // Form/wizard routes use a fade instead of the y-slide: the slide reveals
@@ -38,18 +38,11 @@ function AnimatedOutlet() {
   const location = useLocation()
   const outlet = useOutlet()
 
-  // prevPathnameRef holds the pathname from the previous render — it's
-  // updated in useEffect (after render), so during the render that fires on a
-  // navigation it still contains the OLD pathname. We use it to pick FADE
-  // when either the source or destination is a form route, ensuring both the
-  // outgoing exit and the incoming enter use the same fade variant.
-  const prevPathnameRef = useRef(location.pathname)
-  useEffect(() => { prevPathnameRef.current = location.pathname })
-
-  const anim =
-    FADE_ROUTES.has(location.pathname) || FADE_ROUTES.has(prevPathnameRef.current)
-      ? FADE
-      : SLIDE
+  // Form/wizard routes (get-started, sign-in) fade in.
+  // All other routes slide up from below.
+  // Note: each motion.div's EXIT uses the `exit` prop from its OWN last render,
+  // so get-started will always fade out regardless of the destination route.
+  const anim = FADE_ROUTES.has(location.pathname) ? FADE : SLIDE
 
   return (
     <AnimatePresence mode="wait">
