@@ -8,6 +8,9 @@ node_modules/
 # Turbo
 .turbo/
 
+# Git worktrees
+.worktrees/
+
 # env files
 .env
 .env.*
@@ -59,4 +62,4 @@ yarn-error.log*
 **/*.tgz
 **/*.log
 package-lock.json
-**/*.bun
+**/*.bun.worktrees/
