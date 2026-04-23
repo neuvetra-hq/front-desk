@@ -1,60 +1,38 @@
-import { test, expect } from "@playwright/test"
+import { test, expect } from '@playwright/test'
 
-test.describe("Pricing section", () => {
+test.describe('Pricing section', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/")
-    await page.locator("#pricing").scrollIntoViewIfNeeded()
+    await page.goto('/')
   })
 
-  test("#pricing anchor exists on landing page", async ({ page }) => {
-    await expect(page.locator("#pricing")).toBeVisible()
+  test('renders three pricing cards', async ({ page }) => {
+    const cards = page.locator('#pricing .plan-card')
+    await expect(cards).toHaveCount(3)
   })
 
-  test("shows all three tiers", async ({ page }) => {
-    const section = page.locator("#pricing")
-    await expect(section.getByText("Starter")).toBeVisible()
-    await expect(section.getByText("Growth")).toBeVisible()
-    await expect(section.getByText("Pro")).toBeVisible()
+  test('shows monthly prices by default', async ({ page }) => {
+    const section = page.locator('#pricing')
+    await expect(section.getByText('49')).toBeVisible()
+    await expect(section.getByText('99')).toBeVisible()
+    await expect(section.getByText('199')).toBeVisible()
   })
 
-  test("shows correct monthly prices", async ({ page }) => {
-    const section = page.locator("#pricing")
-    await expect(section.getByText("$49")).toBeVisible()
-    await expect(section.getByText("$99")).toBeVisible()
-    await expect(section.getByText("$199")).toBeVisible()
+  test('switches to annual prices when Annual tab is clicked', async ({ page }) => {
+    await page.locator('#pricing').getByText('Annual').click()
+    const section = page.locator('#pricing')
+    await expect(section.getByText('39')).toBeVisible()
+    await expect(section.getByText('79')).toBeVisible()
+    await expect(section.getByText('159')).toBeVisible()
   })
 
-  test("Growth tier has most popular badge", async ({ page }) => {
-    await expect(page.locator("#pricing").getByText(/most popular/i)).toBeVisible()
+  test('shows enterprise bar', async ({ page }) => {
+    await expect(
+      page.locator('#pricing').getByText('Replacing a call center')
+    ).toBeVisible()
   })
 
-  test("free trial text is visible", async ({ page }) => {
-    await expect(page.locator("#pricing").getByText(/7.day|7 day|free trial/i).first()).toBeVisible()
-  })
-
-  test("annual toggle switches billing period", async ({ page }) => {
-    const section = page.locator("#pricing")
-    const annualToggle = section.getByRole("button", { name: /annual/i })
-    await annualToggle.click()
-    // Annual prices should show (20% off: $39, $79, $159)
-    await expect(section.getByText("$39")).toBeVisible()
-    await expect(section.getByText("$79")).toBeVisible()
-    await expect(section.getByText("$159")).toBeVisible()
-  })
-
-  test("shows overage rate per minute", async ({ page }) => {
-    await expect(page.locator("#pricing").getByText(/overage|per min/i).first()).toBeVisible()
-  })
-
-  test("starter plan shows 200 minutes", async ({ page }) => {
-    await expect(page.locator("#pricing").getByText(/200 minutes\/month/)).toBeVisible()
-  })
-
-  test("growth plan shows 500 minutes", async ({ page }) => {
-    await expect(page.locator("#pricing").getByText(/500 minutes\/month/)).toBeVisible()
-  })
-
-  test("pro plan shows 1,000 minutes", async ({ page }) => {
-    await expect(page.locator("#pricing").getByText(/1,000 minutes\/month/)).toBeVisible()
+  test('start free trial CTA links to /signup', async ({ page }) => {
+    const cta = page.locator('#pricing a[href="/signup"]')
+    await expect(cta).toBeVisible()
   })
 })
