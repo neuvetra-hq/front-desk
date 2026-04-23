@@ -71,7 +71,7 @@ export function AppHowItWorksPage() {
               </h3>
               <p
                 style={{
-                  color: 'rgba(255,255,255,0.38)',
+                  color: 'rgba(255,255,255,0.62)',
                   fontSize: '0.75rem',
                   lineHeight: '1.75',
                   fontWeight: 300,
