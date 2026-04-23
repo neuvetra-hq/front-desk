@@ -1,4 +1,6 @@
 // apps/web/src/pages/app/AppPageShell.tsx
+import { useAppMachine } from "@/pages/app/hooks/useAppMachine"
+
 interface AppPageShellProps {
   title: string
   descriptor: string
@@ -6,6 +8,8 @@ interface AppPageShellProps {
 }
 
 export function AppPageShell({ title, descriptor, children }: AppPageShellProps) {
+  const themeLight = useAppMachine((s) => s.context.currentTheme.light)
+
   return (
     <div className="min-h-full flex flex-col pb-32 select-none">
       {/* Ghost title — upper zone, clears top controls (mute button / hamburger) */}
@@ -13,7 +17,7 @@ export function AppPageShell({ title, descriptor, children }: AppPageShellProps)
         <h1
           className="uppercase leading-none pointer-events-none"
           style={{
-            color: 'rgba(102, 138, 147, 0.2)',
+            color: themeLight,
             fontSize: 'clamp(2.5rem, 8vw, 7rem)',
             letterSpacing: '0.25em',
             fontFamily: "'Jost', sans-serif",
