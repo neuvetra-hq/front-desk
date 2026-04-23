@@ -26,11 +26,19 @@ const itemVariants = {
 export function AppHowItWorksPage() {
   return (
     <AppPageShell title="How It Works" descriptor="Your AI. Ready in minutes.">
+      <div
+        className="max-w-md mx-auto w-full px-5 py-1"
+        style={{
+          background: 'rgba(0,0,0,0.18)',
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
+        }}
+      >
       <motion.ol
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="flex flex-col max-w-md mx-auto w-full"
+        className="flex flex-col w-full"
       >
         {HOW_IT_WORKS.map((step, index) => (
           <motion.li
@@ -45,7 +53,7 @@ export function AppHowItWorksPage() {
             <span
               className="shrink-0 w-14 text-right"
               style={{
-                color: `rgba(${BRAND_GREEN_RGB},${0.22 - index * 0.04})`,
+                color: `rgba(${BRAND_GREEN_RGB},${0.45 - index * 0.06})`,
                 fontSize: '3rem',
                 fontFamily: "'Jost', sans-serif",
                 fontWeight: 200,
@@ -61,7 +69,7 @@ export function AppHowItWorksPage() {
                 className="uppercase"
                 style={{
                   color: 'rgba(255,255,255,0.8)',
-                  fontSize: '0.75rem',
+                  fontSize: '0.85rem',
                   letterSpacing: '0.18em',
                   fontFamily: "'Jost', sans-serif",
                   fontWeight: 300,
@@ -71,7 +79,7 @@ export function AppHowItWorksPage() {
               </h3>
               <p
                 style={{
-                  color: 'rgba(255,255,255,0.62)',
+                  color: 'rgba(255,255,255,0.42)',
                   fontSize: '0.75rem',
                   lineHeight: '1.75',
                   fontWeight: 300,
@@ -96,6 +104,7 @@ export function AppHowItWorksPage() {
           </motion.li>
         ))}
       </motion.ol>
+      </div>
     </AppPageShell>
   )
 }

@@ -15,7 +15,7 @@ export function AppPricingPage() {
   }, [annual])
 
   return (
-    <AppPageShell title="Pricing" descriptor="Starter · Growth · Pro">
+    <AppPageShell title="Pricing" descriptor="From $49 / month · 7-day free trial · Cancel any time">
 
       {/* Billing toggle */}
       <div className="flex justify-center mb-10">
@@ -65,8 +65,8 @@ export function AppPricingPage() {
               key={tier.name}
               className={`plan-card relative flex flex-col p-7 ${
                 tier.popular
-                  ? "order-first md:order-none border border-violet-500/20 bg-violet-500/[0.03]"
-                  : "border border-white/10 bg-white/[0.015]"
+                  ? "order-first md:order-none border border-violet-500/20 bg-violet-500/[0.03] backdrop-blur-md"
+                  : "border border-white/10 bg-white/[0.015] backdrop-blur-md"
               }`}
             >
               <p className={`text-[11px] font-semibold tracking-[.14em] uppercase mb-5 ${

@@ -8,7 +8,7 @@ export const HERO = {
   badge: "AI Receptionist · From $49/mo",
   headline: "Every call answered.\nEvery appointment booked.\nZero revenue left behind.",
   subheadline:
-    "The average small business misses 1 in 5 inbound calls — each one a potential customer who hangs up and calls someone else. Front Desk answers instantly, books the appointment, and texts you a summary. 24/7, in any language, for a fraction of the cost of a receptionist.",
+    "The average small business misses 1 in 5 inbound calls. Each one is a potential customer who hangs up and calls someone else. Front Desk answers instantly, books the appointment, and texts you a summary. 24/7, in any language, for a fraction of the cost of a receptionist.",
   primaryCTA: "Get started free →",
   secondaryCTA: "See how it works",
   trust: "7-day free trial · Your card won't be charged until day 8 · Live in 10 minutes",
@@ -22,7 +22,7 @@ export const PRODUCTS = [
     color: "indigo",
     icon: "🎙️",
     description:
-      "Your AI receptionist. Answers every call 24/7, handles FAQs, books appointments, and sends SMS alerts — so you never miss a customer.",
+      "Your AI receptionist. Answers every call 24/7, handles FAQs, books appointments, and sends SMS alerts, so you never miss a customer.",
     cta: "Get started",
     href: "/signup",
   },
@@ -55,7 +55,7 @@ export const PRODUCTS = [
     color: "amber",
     icon: "💬",
     description:
-      "Automated SMS follow-ups, appointment reminders, and re-engagement campaigns — all personalized by AI.",
+      "Automated SMS follow-ups, appointment reminders, and re-engagement campaigns, all personalized by AI.",
     cta: "Join waitlist",
     href: "#",
   },
@@ -78,7 +78,7 @@ export const FRONT_DESK_FEATURES = [
     icon: "📆",
     title: "Books appointments",
     description:
-      "Callers can schedule, reschedule, or cancel — fully automated and synced to your calendar in real time.",
+      "Callers can schedule, reschedule, or cancel. Fully automated and synced to your calendar in real time.",
   },
   {
     icon: "🌐",
@@ -105,28 +105,28 @@ export const HOW_IT_WORKS = [
     step: "01",
     title: "Start with your phone number",
     description:
-      "That's all we need to get going. Verify with a one-time code — your free trial begins immediately. No credit card, no commitment, no forms to fill out.",
+      "That's all we need to get going. Verify with a one-time code and your free trial begins immediately. No credit card, no commitment, no forms to fill out.",
     callout: "7-day free trial · 100 free minutes · no card required",
   },
   {
     step: "02",
     title: "Design your AI",
     description:
-      "Give your AI a name. Choose its voice — the one that represents your business. Then train it: your services, your pricing, your hours, exactly how you like things handled. This is your AI — built by you, for you.",
-    callout: "Your name, your voice, your rules — edit any time",
+      "Give your AI a name. Choose its voice, the one that represents your business. Then train it on your services, your pricing, your hours, exactly how you like things handled. This is your AI, built by you, for you.",
+    callout: "Your name, your voice, your rules. Edit any time.",
   },
   {
     step: "03",
     title: "Pick your AI's number",
     description:
-      "Choose a real local number for your AI — one you can advertise, put on your website, or hand to clients directly. Forward missed calls from your existing number, or let clients call your AI's number straight. Either way, your current number stays exactly as it is.",
+      "Choose a real local number for your AI, one you can advertise, put on your website, or hand to clients directly. Forward missed calls from your existing number, or let clients call your AI's number straight. Either way, your current number stays exactly as it is.",
     callout: "Keep your existing number · your AI gets its own",
   },
   {
     step: "04",
     title: "Call it. Then let it work.",
     description:
-      "Dial your AI's number before you go live — hear it handle a call exactly the way your clients will. When you're satisfied, it answers every call, books every appointment, and texts you instantly when something needs your attention. In English and Spanish, around the clock.",
+      "Dial your AI's number before you go live and hear it handle a call exactly the way your clients will. When you're satisfied, it answers every call, books every appointment, and texts you instantly when something needs your attention. In English and Spanish, around the clock.",
     callout: "24/7 · English & Spanish · instant SMS alerts",
   },
 ]
@@ -146,7 +146,7 @@ export const WHY_NEUVETRA = [
   {
     title: "Enterprise AI, small business price",
     description:
-      "We use the same AI models powering Fortune 500 companies — delivered at a price point that works for a 5-person team.",
+      "We use the same AI models powering Fortune 500 companies, delivered at a price point that works for a 5-person team.",
   },
   {
     title: "You stay in control",
@@ -209,7 +209,7 @@ export const TESTIMONIALS = [
   },
   {
     quote:
-      "I run a small crew — I can't have someone sitting by the phone all day. Neuvetra Front Desk handles it while we're on jobs. Customers get a real answer, not voicemail.",
+      "I run a small crew and can't have someone sitting by the phone all day. Neuvetra Front Desk handles it while we're on jobs. Customers get a real answer, not voicemail.",
     name: "Marcus T.",
     business: "T&R Plumbing",
     stars: 5,
@@ -299,12 +299,12 @@ export const FAQ_ITEMS = [
   {
     question: "Will my callers know they're talking to AI?",
     answer:
-      "Front Desk sounds natural and professional. Most callers don't ask — and if they do, it's honest about being an AI assistant. You control the name and personality.",
+      "Front Desk sounds natural and professional. Most callers don't ask, and if they do, it's honest about being an AI assistant. You control the name and personality.",
   },
   {
     question: "Do I need to change my phone number?",
     answer:
-      "No. You keep your existing number. You simply set up call forwarding for missed or after-hours calls — takes about 2 minutes with your carrier.",
+      "No. You keep your existing number. You simply set up call forwarding for missed or after-hours calls. It takes about 2 minutes with your carrier.",
   },
   {
     question: "What if it gets something wrong?",
@@ -314,12 +314,12 @@ export const FAQ_ITEMS = [
   {
     question: "What languages does it support?",
     answer:
-      "Front Desk automatically detects the caller's language and responds in kind — no extra setup required. Particularly useful for businesses serving multilingual communities.",
+      "Front Desk automatically detects the caller's language and responds in kind. No extra setup required. Particularly useful for businesses serving multilingual communities.",
   },
   {
     question: "Can I customize what it says?",
     answer:
-      "Yes — you train it on your business: services, pricing, hours, FAQs, and policies. The more you teach it, the better it performs. You can update it any time from your dashboard.",
+      "Yes, you train it on your business: services, pricing, hours, FAQs, and policies. The more you teach it, the better it performs. You can update it any time from your dashboard.",
   },
 ]
 
