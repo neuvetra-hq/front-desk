@@ -15,7 +15,7 @@ export function StepKnowledge({ value, onNext }: Props) {
   return (
     <div className="space-y-4">
       <div className="space-y-1.5">
-        <label className="block text-[10px] uppercase text-white/30" style={jostLabel}>
+        <label className="block text-[12px] uppercase text-white/95" style={jostLabel}>
           About your business
         </label>
         <DarkTextarea

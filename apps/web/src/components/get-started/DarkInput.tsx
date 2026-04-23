@@ -15,9 +15,9 @@ export const DarkInput = forwardRef<HTMLInputElement, DarkInputProps>(
       <input
         ref={ref}
         className={[
-          "w-full bg-white/[0.03] border px-4 py-3 text-sm text-white",
-          "placeholder:text-white/25 focus:outline-none transition-colors",
-          hasError ? "border-red-400/40" : "border-white/10",
+          "w-full bg-white/[0.07] border px-4 py-3 text-sm text-white",
+          "placeholder:text-white/35 focus:outline-none transition-colors",
+          hasError ? "border-red-400/50" : "border-white/20",
           className,
         ].join(" ")}
         style={{

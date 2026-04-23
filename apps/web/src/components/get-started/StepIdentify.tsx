@@ -1,7 +1,6 @@
 // apps/web/src/components/get-started/StepIdentify.tsx
 import { useState, useEffect, useRef } from "react"
 import { useRouteTransition } from "@/contexts/RouteTransitionContext"
-import { useAppMachine } from "@/pages/app/hooks/useAppMachine"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -9,7 +8,7 @@ import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import { DarkInput } from "./DarkInput"
 import { WizardButton } from "./WizardButton"
-import { jostLabel, alpha } from "./types"
+import { jostLabel } from "./types"
 import type { IdentityData } from "./types"
 
 const schema = z.object({
@@ -36,7 +35,6 @@ export function StepIdentify({ onNext }: Props) {
   const [busy, setBusy] = useState(false)
   const firstNameRef = useRef<HTMLInputElement>(null)
   const { transitionComplete } = useRouteTransition()
-  const light = useAppMachine((s) => s.context.currentTheme.light)
   const { register, handleSubmit, formState: { errors } } = useForm<IdentityData>({
     resolver: zodResolver(schema),
   })
@@ -63,7 +61,7 @@ export function StepIdentify({ onNext }: Props) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <label className="block text-[10px] uppercase text-white/30" style={jostLabel}>
+          <label className="block text-[12px] uppercase text-white/95" style={jostLabel}>
             First name
           </label>
           <DarkInput
@@ -82,7 +80,7 @@ export function StepIdentify({ onNext }: Props) {
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-[10px] uppercase text-white/30" style={jostLabel}>
+          <label className="block text-[12px] uppercase text-white/95" style={jostLabel}>
             Last name
           </label>
           <DarkInput
@@ -98,7 +96,7 @@ export function StepIdentify({ onNext }: Props) {
       </div>
 
       <div className="space-y-1.5">
-        <label className="block text-[10px] uppercase text-white/30" style={jostLabel}>
+        <label className="block text-[12px] uppercase text-white/95" style={jostLabel}>
           Mobile number
         </label>
         <DarkInput
@@ -113,20 +111,20 @@ export function StepIdentify({ onNext }: Props) {
         )}
       </div>
 
+      <WizardButton type="submit" disabled={busy} className="mt-1">
+        {busy ? "Sending…" : "Send verification code"}
+      </WizardButton>
+
       <p
-        className="text-[10px] text-white/18 leading-relaxed pt-1"
+        className="text-[12px] text-white/60 leading-relaxed pt-2"
         style={{ fontFamily: "'Jost', sans-serif" }}
       >
-        By continuing you agree to receive SMS messages from Front Desk by Neuvetra, including
-        verification codes and transactional notifications. Reply STOP to opt out. See our{" "}
-        <a href="/terms" style={{ color: alpha(light, 0.5) }} className="underline">Terms</a>
+        By clicking "Send verification code," you agree to receive SMS messages from Front Desk by Neuvetra, including a one-time verification code and transactional notifications such as appointment bookings, cancellations, rescheduling, callback requests, and emergency alerts related to your account. Message frequency varies based on usage. Message and data rates may apply. Reply STOP to opt out or HELP for help. For support, contact{" "}
+        <a href="mailto:support@neuvetra.com" className="text-blue-400/80 hover:text-blue-300 transition-colors">support@neuvetra.com</a>. See our{" "}
+        <a href="/terms" className="text-blue-400/80 hover:text-blue-300 transition-colors">Terms of Service</a>
         {" "}and{" "}
-        <a href="/privacy" style={{ color: alpha(light, 0.5) }} className="underline">Privacy Policy</a>.
+        <a href="/privacy" className="text-blue-400/80 hover:text-blue-300 transition-colors">Privacy Policy</a>.
       </p>
-
-      <WizardButton type="submit" disabled={busy} className="mt-1">
-        {busy ? "Sending…" : "Send verification code →"}
-      </WizardButton>
     </form>
   )
 }

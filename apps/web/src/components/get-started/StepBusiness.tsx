@@ -5,6 +5,7 @@ import { z } from "zod"
 import { ChevronDown } from "lucide-react"
 import { WizardButton } from "./WizardButton"
 import { useState, useRef, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { DarkInput } from "./DarkInput"
 import { jostLabel } from "./types"
 import type { BusinessData } from "./types"
@@ -38,13 +39,24 @@ export function StepBusiness({ onNext }: Props) {
   })
   const [open, setOpen] = useState(false)
   const [selectedLabel, setSelectedLabel] = useState("")
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [dropPos, setDropPos] = useState<{ top: number; left: number; width: number } | null>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const portalRef = useRef<HTMLDivElement>(null)
+
+  const handleToggle = () => {
+    if (!open && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setDropPos({ top: rect.bottom + 2, left: rect.left, width: rect.width })
+    }
+    setOpen((o) => !o)
+  }
 
   useEffect(() => {
     const handleOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
+      const target = e.target as Node
+      const inButton = buttonRef.current?.contains(target)
+      const inPortal = portalRef.current?.contains(target)
+      if (!inButton && !inPortal) setOpen(false)
     }
     document.addEventListener("mousedown", handleOutside)
     return () => document.removeEventListener("mousedown", handleOutside)
@@ -53,7 +65,7 @@ export function StepBusiness({ onNext }: Props) {
   return (
     <form onSubmit={handleSubmit(onNext)} className="space-y-3">
       <div className="space-y-1.5">
-        <label className="block text-[10px] uppercase text-white/30" style={jostLabel}>
+        <label className="block text-[12px] uppercase text-white/95" style={jostLabel}>
           Business name
         </label>
         <DarkInput
@@ -67,33 +79,44 @@ export function StepBusiness({ onNext }: Props) {
       </div>
 
       <div className="space-y-1.5">
-        <label className="block text-[10px] uppercase text-white/30" style={jostLabel}>
+        <label className="block text-[12px] uppercase text-white/95" style={jostLabel}>
           Business type
         </label>
         <Controller
           control={control}
           name="businessType"
           render={({ field }) => (
-            <div className="relative" ref={dropdownRef}>
+            <>
               <button
+                ref={buttonRef}
                 type="button"
-                onClick={() => setOpen((o) => !o)}
+                onClick={handleToggle}
                 className={[
-                  "w-full bg-white/[0.03] border px-4 py-3 text-sm text-left flex items-center justify-between transition-colors",
+                  "w-full bg-white/[0.07] border px-4 py-3 text-sm text-left flex items-center justify-between transition-colors",
                   errors.businessType
-                    ? "border-red-400/40"
-                    : "border-white/10 hover:border-white/20",
+                    ? "border-red-400/50"
+                    : "border-white/20 hover:border-white/35",
                 ].join(" ")}
                 style={{ fontFamily: "'Jost', sans-serif" }}
               >
-                <span className={selectedLabel ? "text-white" : "text-white/25"}>
+                <span className={selectedLabel ? "text-white" : "text-white/35"}>
                   {selectedLabel || "Select a type…"}
                 </span>
-                <ChevronDown className="size-4 text-white/30 shrink-0" strokeWidth={1.5} />
+                <ChevronDown className="size-4 text-white/95 shrink-0" strokeWidth={1.5} />
               </button>
 
-              {open && (
-                <div className="absolute top-full left-0 right-0 z-20 border border-white/10 bg-[#0f0f10] mt-0.5 max-h-52 overflow-y-auto">
+              {open && dropPos && createPortal(
+                <div
+                  ref={portalRef}
+                  style={{
+                    position: "fixed",
+                    top: dropPos.top,
+                    left: dropPos.left,
+                    width: dropPos.width,
+                    zIndex: 9999,
+                  }}
+                  className="border border-white/20 bg-[#0f0f10] max-h-64 overflow-y-auto"
+                >
                   {BUSINESS_TYPES.map(([value, label]) => (
                     <button
                       key={value}
@@ -103,15 +126,16 @@ export function StepBusiness({ onNext }: Props) {
                         setSelectedLabel(label)
                         setOpen(false)
                       }}
-                      className="w-full px-4 py-3 text-sm text-left text-white/60 hover:text-white hover:bg-white/[0.03] transition-colors"
+                      className="w-full px-4 py-3 text-sm text-left text-white/95 hover:text-white hover:bg-white/[0.03] transition-colors"
                       style={{ fontFamily: "'Jost', sans-serif" }}
                     >
                       {label}
                     </button>
                   ))}
-                </div>
+                </div>,
+                document.body
               )}
-            </div>
+            </>
           )}
         />
         {errors.businessType && (

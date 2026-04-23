@@ -238,15 +238,34 @@ export function AppGetStartedPage() {
 
   return (
     <AppPageShell title="Get Started" descriptor={currentConfig.descriptor}>
-      <div className="max-w-sm mx-auto w-full">
-        {/* Dynamic step label — shown above the form content */}
+      <div
+        className="max-w-sm mx-auto w-full px-6 pt-4 pb-8 -mt-6"
+        style={{
+          background: 'rgba(0,0,0,0.22)',
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
+          maskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 5%, black 100%)',
+          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 5%, black 100%)',
+          maskComposite: 'intersect',
+          WebkitMaskComposite: 'source-in',
+        }}
+      >
+        {/* Step title */}
         <p
-          className="text-center mb-4 text-[10px] uppercase tracking-[0.25em] text-white/30"
-          style={{ fontFamily: "'Jost', sans-serif" }}
+          className="text-center uppercase text-white/90"
+          style={{ fontFamily: "'Jost', sans-serif", fontSize: "clamp(1rem, 4vw, 1.5rem)", letterSpacing: "0.15em", fontWeight: 200 }}
         >
           {currentConfig.title}
         </p>
-        <div className="overflow-hidden">
+
+        <WizardNav
+          currentStep={step}
+          canGoBack={canGoBack}
+          onBack={retreat}
+        />
+
+
+        <div className="[overflow-x:clip]">
           <AnimatePresence custom={direction} mode="wait" initial={false}>
             <motion.div
               key={step}
@@ -262,21 +281,15 @@ export function AppGetStartedPage() {
           </AnimatePresence>
         </div>
 
-        <WizardNav
-          currentStep={step}
-          canGoBack={canGoBack}
-          onBack={retreat}
-        />
-
         {step === STEPS.IDENTIFY && (
           <p
-            className="text-center mt-6 text-[11px] text-white/20 tracking-[.06em]"
+            className="text-left mt-6 text-[11px] text-white/40 tracking-[.06em]"
             style={{ fontFamily: "'Jost', sans-serif" }}
           >
             Already have an account?{" "}
             <Link
               to="/login"
-              className="text-violet-400/60 hover:text-violet-300 transition-colors"
+              className="text-blue-400/80 hover:text-blue-300 transition-colors"
             >
               Sign in
             </Link>
