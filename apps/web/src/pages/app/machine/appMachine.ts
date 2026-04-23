@@ -9,6 +9,7 @@ import {
 import type { AppContext, AppEvent, AppUserProfile, AppBusiness } from "./appMachine.types"
 import { ROUTE_BY_PATH } from "@/pages/app/routes"
 import { AUDIO } from "@/data/spirit-presets"
+import { THEMES, DEFAULT_THEME } from "@/data/section-themes"
 
 export const appMachine = setup({
   types: {} as {
@@ -33,13 +34,26 @@ export const appMachine = setup({
     setRoute: assign(({ event }) => ({
       currentRoute: (event as Extract<AppEvent, { type: "ROUTE_CHANGED" }>).pathname,
     })),
+    setCurrentTheme: assign(({ event }) => {
+      const e = event as Extract<AppEvent, { type: "ROUTE_CHANGED" }>
+      const themeName = ROUTE_BY_PATH[e.pathname]?.theme ?? "blue"
+      return { currentTheme: THEMES[themeName] ?? DEFAULT_THEME }
+    }),
     registerSpirit: assign(({ event }) => ({
       spiritActorRef: (event as Extract<AppEvent, { type: "REGISTER_SPIRIT" }>).actorRef,
     })),
-    forwardPreset: ({ context, event }) => {
+    sendRouteToSpirit: ({ context, event }) => {
       const e = event as Extract<AppEvent, { type: "ROUTE_CHANGED" }>
-      const preset = ROUTE_BY_PATH[e.pathname]?.preset ?? "default"
-      context.spiritActorRef?.send({ type: "SET_PRESET", name: preset })
+      const routeDef = ROUTE_BY_PATH[e.pathname]
+      const preset = routeDef?.preset ?? "default"
+      const themeName = routeDef?.theme ?? "blue"
+      const theme = THEMES[themeName] ?? DEFAULT_THEME
+      context.spiritActorRef?.send({
+        type: "SET_PRESET",
+        name: preset,
+        color1: theme.dark,
+        color2: theme.mid,
+      })
     },
     playNavSfx: ({ context }) => {
       context.spiritActorRef?.send({ type: "PLAY_SFX", name: AUDIO.nav })
@@ -57,6 +71,7 @@ export const appMachine = setup({
     profile: null,
     business: null,
     currentRoute: "/app",
+    currentTheme: DEFAULT_THEME,
     spiritActorRef: null,
   },
   states: {
@@ -170,12 +185,12 @@ export const appMachine = setup({
         loading: {
           on: {
             SPIRIT_READY:  { target: "active" },
-            ROUTE_CHANGED: { actions: ["setRoute", "forwardPreset"] },
+            ROUTE_CHANGED: { actions: ["setRoute", "setCurrentTheme", "sendRouteToSpirit"] },
           },
         },
         active: {
           on: {
-            ROUTE_CHANGED: { actions: ["setRoute", "forwardPreset", "playNavSfx"] },
+            ROUTE_CHANGED: { actions: ["setRoute", "setCurrentTheme", "sendRouteToSpirit", "playNavSfx"] },
           },
         },
       },
