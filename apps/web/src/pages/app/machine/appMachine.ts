@@ -177,8 +177,8 @@ export const appMachine = setup({
 
     // ── View ─────────────────────────────────────────────────────
     // Starts in 'loading' — blocks the overlay until SPIRIT_READY fires.
-    // ROUTE_CHANGED in loading: record route + forward preset (no SFX yet).
-    // ROUTE_CHANGED in active: record route + forward preset + play nav SFX.
+    // ROUTE_CHANGED in loading: record route + set theme + send to Spirit (no SFX yet).
+    // ROUTE_CHANGED in active: record route + set theme + send to Spirit + play nav SFX.
     view: {
       initial: "loading",
       states: {
