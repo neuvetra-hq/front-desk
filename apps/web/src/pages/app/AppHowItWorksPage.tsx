@@ -106,7 +106,7 @@ export function AppHowItWorksPage() {
                   display: 'inline-block',
                   width: '7px',
                   height: '7px',
-                  background: `rgba(${BRAND_GREEN_RGB},0.75)`,
+                  background: `rgba(30,90,50,0.95)`,
                   flexShrink: 0,
                 }} />
                 {step.callout}
