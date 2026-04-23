@@ -23,7 +23,7 @@ const itemVariants = {
 
 export function AppHowItWorksPage() {
   return (
-    <AppPageShell title="How It Works" descriptor="Live in under 10 minutes">
+    <AppPageShell title="How It Works" descriptor="Your AI. Ready in minutes.">
       <motion.ol
         variants={containerVariants}
         initial="hidden"
@@ -39,15 +39,15 @@ export function AppHowItWorksPage() {
               borderTop: index === 0 ? 'none' : '1px solid rgba(255,255,255,0.06)',
             }}
           >
-            {/* Step number */}
+            {/* Step number — ghost green, fades 01→04 */}
             <span
-              className="shrink-0 w-7 text-right pt-px"
+              className="shrink-0 w-14 text-right"
               style={{
-                color: 'rgba(255,255,255,0.18)',
-                fontSize: '0.7rem',
+                color: `rgba(61,158,96,${0.22 - index * 0.04})`,
+                fontSize: '3rem',
                 fontFamily: "'Jost', sans-serif",
                 fontWeight: 200,
-                letterSpacing: '0.05em',
+                lineHeight: 1,
               }}
             >
               {step.step}
@@ -78,6 +78,18 @@ export function AppHowItWorksPage() {
               >
                 {step.description}
               </p>
+              <span
+                style={{
+                  color: 'rgba(61,158,96,0.75)',
+                  fontSize: '0.65rem',
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase' as const,
+                  marginTop: '2px',
+                  display: 'block',
+                }}
+              >
+                ✓ {step.callout}
+              </span>
             </div>
           </motion.li>
         ))}
