@@ -1,10 +1,14 @@
+import { useAppMachine } from "@/pages/app/hooks/useAppMachine"
+
 export function AppHomePage() {
+  const themeLight = useAppMachine((s) => s.context.currentTheme.light)
+
   return (
     <div className="relative flex h-full flex-col items-center justify-center px-8 select-none">
       <div className="flex flex-col items-center text-center">
         <h1
           className="uppercase leading-none"
-          style={{ color: '#668a93', fontSize: 'clamp(1.8rem, 7vw, 9rem)', letterSpacing: '0.25em', fontFamily: "'Jost', sans-serif", fontWeight: 200 }}
+          style={{ color: themeLight, fontSize: 'clamp(1.8rem, 7vw, 9rem)', letterSpacing: '0.25em', fontFamily: "'Jost', sans-serif", fontWeight: 200 }}
         >
           Front Desk
         </h1>
