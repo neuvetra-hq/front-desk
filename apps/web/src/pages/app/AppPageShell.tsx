@@ -18,6 +18,7 @@ export function AppPageShell({ title, descriptor, children }: AppPageShellProps)
           className="uppercase leading-none pointer-events-none"
           style={{
             color: themeLight,
+            transition: 'color 1400ms ease',
             fontSize: 'clamp(2.5rem, 8vw, 7rem)',
             letterSpacing: '0.25em',
             fontFamily: "'Jost', sans-serif",
