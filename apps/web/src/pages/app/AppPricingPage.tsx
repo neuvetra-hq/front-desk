@@ -65,8 +65,8 @@ export function AppPricingPage() {
               key={tier.name}
               className={`plan-card relative flex flex-col p-7 ${
                 tier.popular
-                  ? "order-first md:order-none border border-violet-500/20 bg-violet-500/[0.03] backdrop-blur-md"
-                  : "border border-white/10 bg-white/[0.015] backdrop-blur-md"
+                  ? "order-first md:order-none bg-violet-500/[0.06] backdrop-blur-md"
+                  : "bg-white/[0.03] backdrop-blur-md"
               }`}
             >
               <p className={`text-[11px] font-semibold tracking-[.14em] uppercase mb-5 ${
