@@ -27,7 +27,7 @@ export function AppHowItWorksPage() {
   return (
     <AppPageShell title="How It Works" descriptor="Your AI. Ready in minutes.">
       <div
-        className="max-w-md mx-auto w-full px-5 py-1"
+        className="w-full max-w-md md:max-w-2xl mx-auto px-5 py-1"
         style={{
           background: 'rgba(0,0,0,0.18)',
           backdropFilter: 'blur(14px)',
@@ -83,12 +83,13 @@ export function AppHowItWorksPage() {
                   fontSize: '0.75rem',
                   lineHeight: '1.75',
                   fontWeight: 300,
-                  maxWidth: '26rem',
+                  maxWidth: '38rem',
                 }}
               >
                 {step.description}
               </p>
               <span
+                className="md:whitespace-nowrap"
                 style={{
                   color: `rgba(${BRAND_GREEN_RGB},0.75)`,
                   fontSize: '0.65rem',
