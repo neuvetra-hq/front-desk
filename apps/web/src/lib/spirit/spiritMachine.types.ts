@@ -26,7 +26,7 @@ export interface SpiritMachineContext {
 }
 
 export type SpiritEvent =
-  | { type: "SET_PRESET";    name: string; durationMs?: number }
+  | { type: "SET_PRESET";    name: string; durationMs?: number; color1?: string; color2?: string }
   | { type: "CHANGE_COLORS"; color1?: string; color2?: string; bgColor?: string; durationMs?: number }
   | { type: "MOVE_TO";       target: NamedAnchor | { x: number; y: number; z: number }; holdMs?: number; returnMs?: number }
   | { type: "WANDER" }
