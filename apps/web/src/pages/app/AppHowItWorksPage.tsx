@@ -27,7 +27,7 @@ export function AppHowItWorksPage() {
   return (
     <AppPageShell title="How It Works" descriptor="Your AI. Ready in minutes.">
       <div
-        className="w-full max-w-md md:max-w-2xl mx-auto px-5 py-1"
+        className="w-full max-w-md md:max-w-2xl mx-auto px-10 py-8"
         style={{
           background: 'rgba(0,0,0,0.18)',
           backdropFilter: 'blur(14px)',
