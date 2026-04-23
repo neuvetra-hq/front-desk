@@ -35,7 +35,12 @@ export function createSpiritMachine(engineRef: RefObject<SpiritEngine | null>) {
       // ── visual ───────────────────────────────────────────────────────
       applyPreset: assign(({ context, event }) => {
         const e = event as Extract<SpiritEvent, { type: "SET_PRESET" }>
-        const to = PRESETS[e.name]
+        const base = PRESETS[e.name]
+        const to: SpiritPreset = {
+          ...base,
+          color1: e.color1 ?? base.color1,
+          color2: e.color2 ?? base.color2,
+        }
         const from = context.currentPreset
         const durationMs = e.durationMs ?? 1400
         eng()?.setVisualTarget(from, to, durationMs)
