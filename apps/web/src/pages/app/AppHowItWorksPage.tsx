@@ -103,7 +103,7 @@ export function AppHowItWorksPage() {
                   display: 'block',
                 }}
               >
-                ✓ {step.callout}
+                ▪ {step.callout}
               </span>
             </div>
           </motion.li>
