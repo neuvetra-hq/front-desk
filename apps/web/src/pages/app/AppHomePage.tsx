@@ -8,7 +8,7 @@ export function AppHomePage() {
       <div className="flex flex-col items-center text-center">
         <h1
           className="uppercase leading-none"
-          style={{ color: themeLight, transition: 'color 1400ms ease', fontSize: 'clamp(1.8rem, 7vw, 9rem)', letterSpacing: '0.25em', fontFamily: "'Jost', sans-serif", fontWeight: 200 }}
+          style={{ color: themeLight, transition: 'color 1400ms ease', fontSize: 'clamp(1.8rem, 7vw, 9rem)', letterSpacing: '0.12em', fontFamily: "'Jost', sans-serif", fontWeight: 200 }}
         >
           Front Desk
         </h1>

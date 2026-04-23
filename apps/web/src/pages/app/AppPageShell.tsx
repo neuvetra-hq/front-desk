@@ -20,7 +20,7 @@ export function AppPageShell({ title, descriptor, children }: AppPageShellProps)
             color: themeLight,
             transition: 'color 1400ms ease',
             fontSize: 'clamp(2.5rem, 8vw, 7rem)',
-            letterSpacing: '0.25em',
+            letterSpacing: '0.12em',
             fontFamily: "'Jost', sans-serif",
             fontWeight: 200,
           }}
@@ -30,9 +30,11 @@ export function AppPageShell({ title, descriptor, children }: AppPageShellProps)
         <p
           className="mt-4 uppercase"
           style={{
-            color: 'rgba(255, 255, 255, 0.35)',
-            fontSize: '0.65rem',
-            letterSpacing: '0.4em',
+            color: 'rgba(255, 255, 255, 0.85)',
+            fontSize: '1rem',
+            fontWeight: 500,
+            letterSpacing: '0.06em',
+            fontFamily: "'Jost', sans-serif",
           }}
         >
           {descriptor}
