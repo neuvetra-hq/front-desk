@@ -33,7 +33,6 @@ test.describe("/app/how-it-works", () => {
     await page.goto("/app/how-it-works")
     await expect(page.locator("nav")).toBeVisible()
     await expect(page.getByText("Start with your phone number")).toBeVisible()
-    await expect(page.locator("nav")).toBeVisible()
   })
 
   test("Home page is unchanged — still shows Front Desk centered", async ({ page }) => {
