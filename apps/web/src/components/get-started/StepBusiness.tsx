@@ -3,7 +3,7 @@ import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { ChevronDown } from "lucide-react"
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { DarkInput } from "./DarkInput"
 import { jostLabel } from "./types"
 import type { BusinessData } from "./types"
@@ -37,6 +37,17 @@ export function StepBusiness({ onNext }: Props) {
   })
   const [open, setOpen] = useState(false)
   const [selectedLabel, setSelectedLabel] = useState("")
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleOutside)
+    return () => document.removeEventListener("mousedown", handleOutside)
+  }, [])
 
   return (
     <form onSubmit={handleSubmit(onNext)} className="space-y-3">
@@ -62,7 +73,7 @@ export function StepBusiness({ onNext }: Props) {
           control={control}
           name="businessType"
           render={({ field }) => (
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
               <button
                 type="button"
                 onClick={() => setOpen((o) => !o)}

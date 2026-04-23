@@ -20,7 +20,6 @@ type PlanId = "starter" | "growth" | "pro"
 
 interface ActivatePayload {
   userId: string
-  userName: string
   businessName: string
   businessType: string
   phoneNumber: string
@@ -248,7 +247,7 @@ export function StepActivate({
       }}
     >
       <PaymentForm
-        payload={{ userId, userName, businessName, businessType, phoneNumber, aiName, aiPersonality, aiVoiceGender, aiKbSeed }}
+        payload={{ userId, businessName, businessType, phoneNumber, aiName, aiPersonality, aiVoiceGender, aiKbSeed }}
         stripeCustomerId={stripeCustomerId}
         onSuccess={onSuccess}
         onBack={onBack}
