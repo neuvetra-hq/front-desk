@@ -103,23 +103,31 @@ export const FRONT_DESK_FEATURES = [
 export const HOW_IT_WORKS = [
   {
     step: "01",
-    title: "Create your account",
-    description: "Enter your mobile number and verify with a one-time code. Takes 30 seconds.",
+    title: "Start with your phone number",
+    description:
+      "That's all we need to get going. Verify with a one-time code — your free trial begins immediately. No credit card, no commitment, no forms to fill out.",
+    callout: "7-day free trial · 100 free minutes · no card required",
   },
   {
     step: "02",
-    title: "Tell us about your business",
-    description: "Business name, type, and we provision you a real local phone number instantly.",
+    title: "Design your AI",
+    description:
+      "Give your AI a name. Choose its voice — the one that represents your business. Then train it: your services, your pricing, your hours, exactly how you like things handled. This is your AI — built by you, for you.",
+    callout: "Your name, your voice, your rules — edit any time",
   },
   {
     step: "03",
-    title: "Set up call forwarding",
-    description: "Forward missed calls from your existing number to your new Neuvetra Front Desk number.",
+    title: "Pick your AI's number",
+    description:
+      "Choose a real local number for your AI — one you can advertise, put on your website, or hand to clients directly. Forward missed calls from your existing number, or let clients call your AI's number straight. Either way, your current number stays exactly as it is.",
+    callout: "Keep your existing number · your AI gets its own",
   },
   {
     step: "04",
-    title: "Go live",
-    description: "Your AI receptionist is active. Every call answered, every question handled, around the clock.",
+    title: "Call it. Then let it work.",
+    description:
+      "Dial your AI's number before you go live — hear it handle a call exactly the way your clients will. When you're satisfied, it answers every call, books every appointment, and texts you instantly when something needs your attention. In English and Spanish, around the clock.",
+    callout: "24/7 · English & Spanish · instant SMS alerts",
   },
 ]
 
