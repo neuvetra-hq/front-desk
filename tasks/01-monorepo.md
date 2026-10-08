@@ -9,7 +9,7 @@ status: done
 - [x] Create `packages/config` with shared `tsconfig.base.json`
 - [x] Create `package.json` for `apps/api`, `apps/web`, `packages/database`
 - [x] Remove root `src/` (source moves to `apps/api`)
-- [x] Update `CLAUDE.md` to reflect monorepo layout
+- [x] Update the README to reflect monorepo layout
 
 ## Acceptance Criteria
 - `bun install` links all workspaces

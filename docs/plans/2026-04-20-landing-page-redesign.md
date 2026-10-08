@@ -1,7 +1,5 @@
 # Landing Page Redesign + Pricing Update — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Rewrite the Neuvetra Front Desk landing page with sharper copy, new sections (SocialProof, FAQ), shadcn semantic token compliance across every component, and updated pricing (200/500/1000 min, lower overages).
 
 **Architecture:** All data lives in `constants/landing.ts` — components are pure renderers. Two new components (`SocialProof.tsx`, `FAQ.tsx`) are added. `Products` is removed from `LandingPage.tsx`. Every color and spacing value migrates from hardcoded Tailwind palette classes to shadcn semantic tokens (`text-foreground`, `bg-muted`, `text-primary`, etc.).

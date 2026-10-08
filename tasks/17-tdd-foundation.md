@@ -12,7 +12,7 @@ Tests live in `apps/web/tests/` and run against the production or local dev serv
 - [x] Install and configure Playwright in `apps/web`
 - [x] Cover the critical signup/login/onboarding/protected-route flows
 - [x] Integrate test run into CI (Railway build passes tests before deploy)
-- [x] Document TDD conventions in CLAUDE.md
+- [x] Document TDD conventions in the README
 
 ## Test Scenarios (MVP)
 
@@ -52,7 +52,7 @@ Tests live in `apps/web/tests/` and run against the production or local dev serv
 
 - [x] `bun run test:e2e` passes from `apps/web/` — **24 tests, all passing**
 - [x] At least 10 test cases covering auth + landing
-- [x] CLAUDE.md updated with TDD section
+- [x] README updated with TDD section
 
 ## Notes
 - Authenticated-state tests (login redirect, post-OTP steps) require Playwright `storageState` with a seeded Supabase session — deferred to a future task

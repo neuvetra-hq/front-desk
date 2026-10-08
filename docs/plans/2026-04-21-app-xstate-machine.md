@@ -1,7 +1,5 @@
 # XState Machine for `/app` (neuvetra.ai) Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Replace the ad-hoc `useState`/`useWebGPU`/`GpuRoute` approach in `/app` with a single XState v5 parallel machine that owns all four dimensions of app state: WebGL gate, auth, audio, and current view.
 
 **Architecture:** Full parallel machine (`neuvetraAI`) with four orthogonal state regions running simultaneously. React Router owns the URL; a `useEffect` in `AppLayout` fires `ROUTE_CHANGED` events into the machine. Auth talks to Supabase directly (independent from the `.com` `AuthContext`). The machine is exposed via `createActorContext` from `@xstate/react`.

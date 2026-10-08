@@ -1,7 +1,5 @@
 # SpiritMachine Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Replace the imperative `engine.transition()` call with a parallel XState v5 machine (`spiritMachine`) that owns all Spirit behavior — visuals, attractor movement, speed surges, and audio state — and communicates with `SpiritEngine` through typed events.
 
 **Architecture:** `createSpiritMachine(engineRef)` is a factory that captures a `RefObject<SpiritEngine | null>` in a closure; actions call `engineRef.current?.method()` safely. `AppLayout` creates the engine ref, creates the actor, initialises the engine into the container div, and wraps children in `SpiritActorContext.Provider`. `SpiritEngine` gains four setter methods (`setVisualTarget`, `setAttractorTarget`, `setSurge`, `setMuted`) and loses `transition()` and `toggleMute()`. The `appMachine` audio region is deleted; SpiritMachine's `audio` region is the single source of truth for mute state.

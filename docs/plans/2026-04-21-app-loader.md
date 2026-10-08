@@ -1,7 +1,5 @@
 # App Loader Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Add a loading state to the `/app` route that hides all content until the Spirit engine (Three.js renderer + audio buffers) is fully initialized, then transitions to the correct page — eliminating the white flash on load and the jittery first slide animation.
 
 **Architecture:** `view` state in the XState machine gains a new initial `loading` state. While there, `ROUTE_CHANGED` events only update `context.currentRoute` (no view transition). When `useSpirit`'s `onReady` callback fires (after `engine.init()` resolves — Three.js + all audio buffered), `AppLayout` sends `SPIRIT_READY` into the machine, which uses `context.currentRoute` to jump to the right page. A dark fullscreen overlay is shown while `view === 'loading'` and fades out on transition.
