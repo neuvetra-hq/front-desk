@@ -65,6 +65,9 @@ interface Context {
   // Step 8 — post-activation
   businessId: string | null
 
+  // Set from input on start
+  isAlreadyActive: boolean
+
   // Transient
   error: string | null
 }
@@ -146,11 +149,11 @@ export const onboardingMachine = setup({
   },
 
   guards: {
-    alreadyActive: ({ input }) => input.isAlreadyActive,
+    alreadyActive: ({ context }) => context.isAlreadyActive,
 
+    // Only used in verifyOtp's onDone, so the event carries the actor output.
     isExistingAccount: ({ event }) =>
-      event.type === "xstate.done.actor.verifyOtp" &&
-      (event as any).output?.hasExistingBusiness === true,
+      (event as unknown as { output?: OtpResult }).output?.hasExistingBusiness === true,
   },
 
   actions: {
@@ -216,13 +219,14 @@ export const onboardingMachine = setup({
 }).createMachine({
   id: "onboarding",
 
-  context: () => ({
+  context: ({ input }) => ({
     firstName: "", lastName: "", phone: "",
     userId: null, accessToken: null,
     businessName: "", businessType: "",
     aiName: "", aiPersonality: "professional", aiVoiceGender: "female",
     kbSeed: "", availableNumbers: [], selectedNumber: null,
     businessId: null,
+    isAlreadyActive: input?.isAlreadyActive ?? false,
     error: null,
   }),
 
