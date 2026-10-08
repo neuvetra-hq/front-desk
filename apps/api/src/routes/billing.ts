@@ -4,6 +4,7 @@ import { db, businesses, businessMembers, users, calls, knowledgeBase } from "@f
 import { eq, and, gte, lte, sql } from "drizzle-orm"
 import { stripe, PLANS, type PlanId } from "../services/stripe"
 import { provisionNumber, releaseNumber } from "../services/twilio"
+import type Stripe from "stripe"
 
 function getSupabaseAdmin() {
   return createClient(Bun.env.SUPABASE_URL!, Bun.env.SUPABASE_SERVICE_ROLE_KEY!)
@@ -14,6 +15,19 @@ async function getUserFromHeader(authHeader: string | undefined): Promise<{ id: 
   if (!token) return null
   const { data } = await getSupabaseAdmin().auth.getUser(token)
   return data.user ?? null
+}
+
+/**
+ * Since Stripe API version 2025-03-31 ("basil"), the billing period lives on
+ * each subscription item instead of the subscription itself. Every item on a
+ * subscription shares the same billing cycle, so the first item is enough.
+ */
+function billingPeriod(sub: Stripe.Subscription): { start: number; end: number } {
+  const item = sub.items.data[0]
+  return {
+    start: item?.current_period_start ?? 0,
+    end:   item?.current_period_end ?? 0,
+  }
 }
 
 export const billingRoutes = new Elysia({ prefix: "/billing" })
@@ -281,7 +295,7 @@ export const billingRoutes = new Elysia({ prefix: "/billing" })
     return {
       planId:           planId ?? null,
       status:           sub.status,
-      currentPeriodEnd: sub.current_period_end,
+      currentPeriodEnd: billingPeriod(sub).end,
     }
   })
 
@@ -380,8 +394,9 @@ export const billingRoutes = new Elysia({ prefix: "/billing" })
       return empty
     }
 
-    const periodStart = new Date(sub.current_period_start * 1000)
-    const periodEnd   = new Date(sub.current_period_end   * 1000)
+    const period      = billingPeriod(sub)
+    const periodStart = new Date(period.start * 1000)
+    const periodEnd   = new Date(period.end   * 1000)
 
     const [usageRow] = await db
       .select({ totalSeconds: sql<number>`COALESCE(SUM(duration_seconds), 0)` })
@@ -409,8 +424,8 @@ export const billingRoutes = new Elysia({ prefix: "/billing" })
       minutesIncluded,
       overageMinutes,
       overageCost,
-      periodStart: sub.current_period_start,
-      periodEnd:   sub.current_period_end,
+      periodStart: period.start,
+      periodEnd:   period.end,
       planId:      planId ?? null,
     }
 
