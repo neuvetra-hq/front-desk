@@ -191,7 +191,7 @@
         "custom_sip_headers": {},
         "transfer_destination": {
           "type": "predefined",
-          "number": "+16507434932"
+          "number": "+15555550100"
         },
         "edge": {
           "destination_node_id": "node-1775762538467",

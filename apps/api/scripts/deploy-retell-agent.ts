@@ -21,6 +21,13 @@ if (!Bun.env.RETELL_API_KEY) {
   process.exit(1)
 }
 
+// Number the agent cold-transfers to for emergencies (E.164).
+const TRANSFER_NUMBER = Bun.env.DEFAULT_TRANSFER_NUMBER ?? ""
+if (!TRANSFER_NUMBER) {
+  console.error("DEFAULT_TRANSFER_NUMBER is not set")
+  process.exit(1)
+}
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -389,7 +396,7 @@ After answering, ask: "Is there anything else I can help you with?"`,
     id: IDS.emergencyTransfer,
     type: "transfer_call",
     name: "Emergency Transfer",
-    transfer_destination: { type: "predefined", number: "+16507434932" },
+    transfer_destination: { type: "predefined", number: TRANSFER_NUMBER },
     transfer_option: {
       type: "cold_transfer",
       show_transferee_as_caller: false,

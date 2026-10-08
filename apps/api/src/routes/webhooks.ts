@@ -230,7 +230,7 @@ export const webhooks = new Elysia({ prefix: "/webhooks" })
           business_name:    (aiConfig.businessName as string | undefined) ?? business.name,
           business_type:    business.businessType ?? "service",
           agent_name:       (aiConfig.agentName as string | undefined) ?? "your virtual receptionist",
-          owner_phone:      (aiConfig.ownerPhone as string | undefined) ?? "+16507434932",
+          owner_phone:      (aiConfig.ownerPhone as string | undefined) ?? Bun.env.DEFAULT_TRANSFER_NUMBER ?? "",
           knowledge_base:   knowledgeBaseText,
           collect_address:  (aiConfig.collectAddress as boolean | undefined) ? "true" : "false",
         },
